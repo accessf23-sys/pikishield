@@ -457,7 +457,7 @@ tr:hover td { background: #F0FDF9; }
   min-height: 100vh;
   display: grid; grid-template-columns: 1fr 1fr;
 }
-.auth-hero {
+.auth-hero { overflow: hidden;
   background: linear-gradient(155deg, #030B17 0%, #071E3D 35%, #043D28 75%, #052B1C 100%);
   padding: 32px 36px;
   display: flex; flex-direction: column; justify-content: space-between;
@@ -658,7 +658,7 @@ tr:hover td { background: #F0FDF9; }
 /* ── Mobile auth layout (LoginPage + RegisterPage) ──────────────── */
 @media (max-width: 768px) {
   .auth-layout { flex-direction: column; }
-  .auth-hero { display: none !important; }
+  .auth-hero { overflow: hidden; display: none !important; }
   .mobile-login-banner { display: block !important; }
   .auth-form-panel { width: 100% !important; padding: 20px !important; }
   .auth-form-inner { max-width: 100% !important; }
@@ -833,3 +833,5 @@ img, svg { max-width: 100%; }
 @media (max-width: 900px) {
   .admin-modal-backdrop { left: 0 !important; }
 }
+
+@media (max-width: 900px) { .auth-hero { display: none !important; max-width: 0 !important; overflow: hidden !important; width: 0 !important; padding: 0 !important; } .auth-layout { display: flex !important; flex-direction: column !important; } .auth-form-panel { width: 100% !important; min-height: 100vh !important; } }
