@@ -1,3 +1,4 @@
+const { sendSMS } = require('../utils/sms');
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const router = express.Router();
@@ -403,6 +404,7 @@ router.post('/forgot-password', async (req, res) => {
     user.resetOtp = otp;
     user.resetOtpExpiry = new Date(Date.now() + 15 * 60 * 1000);
     await user.save();
+    await sendSMS(user.phone, `Your PikiShield reset code: ${otp}. Valid 15 mins.`);
 
     const isDev = process.env.NODE_ENV !== 'production';
 
