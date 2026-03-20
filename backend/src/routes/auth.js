@@ -552,8 +552,8 @@ router.post("/admin-reset-password", auth, async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-@
 module.exports = router;
+
 
 
 
