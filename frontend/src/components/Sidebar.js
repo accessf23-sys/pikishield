@@ -158,13 +158,14 @@ export default function Sidebar() {
         )}
 
         <button className="nav-item" onClick={logout} style={{ color: '#F87171', marginTop: 2 }}>
-          <span className="nav-icon">Sign Out</span>
+          <span className="nav-icon">?</span>
           Sign Out
         </button>
       </div>
     </aside>
   );
 }
+
 
 
 
