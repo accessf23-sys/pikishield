@@ -38,9 +38,9 @@ async function pvDoc(id) {
 }
 
 const TYPE_META = {
-  bail:    { label:'Bail',     icon:'🚔', color:'#6366F1', maxAmount:20000 },
-  funeral: { label:'Funeral',  icon:'🕊️', color:'#0EA5E9', maxAmount:200000 },
-  income:  { label:'Stipend',  icon:'💊', color:'#10B981', maxAmount:15000 },
+  bail:    { label:'Bail',     icon:'', color:'#6366F1', maxAmount:20000 },
+  funeral: { label:'Funeral',  icon:'', color:'#0EA5E9', maxAmount:200000 },
+  income:  { label:'Stipend',  icon:'', color:'#10B981', maxAmount:15000 },
 };
 
 function FraudBadge({ score }) {
@@ -281,7 +281,7 @@ export default function AdminClaimsPage() {
 
         {/* Tab bar */}
         <div style={{ display:'flex',gap:6,marginBottom:16 }}>
-          {[['bail','🚔 Bail'],['funeral','🕊️ Funeral'],['income','💊 Stipend']].map(([k,l])=>{
+          {[['bail','Bail'],['funeral','Funeral'],['income','Stipend']].map(([k,l])=>{
             const cnt = byType[k]?.filter(c=>c.status==='pending').length||0;
             return (
               <button key={k} onClick={()=>setTab(k)}
