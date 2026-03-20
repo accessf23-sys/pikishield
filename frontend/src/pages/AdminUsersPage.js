@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { usersAPI, documentsAPI } from '../utils/api';
+import { useAuth } from '../context/AuthContext';
 const s=(v,fb='')=>v==null?fb:typeof v==='object'?fb:String(v)||fb; const sd=(v)=>s(v,'—');
 
 
 async function downloadDoc(id, name) {
-  const token = localStorage.getItem('piki_token');
+  const token = localStorage.getItem('token');
   const res = await fetch(`/api/documents/${id}/download`, {
     headers: token ? { Authorization: `Bearer ${token}` } : {}
   });
@@ -22,7 +23,7 @@ async function downloadDoc(id, name) {
 }
 
 async function previewDoc(id) {
-  const token = localStorage.getItem('piki_token');
+  const token = localStorage.getItem('token');
   const res = await fetch(`/api/documents/${id}/preview`, {
     headers: token ? { Authorization: `Bearer ${token}` } : {}
   });
@@ -346,7 +347,7 @@ export default function AdminUsersPage() {
 
   
 
-  const allUsers = (data?.allUsers || []).filter(u => u.role !== 'nok' && u.role !== 'agent' && u.role !== 'admin');
+  const allUsers = (data?.allUsers || []).filter(u => u.role !== 'nok' && u.role !== 'agent' && u.role !== 'admin' && u.role !== 'superadmin');
   const pending  = allUsers.filter(u=>u.kycStatus==='pending' && u.role !== 'nok');
 
   let filtered = allUsers;

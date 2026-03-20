@@ -280,18 +280,18 @@ export default function AdminClaimsPage() {
         </div>
 
         {/* Tab bar */}
-        <div style={{ display:'flex',gap:6,marginBottom:16 }}>
-          {[['bail','🚔 Bail'],['funeral','🕊️ Funeral'],['income','💊 Stipend']].map(([k,l])=>{
-            const cnt = byType[k]?.filter(c=>c.status==='pending').length||0;
-            return (
-              <button key={k} onClick={()=>setTab(k)}
-                className={`btn btn-sm ${tab===k?'btn-primary':'btn-secondary'}`}>
-                {l}
-                {cnt>0 && <span style={{background:tab===k?'rgba(255,255,255,.3)':'var(--red)',color:'white',borderRadius:10,padding:'0 5px',fontSize:10,fontWeight:700,marginLeft:4}}>{cnt}</span>}
-              </button>
-            );
-          })}
-          <div style={{ marginLeft:'auto',display:'flex',gap:6 }}>
+        <div style={{ overflowX:'auto', marginBottom:16 }}>
+          <div style={{ display:'flex', gap:6, minWidth:'max-content' }}>
+            {[['bail','Bail'],['funeral','Funeral'],['income','Stipend']].map(([k,l])=>{
+              const cnt = byType[k]?.filter(c=>c.status==='pending').length||0;
+              return (
+                <button key={k} onClick={()=>setTab(k)}
+                  className={`btn btn-sm ${tab===k?'btn-primary':'btn-secondary'}`}>
+                  {l}
+                  {cnt>0 && <span style={{background:tab===k?'rgba(255,255,255,.3)':'var(--red)',color:'white',borderRadius:10,padding:'0 5px',fontSize:10,fontWeight:700,marginLeft:4}}>{cnt}</span>}
+                </button>
+              );
+            })}
             {['all','pending','approved','rejected'].map(f=>(
               <button key={f} onClick={()=>setFilter(f)}
                 className={`btn btn-sm ${filter===f?'btn-primary':'btn-secondary'}`}

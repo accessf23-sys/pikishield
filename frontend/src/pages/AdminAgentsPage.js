@@ -172,7 +172,7 @@ export default function AdminAgentsPage() {
     if(!allowed.includes(file.type)) return alert('Please upload a JPG, PNG or PDF file');
     setUploading(true);
     const fd=new FormData(); fd.append('files',file); fd.append('docType','national_id'); fd.append('tempUploadId',tempId);
-    fetch('/api/documents/upload-kyc',{method:'POST',body:fd})
+    fetch('/api/documents/upload-kyc',{method:'POST',headers:{'Authorization':'Bearer '+localStorage.getItem('token')},body:fd})
       .then(r=>r.json()).then(d=>{ if(d.documents?.[0]) setDoc(d.documents[0]); else alert('Upload failed: '+(d.error||'Unknown')); })
       .catch(()=>alert('Upload failed')).finally(()=>setUploading(false));
   };
