@@ -1163,10 +1163,8 @@ export default function AdminDashboard() {
   useEffect(() => { load(); }, []);
 
   const handleApprove = async (id) => {
-    const resolvedId = String(id || reviewPerson?._id || reviewPerson?.id || '');
-    if (!resolvedId || resolvedId === 'undefined') return alert('Cannot approve: user ID missing');
     try {
-      await usersAPI.approveKyc(resolvedId);
+      await usersAPI.approveKyc(id);
       setReviewPerson(null);
       load();
     } catch (e) {
@@ -1175,10 +1173,8 @@ export default function AdminDashboard() {
   };
 
   const handleReject = async (id, reason) => {
-    const resolvedId = String(id || reviewPerson?._id || reviewPerson?.id || '');
-    if (!resolvedId || resolvedId === 'undefined') return alert('Cannot reject: user ID missing');
     try {
-      await usersAPI.rejectKyc(resolvedId, reason || 'Documents incomplete or not legible');
+      await usersAPI.rejectKyc(id, reason || 'Documents incomplete or not legible');
       setReviewPerson(null);
       load();
     } catch (e) {
@@ -1187,9 +1183,8 @@ export default function AdminDashboard() {
   };
 
   const handleSuspend = async (user, reason) => {
-    const uid = String(user._id || user.id || '');
-    if (user.suspended) await usersAPI.unsuspendUser(uid);
-    else await usersAPI.suspendUser(uid, reason || 'Admin action');
+    if (user.suspended) await usersAPI.unsuspendUser(user.id);
+    else await usersAPI.suspendUser(user.id, reason || 'Admin action');
 
     setSuspendPerson(null);
     setReviewPerson(null);
@@ -1202,9 +1197,7 @@ export default function AdminDashboard() {
     { name: 'Red', value: data?.riskDistribution?.red || 0, color: '#F43F5E' },
   ];
 
-  // Filter out NOKs from pending KYC — they don't need KYC review
-  const pendingFiltered = pending.filter(p => p.role !== 'nok');
-  const pendingCount = pendingFiltered.length;
+  const pendingCount = pending.length;
 
   return (
     <div>
@@ -1420,7 +1413,7 @@ export default function AdminDashboard() {
 
         {!loading && tab === 'overview' && (
           <>
-            <div className="stats-grid" style={{ marginBottom: 16 }}>
+            <div className="stats-grid" style={{ marginBottom: 16, gridTemplateColumns: "repeat(2, 1fr)" }}>
               {[
                 { label: 'Agents', value: data.totalAgents, icon: '🤝', color: '#3B82F6', bg: '#EFF6FF' },
                 { label: 'Active Policies', value: data.activePolicies, icon: '🛡️', color: '#F59E0B', bg: '#FFFBEB' },
@@ -1437,9 +1430,9 @@ export default function AdminDashboard() {
                 ] : []),
                 { label: 'Claims Pending', value: data.pendingClaims, icon: '⏳', color: 'var(--red)', bg: 'var(--red-light)' },
               ].map(stat => (
-                <div key={stat.label} className="stat-card" style={{ padding: "12px 14px" }}>
-                  <div className="stat-icon" style={{ width: 32, height: 32, fontSize: 16 }} style={{ background: stat.bg, color: stat.color }}>{stat.icon}</div>
-                  <div className="stat-value" style={{ fontSize: 20 }} style={{ color: stat.color }}>{stat.value ?? 0}</div>
+                <div key={stat.label} className="stat-card" style={{padding:"12px 10px"}}>
+                  <div className="stat-icon" style={{ background: stat.bg, color: stat.color }}>{stat.icon}</div>
+                  <div className="stat-value" style={{ color: stat.color }}>{stat.value ?? 0}</div>
                   <div className="stat-label">{stat.label}</div>
                 </div>
               ))}
@@ -1600,76 +1593,75 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {pendingFiltered.length > 0 && (
+            {pending.length > 0 && (
               <div className="card">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
                   <div>
-                    <div style={{ fontSize: 14, fontWeight: 700 }}>KYC Reviews</div>
-                    <div style={{ fontSize: 12, color: 'var(--muted)' }}>
-                      {isSuperAdmin ? 'Summary — go to Admins page to review' : 'Review documents before approving accounts'}
-                    </div>
+                    <div style={{ fontSize: 14, fontWeight: 700 }}>Pending KYC Reviews</div>
+                    <div style={{ fontSize: 12, color: 'var(--muted)' }}>Review documents before approving accounts</div>
                   </div>
-                  <span style={{ fontSize: 12, background: '#FFF8E1', color: '#92400E', padding: '4px 12px', borderRadius: 20, fontWeight: 600 }}>
+                  <span
+                    style={{
+                      fontSize: 12,
+                      background: '#FFF8E1',
+                      color: '#92400E',
+                      padding: '4px 12px',
+                      borderRadius: 20,
+                      fontWeight: 600
+                    }}
+                  >
                     {pendingCount} pending
                   </span>
                 </div>
 
-                {isSuperAdmin ? (
-                  /* Superadmin: summary only */
-                  <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                    {[
-                      { label: 'Pending KYC', value: pendingCount, color: '#F59E0B', bg: '#FFFBEB', icon: '⏳' },
-                      { label: 'Riders waiting', value: pendingFiltered.filter(p=>p.role==='rider').length, color: '#0EA5E9', bg: '#EFF6FF', icon: '🏍️' },
-                      { label: 'Members waiting', value: pendingFiltered.filter(p=>p.role==='member').length, color: '#8B5CF6', bg: '#F5F3FF', icon: '👥' },
-                      { label: 'NOKs waiting', value: pendingFiltered.filter(p=>p.role==='nok').length, color: '#EC4899', bg: '#FDF2F8', icon: '👤' },
-                    ].map(s => (
-                      <div key={s.label} style={{ flex: '1 1 100px', background: s.bg, borderRadius: 10, padding: '10px 14px', border: `1px solid ${s.color}22`, textAlign: 'center' }}>
-                        <div style={{ fontSize: 20 }}>{s.icon}</div>
-                        <div style={{ fontSize: 22, fontWeight: 800, color: s.color, lineHeight: 1.2 }}>{s.value}</div>
-                        <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 2 }}>{s.label}</div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  /* Regular admin: full list with review buttons */
-                  <div className="table-wrap">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th style={{ width: '30%' }}>Name</th>
-                          <th style={{ width: '15%' }}>Member No.</th>
-                          <th style={{ width: '10%' }}>Role</th>
-                          <th style={{ width: '15%' }}>County</th>
-                          <th style={{ width: '15%' }}>Joined</th>
-                          <th style={{ width: '15%' }}>Action</th>
+                <div className="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th style={{ width: '30%' }}>Name</th>
+                        <th style={{ width: '15%' }}>Member No.</th>
+                        <th style={{ width: '10%' }}>Role</th>
+                        <th style={{ width: '15%' }}>County</th>
+                        <th style={{ width: '15%' }}>Joined</th>
+                        <th style={{ width: '15%' }}>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pending.slice(0, 8).map(p => (
+                        <tr key={p.id}>
+                          <td style={{ fontWeight: 600, fontSize: 13 }}>
+                            {s(p.fullName)}
+                            <div style={{ fontSize: 11, color: 'var(--muted)' }}>{s(p.phone)}</div>
+                          </td>
+                          <td style={{ fontSize: 11, fontWeight: 700 }}>{sd(p.memberNumber || p.nokNumber)}</td>
+                          <td>
+                            <span
+                              className={'tier-badge ' + (p.role === 'rider' ? 'tier-green' : p.role === 'member' ? 'tier-yellow' : 'tier-red')}
+                              style={{ fontSize: 10 }}
+                            >
+                              {s(p.role)}
+                            </span>
+                          </td>
+                          <td style={{ fontSize: 12 }}>
+                            {typeof p.profile?.county === 'object' ? '—' : (p.profile?.county || '—')}
+                          </td>
+                          <td style={{ fontSize: 11, color: 'var(--muted)' }}>
+                            {new Date(p.createdAt).toLocaleDateString('en-KE')}
+                          </td>
+                          <td>
+                            <button
+                              className="btn btn-sm btn-primary"
+                              style={{ fontSize: 11, padding: '5px 12px' }}
+                              onClick={() => setReviewPerson(p)}
+                            >
+                              🔍 Review
+                            </button>
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody>
-                        {pendingFiltered.slice(0, 8).map(p => (
-                          <tr key={p.id}>
-                            <td style={{ fontWeight: 600, fontSize: 13 }}>
-                              {s(p.fullName)}
-                              <div style={{ fontSize: 11, color: 'var(--muted)' }}>{s(p.phone)}</div>
-                            </td>
-                            <td style={{ fontSize: 11, fontWeight: 700 }}>{sd(p.memberNumber || p.nokNumber)}</td>
-                            <td>
-                              <span className={'tier-badge ' + (p.role === 'rider' ? 'tier-green' : p.role === 'member' ? 'tier-yellow' : 'tier-red')} style={{ fontSize: 10 }}>
-                                {s(p.role)}
-                              </span>
-                            </td>
-                            <td style={{ fontSize: 12 }}>{typeof p.profile?.county === 'object' ? '—' : (p.profile?.county || '—')}</td>
-                            <td style={{ fontSize: 11, color: 'var(--muted)' }}>{new Date(p.createdAt).toLocaleDateString('en-KE')}</td>
-                            <td>
-                              <button className="btn btn-sm btn-primary" style={{ fontSize: 11, padding: '5px 12px' }} onClick={() => setReviewPerson(p)}>
-                                🔍 Review
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
           </>
@@ -1725,6 +1717,7 @@ export default function AdminDashboard() {
                   <table>
                     <thead>
                       <tr>
+                        <th>Agent</th>
                         <th>Code</th>
                         <th>Region</th>
                         <th>Riders</th>
@@ -1733,12 +1726,16 @@ export default function AdminDashboard() {
                         <th>KYC Pending</th>
                         <th>Claims</th>
                         <th>Approval Rate</th>
-
+                        <th>Last Activity</th>
                       </tr>
                     </thead>
                     <tbody>
                       {agents.map(a => (
                         <tr key={a.id}>
+                          <td style={{ fontWeight: 600 }}>
+                            {s(a.name || a.fullName)}
+                            <div style={{ fontSize: 11, color: 'var(--muted)' }}>{s(a.phone)}</div>
+                          </td>
                           <td style={{ fontFamily: 'monospace', fontSize: 12, color: 'var(--green)', fontWeight: 700 }}>
                             {s(a.agentCode)}
                           </td>
@@ -1776,7 +1773,9 @@ export default function AdminDashboard() {
                               <span style={{ fontSize: 11, fontWeight: 600, width: 32 }}>{a.kycApprovalRate ?? 0}%</span>
                             </div>
                           </td>
-
+                          <td style={{ fontSize: 11, color: 'var(--muted)' }}>
+                            {a.lastActivity ? new Date(a.lastActivity).toLocaleDateString('en-KE') : '—'}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
