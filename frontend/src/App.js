@@ -47,7 +47,7 @@ class ErrorBoundary extends React.Component {
             </div>
             <button onClick={()=>window.location.reload()}
               style={{width:'100%',padding:'12px',background:'#00C896',color:'white',border:'none',borderRadius:8,fontWeight:700,fontSize:14,cursor:'pointer'}}>
-              🔄 Reload App
+               Reload App
             </button>
           </div>
         </div>
@@ -68,30 +68,30 @@ function roleHome(role) {
 
 const MOBILE_NAV = {
   rider: [
-    { icon:'📊', label:'Home',      path:'/dashboard' },
-    { icon:'🛡️', label:'Policies',  path:'/policies' },
-    { icon:'📋', label:'Claims',    path:'/claims' },
-    { icon:'💳', label:'Pay',       path:'/payments' },
+    { icon:'', label:'Home',      path:'/dashboard' },
+    { icon:'️', label:'Policies',  path:'/policies' },
+    { icon:'', label:'Claims',    path:'/claims' },
+    { icon:'', label:'Pay',       path:'/payments' },
     { icon:'🪙', label:'Tokens',    path:'/tokens' },
   ],
   nok: [
-    { icon:'📋', label:'Claims',    path:'/claims' },
-    { icon:'🔐', label:'Password',  path:'/password' },
+    { icon:'', label:'Claims',    path:'/claims' },
+    { icon:'', label:'Password',  path:'/password' },
   ],
   admin: [
-    { icon:'🏢', label:'Overview',  path:'/admin' },
-    { icon:'📋', label:'Claims',    path:'/admin/claims' },
-    { icon:'🔑', label:'Admins',    path:'/admin/users' },
-    { icon:'🤝', label:'Agents',    path:'/admin/agents' },
+    { icon:'', label:'Overview',  path:'/admin' },
+    { icon:'', label:'Claims',    path:'/admin/claims' },
+    { icon:'', label:'Admins',    path:'/admin/users' },
+    { icon:'', label:'Agents',    path:'/admin/agents' },
   ],
   agent: [
-    { icon:'📊', label:'Dashboard', path:'/agent' },
-    { icon:'🔐', label:'Password',  path:'/password' },
+    { icon:'', label:'Dashboard', path:'/agent' },
+    { icon:'', label:'Password',  path:'/password' },
   ],
   member: [
-    { icon:'📋', label:'Claims',    path:'/claims' },
-    { icon:'👤', label:'Account',   path:'/member-dashboard' },
-    { icon:'🔐', label:'Password',  path:'/password' },
+    { icon:'', label:'Claims',    path:'/claims' },
+    { icon:'', label:'Account',   path:'/member-dashboard' },
+    { icon:'', label:'Password',  path:'/password' },
   ],
 };
 
@@ -101,12 +101,12 @@ function MobileTopBar() {
   if (!user) return null;
   return (
     <div className="mobile-topbar">
-      <div className="mobile-topbar-logo">🏍️ PikiShield</div>
+      <div className="mobile-topbar-logo">️ PikiShield</div>
       <div style={{fontSize:11,color:'rgba(255,255,255,.5)',fontWeight:600}}>
         {user.fullName?.split(' ')[0]} · {user.role}
       </div>
       <button className="mobile-topbar-notif" onClick={()=>navigate('/password')} title="Settings">⚙️</button>
-      <button className="mobile-topbar-notif" onClick={logout} title="Sign out">🚪</button>
+      <button className="mobile-topbar-notif" onClick={logout} title="Sign out"></button>
     </div>
   );
 }
@@ -192,7 +192,7 @@ function ForcePasswordModal() {
           padding:'12px 16px 10px',
           display:'flex', alignItems:'center', gap:10,
         }}>
-          <span style={{fontSize:20}}>🔐</span>
+          <span style={{fontSize:20}}></span>
           <div style={{flex:1}}>
             <div style={{fontWeight:800,fontSize:13,color:'white',lineHeight:1.2}}>Set Permanent Password</div>
             <div style={{fontSize:11,color:'rgba(255,255,255,.5)',marginTop:1}}>
@@ -245,7 +245,7 @@ function ForcePasswordModal() {
               <button className="btn btn-primary" type="submit"
                 style={{width:'100%',justifyContent:'center',padding:'9px',fontSize:13}}
                 disabled={loading||(!!form.confirm&&form.next!==form.confirm)}>
-                {loading ? '⏳ Saving…' : '🔐 Set Password'}
+                {loading ? '⏳ Saving…' : ' Set Password'}
               </button>
             </form>
           )}
