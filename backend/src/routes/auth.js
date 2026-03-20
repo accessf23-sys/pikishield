@@ -535,7 +535,6 @@ router.patch('/notifications/read-all', auth, async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-@
 
 router.post("/admin-reset-password", auth, async (req, res) => {
   try {
