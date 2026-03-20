@@ -95,7 +95,7 @@ function ClaimDetailModal({ claim, onClose, onAction }) {
               <div style={{ fontSize:12,color:'var(--muted)' }}>{claim.userName} · {claim.userPhone} {claim.memberNumber && `· ${claim.memberNumber}`}</div>
             </div>
           </div>
-          <button onClick={onClose} style={{ background:'#F1F5F9',border:'none',borderRadius:8,padding:'6px 12px',cursor:'pointer',fontWeight:600,fontSize:13 }}>✕ Close</button>
+          <button onClick={onClose} style={{ background:'#F1F5F9',border:'none',borderRadius:8,padding:'6px 12px',cursor:'pointer',fontWeight:600,fontSize:13 }}> Close</button>
         </div>
 
         <div style={{ overflow:'auto',flex:1,padding:'16px 20px' }}>
@@ -127,25 +127,25 @@ function ClaimDetailModal({ claim, onClose, onAction }) {
 
           {/* Documents */}
           <div style={{ marginBottom:16 }}>
-            <div style={{ fontSize:13,fontWeight:700,marginBottom:8 }}>📎 Supporting Documents ({docs.length})</div>
+            <div style={{ fontSize:13,fontWeight:700,marginBottom:8 }}> Supporting Documents ({docs.length})</div>
             {docs.length === 0 ? (
               <div style={{ background:'#FFF8E1',border:'1px solid #FDE68A',borderRadius:8,padding:'10px 12px',fontSize:12,color:'#92400E' }}>
-                ⚠️ No documents attached to this claim.
+                 No documents attached to this claim.
               </div>
             ) : (
               <div style={{ display:'flex',flexDirection:'column',gap:8 }}>
                 {docs.map(d=>(
                   <div key={d.id} style={{ display:'flex',alignItems:'center',gap:10,background:'white',border:'1px solid var(--border)',borderRadius:8,padding:'9px 12px' }}>
-                    <span style={{ fontSize:18 }}>{d.mimeType?.startsWith('image/')?'🖼️':'📄'}</span>
+                    <span style={{ fontSize:18 }}>{d.mimeType?.startsWith('image/')?'':''}</span>
                     <div style={{ flex:1 }}>
                       <div style={{ fontSize:12,fontWeight:600 }}>{d.originalName}</div>
                       <div style={{ fontSize:11,color:'var(--muted)' }}>{d.docLabel}</div>
                     </div>
-                    {d.verified && <span style={{ fontSize:10,background:'var(--green-light)',color:'var(--green)',padding:'2px 8px',borderRadius:4,fontWeight:700 }}>✓ Verified</span>}
+                    {d.verified && <span style={{ fontSize:10,background:'var(--green-light)',color:'var(--green)',padding:'2px 8px',borderRadius:4,fontWeight:700 }}> Verified</span>}
                     <button onClick={()=>pvDoc(d.id)}
-                      style={{ fontSize:12,background:'#EEF6FF',border:'none',borderRadius:6,padding:'4px 10px',cursor:'pointer',fontWeight:600 }}>👁️</button>
+                      style={{ fontSize:12,background:'#EEF6FF',border:'none',borderRadius:6,padding:'4px 10px',cursor:'pointer',fontWeight:600 }}></button>
                     <button onClick={()=>dlDoc(d.id, d.originalName)}
-                      style={{ fontSize:12,background:'var(--green-light)',border:'none',borderRadius:6,padding:'4px 10px',cursor:'pointer',color:'var(--green)',fontWeight:600 }}>⬇️ Download</button>
+                      style={{ fontSize:12,background:'var(--green-light)',border:'none',borderRadius:6,padding:'4px 10px',cursor:'pointer',color:'var(--green)',fontWeight:600 }}> Download</button>
                   </div>
                 ))}
               </div>
@@ -159,9 +159,9 @@ function ClaimDetailModal({ claim, onClose, onAction }) {
               <textarea className="form-input" rows={2} placeholder="Add a note (optional for approval, recommended for rejection)..."
                 value={note} onChange={e=>setNote(e.target.value)} style={{ marginBottom:10 }}/>
               <div style={{ display:'flex',gap:8,flexWrap:'wrap' }}>
-                <button className="btn btn-primary" disabled={acting} onClick={()=>act('approved')}>✅ Approve · Pay via M-Pesa</button>
-                <button className="btn btn-danger"  disabled={acting} onClick={()=>act('rejected')}>❌ Reject Claim</button>
-                <button className="btn btn-secondary" onClick={()=>setShowSuspend(s=>!s)}>⚠️ Flag / Suspend Account</button>
+                <button className="btn btn-primary" disabled={acting} onClick={()=>act('approved')}> Approve · Pay via M-Pesa</button>
+                <button className="btn btn-danger"  disabled={acting} onClick={()=>act('rejected')}> Reject Claim</button>
+                <button className="btn btn-secondary" onClick={()=>setShowSuspend(s=>!s)}> Flag / Suspend Account</button>
               </div>
               {showSuspend && (
                 <div style={{ background:'#FFF8E1',border:'1px solid #FDE68A',borderRadius:8,padding:'12px',marginTop:10 }}>
@@ -170,7 +170,7 @@ function ClaimDetailModal({ claim, onClose, onAction }) {
                   <button className="btn btn-danger btn-sm" onClick={async()=>{
                     try { await usersAPI.suspendUser(claim.userId, reason||'Suspected fraud on claim'); onClose(); }
                     catch {}
-                  }}>🚫 Suspend Account</button>
+                  }}> Suspend Account</button>
                 </div>
               )}
             </div>
@@ -281,7 +281,7 @@ export default function AdminClaimsPage() {
 
         {/* Tab bar */}
         <div style={{ display:'flex',gap:6,marginBottom:16 }}>
-          {[['bail','Bail'],['funeral','Funeral'],['income','Stipend']].map(([k,l])=>{
+          {[['bail',' Bail'],['funeral',' Funeral'],['income',' Stipend']].map(([k,l])=>{
             const cnt = byType[k]?.filter(c=>c.status==='pending').length||0;
             return (
               <button key={k} onClick={()=>setTab(k)}
@@ -327,12 +327,12 @@ export default function AdminClaimsPage() {
                       <td style={{ fontWeight:600 }}>{sd(c.userId?.fullName||c.userName)}<div style={{ fontSize:11,color:'var(--muted)' }}>{s(c.userId?.phone||c.userPhone)}</div></td>
                       <td style={{ fontSize:11,fontFamily:'monospace',color:'var(--muted)' }}>{sd(c.userId?.memberNumber||c.memberNumber)}</td>
                       <td style={{ fontWeight:700 }}>KES {(c.amountRequested||c.amountApproved||c.amount||0).toLocaleString()}</td>
-                      <td style={{ fontSize:12 }}>📎 {c.documents?.length||0}</td>
+                      <td style={{ fontSize:12 }}> {c.documents?.length||0}</td>
                       <td><FraudBadge score={c.fraudScore||''}/></td>
                       <td style={{ fontSize:11,color:'var(--muted)' }}>{new Date(c.submittedAt).toLocaleDateString('en-KE')}</td>
                       <td><span className={`status-badge status-${s(c.status)}`}>{s(c.status)}</span></td>
                       <td>
-                        <button className="btn btn-sm btn-secondary" onClick={()=>setSelected(c)}>🔍 Review</button>
+                        <button className="btn btn-sm btn-secondary" onClick={()=>setSelected(c)}> Review</button>
                       </td>
                     </tr>
                   ))}
@@ -347,5 +347,3 @@ export default function AdminClaimsPage() {
     </div>
   );
 }
-
-

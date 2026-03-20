@@ -5,30 +5,30 @@ import NotificationBell from './NotificationBell';
 
 const NAV = {
   rider: [
-    { label: 'Dashboard', icon: '📊', path: '/dashboard' },
-    { label: 'My Policies', icon: '🛡️', path: '/policies' },
-    { label: 'Claims', icon: '📋', path: '/claims' },
-    { label: 'Payments', icon: '💳', path: '/payments' },
+    { label: 'Dashboard', icon: '', path: '/dashboard' },
+    { label: 'My Policies', icon: '', path: '/policies' },
+    { label: 'Claims', icon: '', path: '/claims' },
+    { label: 'Payments', icon: '', path: '/payments' },
     { label: 'Shield Tokens', icon: '🪙', path: '/tokens' },
-    { label: 'Transactions', icon: '🔄', path: '/transactions' },
+    { label: 'Transactions', icon: '', path: '/transactions' },
     { divider: true },
-    { label: 'Add Cover', icon: '➕', path: '/subscribe' },
+    { label: 'Add Cover', icon: '', path: '/subscribe' },
   ],
   nok: [
-    { label: 'My Claims', icon: '📋', path: '/claims' },
+    { label: 'My Claims', icon: '', path: '/claims' },
   ],
   admin: [
-    { label: 'Overview', icon: '🏢', path: '/admin' },
-    { label: 'Claims Review', icon: '📋', path: '/admin/claims' },
-    { label: 'Admins', icon: '🔑', path: '/admin/users' },
-    { label: 'Field Agents', icon: '🤝', path: '/admin/agents' },
+    { label: 'Overview', icon: '', path: '/admin' },
+    { label: 'Claims Review', icon: '', path: '/admin/claims' },
+    { label: 'Admins', icon: '', path: '/admin/users' },
+    { label: 'Field Agents', icon: '', path: '/admin/agents' },
   ],
   agent: [
-    { label: 'Dashboard', icon: '📊', path: '/agent' },
+    { label: 'Dashboard', icon: '', path: '/agent' },
   ],
   member: [
-    { label: 'My Account', icon: '👤', path: '/member-dashboard' },
-    { label: 'Claims', icon: '📋', path: '/claims' },
+    { label: 'My Account', icon: '', path: '/member-dashboard' },
+    { label: 'Claims', icon: '', path: '/claims' },
   ],
 };
 
@@ -152,23 +152,15 @@ export default function Sidebar() {
             onClick={() => navigate('/password')}
             style={{ marginTop: 2 }}
           >
-            <span className="nav-icon">🔐</span>
+            <span className="nav-icon"></span>
             Change Password
           </button>
         )}
 
         <button className="nav-item" onClick={logout} style={{ color: '#F87171', marginTop: 2 }}>
-          <span className="nav-icon">?</span>
           Sign Out
         </button>
       </div>
     </aside>
   );
 }
-
-
-
-
-
-
-
