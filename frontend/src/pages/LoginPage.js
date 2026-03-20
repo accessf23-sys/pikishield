@@ -57,8 +57,6 @@ export default function LoginPage() {
       const res = await login(identifier, pw);
       const user = res?.user;
       if (!user) throw new Error('User data missing from response');
-      if (user.mustChangePassword) return navigate('/password');
-
       const routes = {
         admin: '/admin',
         superadmin: '/admin',

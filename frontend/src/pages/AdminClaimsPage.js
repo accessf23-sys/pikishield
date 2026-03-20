@@ -279,23 +279,26 @@ export default function AdminClaimsPage() {
           </div>
         </div>
 
-        {/* Tab bar */}
-        <div style={{ display:'flex',gap:6,marginBottom:16 }}>
-          {[['bail',' Bail'],['funeral',' Funeral'],['income',' Stipend']].map(([k,l])=>{
-            const cnt = byType[k]?.filter(c=>c.status==='pending').length||0;
-            return (
-              <button key={k} onClick={()=>setTab(k)}
-                className={`btn ${tab===k?'btn-primary':'btn-secondary'}`}>
-                {l}
-                {cnt>0 && <span style={{background:tab===k?'rgba(255,255,255,.3)':'var(--red)',color:'white',borderRadius:10,padding:'0 5px',fontSize:10,fontWeight:700,marginLeft:4}}>{cnt}</span>}
-              </button>
-            );
-          })}
-          <div style={{ marginLeft:'auto',display:'flex',gap:6 }}>
+        {/* Tab bar - two rows */}
+        <div style={{ marginBottom:16 }}>
+          <div style={{ display:'flex', gap:6, marginBottom:6 }}>
+            {[['bail','Bail'],['funeral','Funeral'],['income','Stipend'],['all','All']].map(([k,l])=>{
+              const cnt = byType[k]?.filter(c=>c.status==='pending').length||0;
+              return (
+                <button key={k} onClick={()=>setTab(k)}
+                  className={`btn btn-sm ${tab===k?'btn-primary':'btn-secondary'}`}
+                  style={{flex:1,justifyContent:'center'}}>
+                  {l}
+                  {cnt>0&&<span style={{background:'var(--red)',color:'white',borderRadius:10,padding:'0 4px',fontSize:10,fontWeight:700,marginLeft:3}}>{cnt}</span>}
+                </button>
+              );
+            })}
+          </div>
+          <div style={{ display:'flex', gap:6 }}>
             {['all','pending','approved','rejected'].map(f=>(
               <button key={f} onClick={()=>setFilter(f)}
-                className={`btn ${filter===f?'btn-primary':'btn-secondary'}`}
-                style={{ textTransform:'capitalize' }}>{f}</button>
+                className={`btn btn-sm ${filter===f?'btn-primary':'btn-secondary'}`}
+                style={{textTransform:'capitalize',flex:1,justifyContent:'center'}}>{f}</button>
             ))}
           </div>
         </div>
@@ -332,7 +335,7 @@ export default function AdminClaimsPage() {
                       <td style={{ fontSize:11,color:'var(--muted)' }}>{new Date(c.submittedAt).toLocaleDateString('en-KE')}</td>
                       <td><span className={`status-badge status-${s(c.status)}`}>{s(c.status)}</span></td>
                       <td>
-                        <button className="btn btn-secondary" onClick={()=>setSelected(c)}> Review</button>
+                        <button className="btn btn-sm btn-secondary" onClick={()=>setSelected(c)}> Review</button>
                       </td>
                     </tr>
                   ))}
