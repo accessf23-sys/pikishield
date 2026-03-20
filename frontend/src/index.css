@@ -835,3 +835,15 @@ img, svg { max-width: 100%; }
 }
 
 @media (max-width: 900px) { .auth-hero { display: none !important; max-width: 0 !important; overflow: hidden !important; width: 0 !important; padding: 0 !important; } .auth-layout { display: flex !important; flex-direction: column !important; } .auth-form-panel { width: 100% !important; min-height: 100vh !important; } }
+
+/* -- Mobile table fixes -- */
+@media (max-width: 600px) {
+  .stat-card { padding: 8px 6px !important; }
+  .stat-value { font-size: 16px !important; }
+  .stat-label { font-size: 8px !important; }
+  .stat-icon { width: 28px !important; height: 28px !important; font-size: 13px !important; margin-bottom: 6px !important; }
+  .table-wrap { overflow-x: auto !important; }
+  .table-wrap table { min-width: unset !important; width: max-content !important; }
+  td, th { font-size: 10px !important; padding: 6px 5px !important; white-space: nowrap !important; }
+  .card { padding: 10px !important; }
+}
