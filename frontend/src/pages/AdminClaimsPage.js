@@ -282,7 +282,7 @@ export default function AdminClaimsPage() {
         {/* Tab bar - two rows */}
         <div style={{ marginBottom:16 }}>
           <div style={{ display:'flex', gap:6, marginBottom:6 }}>
-            {[['bail','Bail'],['funeral','Funeral'],['income','Stipend'],['all','All']].map(([k,l])=>{
+            {[['bail','Bail'],['funeral','Funeral'],['income','Stipend']].map(([k,l])=>{
               const cnt = byType[k]?.filter(c=>c.status==='pending').length||0;
               return (
                 <button key={k} onClick={()=>setTab(k)}
