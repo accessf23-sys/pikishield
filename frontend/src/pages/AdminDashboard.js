@@ -1155,7 +1155,7 @@ export default function AdminDashboard() {
       ]);
       setData(d.data);
       setAgents(a.data.agents || []);
-      setPending(p.data.pending || []);
+      setPending((p.data.pending || []).filter(u => u.role !== 'nok'));
     } catch {}
     finally { setLoading(false); }
   };
