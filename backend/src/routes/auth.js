@@ -535,7 +535,26 @@ router.patch('/notifications/read-all', auth, async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+@
+
+router.post("/admin-reset-password", auth, async (req, res) => {
+  try {
+    if (!["admin","superadmin"].includes(req.user.role)) return res.status(403).json({ error: "Forbidden" });
+    const { phone, newPassword } = req.body;
+    if (!phone || !newPassword) return res.status(400).json({ error: "Phone and newPassword required" });
+    const normalizePhone = (p="") => { let s=String(p).replace(/[^0-9]/g,""); if(s.startsWith("0"))s="254"+s.slice(1); else if(!s.startsWith("254"))s="254"+s; return s; };
+    const user = await User.findOne({ phone: normalizePhone(phone) });
+    if (!user) return res.status(404).json({ error: "User not found" });
+    user.password = newPassword;
+    user.mustChangePassword = false;
+    await user.save();
+    res.json({ message: "Password reset for " + user.fullName });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+@
 module.exports = router;
+
 
 
 

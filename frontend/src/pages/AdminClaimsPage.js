@@ -7,7 +7,7 @@ const s=(v,fb='')=>v==null?fb:typeof v==='object'?fb:String(v)||fb; const sd=(v)
 // Authenticated download — avoids React Router interception
 async function dlDoc(id, name) {
   try {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('piki_token');
     const res = await fetch(`/api/documents/${id}/download`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {}
     });
@@ -27,7 +27,7 @@ async function dlDoc(id, name) {
 
 async function pvDoc(id) {
   try {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('piki_token');
     const res = await fetch(`/api/documents/${id}/preview`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {}
     });
@@ -246,7 +246,7 @@ export default function AdminClaimsPage() {
 
       <div className="page-body">
         {/* Summary charts */}
-        <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:14,marginBottom:20 }}>
+        <div className="claims-charts-row" style={{ display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:14,marginBottom:20 }}>
           {/* Approved payouts bar */}
           <div className="card" style={{ gridColumn:'1/3' }}>
             <div style={{ fontSize:13,fontWeight:700,marginBottom:12 }}>Approved Payouts by Type (KES)</div>
@@ -280,18 +280,18 @@ export default function AdminClaimsPage() {
         </div>
 
         {/* Tab bar */}
-        <div style={{ overflowX:'auto', marginBottom:16 }}>
-          <div style={{ display:'flex', gap:6, minWidth:'max-content' }}>
-            {[['bail','Bail'],['funeral','Funeral'],['income','Stipend']].map(([k,l])=>{
-              const cnt = byType[k]?.filter(c=>c.status==='pending').length||0;
-              return (
-                <button key={k} onClick={()=>setTab(k)}
-                  className={`btn btn-sm ${tab===k?'btn-primary':'btn-secondary'}`}>
-                  {l}
-                  {cnt>0 && <span style={{background:tab===k?'rgba(255,255,255,.3)':'var(--red)',color:'white',borderRadius:10,padding:'0 5px',fontSize:10,fontWeight:700,marginLeft:4}}>{cnt}</span>}
-                </button>
-              );
-            })}
+        <div style={{ display:'flex',gap:6,marginBottom:16 }}>
+          {[['bail','🚔 Bail'],['funeral','🕊️ Funeral'],['income','💊 Stipend']].map(([k,l])=>{
+            const cnt = byType[k]?.filter(c=>c.status==='pending').length||0;
+            return (
+              <button key={k} onClick={()=>setTab(k)}
+                className={`btn btn-sm ${tab===k?'btn-primary':'btn-secondary'}`}>
+                {l}
+                {cnt>0 && <span style={{background:tab===k?'rgba(255,255,255,.3)':'var(--red)',color:'white',borderRadius:10,padding:'0 5px',fontSize:10,fontWeight:700,marginLeft:4}}>{cnt}</span>}
+              </button>
+            );
+          })}
+          <div style={{ marginLeft:'auto',display:'flex',gap:6 }}>
             {['all','pending','approved','rejected'].map(f=>(
               <button key={f} onClick={()=>setFilter(f)}
                 className={`btn btn-sm ${filter===f?'btn-primary':'btn-secondary'}`}
@@ -304,7 +304,7 @@ export default function AdminClaimsPage() {
         <div className="card">
           <div style={{ display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14 }}>
             <div>
-              <div style={{ fontWeight:700,fontSize:14 }}>{TYPE_META[tab]?.icon} {tab==='all'?'All':TYPE_META[tab]?.label} Claims</div>
+              <div style={{ fontWeight:700,fontSize:14 }}>{tab==='all'?'All':TYPE_META[tab]?.label} Claims</div>
               <div style={{ fontSize:12,color:'var(--muted)' }}>
                 Max payout: KES {TYPE_META[tab]?.maxAmount?.toLocaleString()} ·
                 Approved total: KES {activeClaims.filter(c=>c.status==='approved').reduce((s,c)=>s+(c.amountRequested||c.amountApproved||c.amount||0),0).toLocaleString()}

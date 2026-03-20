@@ -858,3 +858,5 @@ img, svg { max-width: 100%; }
   .card { padding: 10px !important; }
   .two-col { grid-template-columns: 1fr 1fr !important; }
 }
+
+@media (max-width: 900px) { .claims-charts-row { grid-template-columns: 1fr !important; } .claims-charts-row .card:first-child { grid-column: auto !important; } }
