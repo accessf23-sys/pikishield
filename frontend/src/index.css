@@ -868,3 +868,7 @@ img, svg { max-width: 100%; }
 /* cache bust */
 
 @media (max-width: 900px) { .stats-grid { grid-template-columns: 1fr 1fr !important; } }
+
+@media (max-width: 900px) { .stats-grid { grid-template-columns: 1fr 1fr !important; } .two-col { grid-template-columns: 1fr !important; } .three-col { grid-template-columns: 1fr !important; } }
+
+@media (max-width: 900px) { .stats-grid { grid-template-columns: 1fr 1fr !important; } .two-col { grid-template-columns: 1fr !important; } .three-col { grid-template-columns: 1fr !important; } }
