@@ -38,6 +38,7 @@ async function pvDoc(id) {
 }
 
 const TYPE_META = {
+  all:     { label:'All',      icon:'', color:'#64748B', maxAmount:null },
   bail:    { label:'Bail',     icon:'', color:'#6366F1', maxAmount:20000 },
   funeral: { label:'Funeral',  icon:'', color:'#0EA5E9', maxAmount:200000 },
   income:  { label:'Stipend',  icon:'', color:'#10B981', maxAmount:15000 },
@@ -309,7 +310,7 @@ export default function AdminClaimsPage() {
             <div>
               <div style={{ fontWeight:700,fontSize:14 }}>{tab==='all'?'All':TYPE_META[tab]?.label} Claims</div>
               <div style={{ fontSize:12,color:'var(--muted)' }}>
-                Max payout: KES {TYPE_META[tab]?.maxAmount?.toLocaleString()} ·
+                Max payout: KES {TYPE_META[tab]?.maxAmount?.toLocaleString() || 'N/A'} ·
                 Approved total: KES {activeClaims.filter(c=>c.status==='approved').reduce((s,c)=>s+(c.amountRequested||c.amountApproved||c.amount||0),0).toLocaleString()}
               </div>
             </div>
