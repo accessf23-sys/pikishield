@@ -105,7 +105,7 @@ function OnboardReviewModal({ person, onClose, onApprove, onReject, onSuspend })
 
   useEffect(() => {
     if (person) {
-      documentsAPI.getForUser(person.id).then(r => setDocs(r.data)).catch(() => {});
+      documentsAPI.getForUser(String(person._id||person.id)).then(r => setDocs(r.data)).catch(() => {});
     }
   }, [person]);
 
@@ -294,10 +294,10 @@ function OnboardReviewModal({ person, onClose, onApprove, onReject, onSuspend })
                 />
               </div>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
-                <button className="btn btn-primary" onClick={() => onApprove(person.id)}>
+                <button className="btn btn-primary" onClick={() => onApprove(String(person._id||person.id))}>
                   ✅ Approve KYC
                 </button>
-                <button className="btn btn-danger" onClick={() => onReject(person.id, reason)}>
+                <button className="btn btn-danger" onClick={() => onReject(String(person._id||person.id), reason)}>
                   ❌ Reject KYC
                 </button>
                 <button className="btn btn-secondary" onClick={() => onSuspend(person)}>
@@ -1652,7 +1652,7 @@ export default function AdminDashboard() {
                             <button
                               className="btn btn-sm btn-primary"
                               style={{ fontSize: 11, padding: '5px 12px' }}
-                              onClick={() => setReviewPerson(p)}
+                              onClick={() => setReviewPerson({...p, id: String(p._id||p.id)})}
                             >
                               🔍 Review
                             </button>
