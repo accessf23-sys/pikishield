@@ -383,6 +383,12 @@ router.patch('/:id/approve-kyc', auth, roles('admin', 'superadmin'), async (req,
   try {
     const user = await User.findByIdAndUpdate(req.params.id, { kycStatus: 'approved' }, { new: true });
     if (!user) return res.status(404).json({ error: 'User not found' });
+    // Credit referral tokens to the person who referred this rider
+    if (user.referredBy) {
+      await User.findByIdAndUpdate(user.referredBy, {
+        $inc: { shieldTokens: 30, referralCount: 1 }
+      });
+    }
 
     user.notifications.push({
       message: '✅ Your KYC has been approved! You now have full access.',
