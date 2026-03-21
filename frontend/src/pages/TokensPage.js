@@ -408,8 +408,7 @@ export default function TokensPage() {
                       disabled={!!loading || locked}
                       style={{flexShrink:0}}
                     >
-                      {a.auto ? 'Auto' : loading===a.key ? '…' : locked ? 'Locked' : `+${a.tokens}`}
-                      disabled={!!loading || locked || a.auto}
+                      {loading===a.key ? '…' : locked ? 'Locked' : `+${a.tokens}`}
                     </button>
                   </div>
                 );
