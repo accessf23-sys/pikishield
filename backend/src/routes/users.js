@@ -550,4 +550,22 @@ router.post('/helmet-checkin', auth, uploadHelmet.single('photo'), async (req, r
     res.json({ message: '+3 tokens earned! Helmet check recorded.', tokens: user.shieldTokens });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
+
+router.post('/admin/generate-referral-codes', auth, async (req, res) => {
+  try {
+    if (req.user.role !== 'superadmin') return res.status(403).json({ error: 'Forbidden' });
+    const riders = await User.find({ role: 'rider', referralCode: { $exists: false } });
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let count = 0;
+    for (const rider of riders) {
+      let code = 'REF-';
+      for (let i = 0; i < 5; i++) code += chars[Math.floor(Math.random() * chars.length)];
+      rider.referralCode = code;
+      await rider.save();
+      count++;
+    }
+    res.json({ message: `Generated codes for ${count} riders` });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 module.exports = router;

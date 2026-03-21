@@ -165,7 +165,7 @@ function HeroBanner({ user, totalDailyContrib, policies }) {
         {/* Member tag */}
         <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:18,flexWrap:'wrap'}}>
           <div style={{background:'rgba(0,214,143,.15)',border:'1px solid rgba(0,214,143,.3)',borderRadius:20,padding:'4px 12px',fontSize:11,fontWeight:700,color:'#00D68F',letterSpacing:.3}}>
-            🏍️ {user.memberNumber || 'PENDING'}
+            🏍️ {user.memberNumber || (user.kycStatus === 'pending' ? 'PENDING KYC' : 'APPROVED')}
           </div>
           <div style={{background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.12)',borderRadius:20,padding:'4px 12px',fontSize:11,fontWeight:600,color:'rgba(255,255,255,.6)'}}>
             📍 {typeof user.profile?.county==='object'?'Nairobi':(user.profile?.county||'Nairobi')}
@@ -255,12 +255,13 @@ function QuickAction({ icon, label, sub, color, onClick }) {
 
 /* ── Main Dashboard ───────────────────────────────────────────── */
 export default function DashboardPage() {
-  const { user }      = useAuth();
+  const { user, refreshUser } = useAuth();
   const navigate      = useNavigate();
   const [data, setData]       = useState({policies:[],totalPayouts:0,pendingClaims:0,approvedClaims:0,monthlyData:[],allPolicies:[]});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    refreshUser(); // Refresh user data to get latest kycStatus
     usersAPI.getDashboard()
       .then(r => setData(r.data))
       .catch(err => console.error('Dashboard Fetch Error:', err))
@@ -280,7 +281,12 @@ export default function DashboardPage() {
   return (
     <div>
       <div className="page-header" style={{paddingBottom:0}}>
-        {/* KYC banner shown in AppLayout - not duplicated here */}
+        {/* KYC / suspended alerts */}
+        {user?.kycStatus === 'pending' && (
+          <div className="alert alert-warning" style={{marginBottom:16}}>
+            ⚠️ <strong>KYC Pending</strong> — Your documents are under review. Claims and subscriptions unlock once approved.
+          </div>
+        )}
         {user?.suspended && (
           <div className="alert alert-error" style={{marginBottom:16}}>
             🚫 <strong>Account Suspended</strong> — Contact support@pikishield.co.ke
@@ -444,4 +450,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
