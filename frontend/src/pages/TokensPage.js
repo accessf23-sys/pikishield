@@ -266,13 +266,19 @@ export default function TokensPage() {
                   <img src={helmetPreview} alt="helmet" style={{width:'100%',maxHeight:200,objectFit:'cover',borderRadius:8,border:'2px solid var(--green)'}}/>
                 </div>
               )}
-              <input type="file" accept="image/*" capture="user"
-                onChange={e => {
-                  const f = e.target.files[0];
-                  if (f) { setHelmetFile(f); setHelmetPreview(URL.createObjectURL(f)); }
-                }}
-                style={{marginBottom:12,width:'100%',fontSize:13}}
-              />
+              <div style={{marginBottom:12}}>
+                <input type="file" accept="image/*" capture="user" id="helmet-cam-input"
+                  onChange={e => {
+                    const f = e.target.files[0];
+                    if (f) { setHelmetFile(f); setHelmetPreview(URL.createObjectURL(f)); }
+                  }}
+                  style={{display:'none'}}
+                />
+                <button type="button" className="btn btn-secondary" style={{width:'100%',justifyContent:'center'}}
+                  onClick={() => document.getElementById('helmet-cam-input').click()}>
+                  {helmetFile ? 'Change Photo' : 'Open Camera / Choose Photo'}
+                </button>
+              </div>
               <button className="btn btn-primary" style={{width:'100%',justifyContent:'center'}}
                 disabled={!helmetFile || !!loading}
                 onClick={async () => {
