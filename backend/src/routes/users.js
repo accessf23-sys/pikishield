@@ -1,3 +1,4 @@
+const { uploadHelmet } = require('../utils/cloudinary');
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
@@ -524,5 +525,23 @@ router.post('/admin/create-admin', auth, roles('superadmin'), async (req, res) =
     res.status(500).json({ error: e.message });
   }
 });
-
+router.post('/helmet-checkin', auth, uploadHelmet.single('photo'), async (req, res) => {
+  try {
+    const photoUrl = req.file?.path || req.file?.secure_url || '';
+    const user = await User.findById(req.user._id);
+    if (!user.profile) user.profile = {};
+    if (!user.profile.lastActions) user.profile.lastActions = {};
+    const last = user.profile.lastActions.helmet_check;
+    if (last && (new Date() - new Date(last)) / 36e5 < 24) {
+      return res.status(400).json({ error: 'Already checked in today. Come back in 24 hours.' });
+    }
+    user.profile.lastActions.helmet_check = new Date();
+    user.profile.helmetPhotos = user.profile.helmetPhotos || [];
+    user.profile.helmetPhotos.push({ url: photoUrl, date: new Date(), verified: false });
+    user.shieldTokens = (user.shieldTokens || 0) + 3;
+    user.markModified('profile');
+    await user.save();
+    res.json({ message: '+3 tokens earned! Helmet check recorded.', tokens: user.shieldTokens });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
 module.exports = router;
