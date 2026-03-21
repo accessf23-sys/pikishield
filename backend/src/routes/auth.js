@@ -405,6 +405,7 @@ router.post('/forgot-password', async (req, res) => {
     user.resetOtpExpiry = new Date(Date.now() + 15 * 60 * 1000);
     await user.save();
     await sendSMS(user.phone, `Your PikiShield reset code: ${otp}. Valid 15 mins.`);
+    return res.json({ message: 'OTP sent to your phone', otp });
 
     const isDev = process.env.NODE_ENV !== 'production';
 
