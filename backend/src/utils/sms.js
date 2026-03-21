@@ -23,7 +23,6 @@ async function sendSMS(to, text) {
     const result = await getSMS().send({
       to:      [phone],
       message: text,
-      from:    'PikiShield',
     });
     console.log('SMS sent:', JSON.stringify(result));
     return { success: true, result };
