@@ -128,7 +128,7 @@ export default function TokensPage() {
     { key:'helmet_check',   label:'Helmet Compliance Check', tokens:3,  icon:'🪖', desc:'Once per day · 24h cooldown' },
     { key:'safety_quiz',    label:'Complete Safety Quiz',     tokens:5,  icon:'📝', desc:'Once per day · must score 7/10 to earn' },
     ...(isEV ? [{ key:'ev_charging', label:'EV Charging Logged', tokens:4, icon:'⚡', desc:'Log a full charge · once per day (EV riders)' }] : []),
-    { key:'no_claim_month', label:'No-Claim Month Bonus',     tokens:15, icon:'🏆', desc:'Automatically credited after 30 claim-free days' },
+    { key:'no_claim_month', label:'No-Claim Month Bonus',     tokens:15, icon:'🏆', desc:'Stay claim-free this month' },
     { key:'referral',       label:'Refer a New Rider',        tokens:30, icon:'👥', desc:'Per verified referral' },
   ];
 
