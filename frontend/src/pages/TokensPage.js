@@ -118,6 +118,9 @@ export default function TokensPage() {
   const [loading, setLoading] = useState('');
   const [error, setError]     = useState('');
   const [showQuiz, setShowQuiz] = useState(false);
+  const [showHelmet, setShowHelmet] = useState(false);
+  const [helmetFile, setHelmetFile] = useState(null);
+  const [helmetPreview, setHelmetPreview] = useState(null);
 
   const isEV = user?.profile?.bikeType === 'EV';
 
@@ -137,6 +140,7 @@ export default function TokensPage() {
 
   const earn = async (action) => {
     if (action === 'safety_quiz') { setShowQuiz(true); return; }
+    if (action === 'helmet_check') { setShowHelmet(true); return; }
     setLoading(action);
     try {
       const res = await usersAPI.earnTokens(action);
@@ -224,6 +228,54 @@ export default function TokensPage() {
             </a>
           </div>
         ) : (<>
+
+        {/* Helmet Modal */}
+        {showHelmet && (
+          <div style={{position:'fixed',inset:0,zIndex:9999,background:'rgba(0,0,0,.6)',display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
+            <div style={{background:'white',borderRadius:14,width:'100%',maxWidth:400,padding:'20px 24px'}}>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
+                <div style={{fontSize:15,fontWeight:700}}>Helmet Check-in</div>
+                <button onClick={() => { setShowHelmet(false); setHelmetFile(null); setHelmetPreview(null); }} style={{background:'#F1F5F9',border:'none',borderRadius:8,padding:'4px 10px',cursor:'pointer',fontSize:13}}>✕</button>
+              </div>
+              <p style={{fontSize:13,color:'var(--muted)',marginBottom:16,lineHeight:1.5}}>
+                Take a selfie wearing your helmet to earn 3 tokens. Photo is saved for compliance records.
+              </p>
+              {helmetPreview && (
+                <div style={{marginBottom:12,textAlign:'center'}}>
+                  <img src={helmetPreview} alt="helmet" style={{width:'100%',maxHeight:200,objectFit:'cover',borderRadius:8,border:'2px solid var(--green)'}}/>
+                </div>
+              )}
+              <input type="file" accept="image/*" capture="user"
+                onChange={e => {
+                  const f = e.target.files[0];
+                  if (f) { setHelmetFile(f); setHelmetPreview(URL.createObjectURL(f)); }
+                }}
+                style={{marginBottom:12,width:'100%',fontSize:13}}
+              />
+              <button className="btn btn-primary" style={{width:'100%',justifyContent:'center'}}
+                disabled={!helmetFile || !!loading}
+                onClick={async () => {
+                  if (!helmetFile) return;
+                  setLoading('helmet_check');
+                  try {
+                    const fd = new FormData();
+                    fd.append('photo', helmetFile);
+                    const token = localStorage.getItem('token');
+                    const res = await fetch('/api/users/helmet-checkin', { method:'POST', headers:{ Authorization:`Bearer ${token}` }, body:fd });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error);
+                    flash(true, data.message);
+                    refreshUser();
+                    setShowHelmet(false); setHelmetFile(null); setHelmetPreview(null);
+                  } catch(err) { flash(false, err.message || 'Upload failed'); }
+                  finally { setLoading(''); }
+                }}
+              >
+                {loading==='helmet_check' ? 'Uploading…' : 'Submit +3 Tokens'}
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Quiz Modal */}
         {showQuiz && (
