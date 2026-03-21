@@ -231,15 +231,7 @@ export default function DocumentUploader({ claimType, claimId, tempUploadId, onC
 
   React.useEffect(() => {
     if (!claimType) return;
-    documentsAPI.getTypes(claimType)
-      .then(r => {
-        if (r.data && Object.keys(r.data).length > 0) {
-          setDocTypes(r.data);
-        } else {
-          setDocTypes(FALLBACK_DOC_TYPES[claimType] || {});
-        }
-      })
-      .catch(() => setDocTypes(FALLBACK_DOC_TYPES[claimType] || {}));
+    setDocTypes(FALLBACK_DOC_TYPES[claimType] || {});
   }, [claimType]);
 
   React.useEffect(() => {
