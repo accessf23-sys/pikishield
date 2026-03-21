@@ -3,7 +3,7 @@ import { documentsAPI } from '../utils/api';
 
 async function downloadDoc(doc) {
   try {
-    const token = localStorage.getItem('piki_token');
+    const token = localStorage.getItem('token');
     const res = await fetch(`/api/documents/${doc.id}/download`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {}
     });
@@ -23,7 +23,7 @@ async function downloadDoc(doc) {
 
 async function previewDoc(doc) {
   try {
-    const token = localStorage.getItem('piki_token');
+    const token = localStorage.getItem('token');
     const res = await fetch(`/api/documents/${doc.id}/preview`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {}
     });
@@ -152,7 +152,7 @@ function PreviewModal({ doc, onClose }) {
 
   React.useEffect(() => {
     if (!doc) { setBlobUrl(null); setErr(''); return; }
-    const token = localStorage.getItem('piki_token');
+    const token = localStorage.getItem('token');
     fetch(`/api/documents/${doc.id}/preview`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {}
     })
@@ -211,9 +211,35 @@ export default function DocumentUploader({ claimType, claimId, tempUploadId, onC
   const [preview, setPreview] = useState(null);
   const [errors, setErrors] = useState({});
 
+  const FALLBACK_DOC_TYPES = {
+    bail: {
+      police_abstract:  { label: 'Police Abstract or Court Charge Sheet', required: true,  icon: '📄', hint: 'Official police report or court charge sheet' },
+      national_id:      { label: 'National ID Copy',                       required: true,  icon: '🪪', hint: 'Clear copy of your national ID' },
+    },
+    funeral: {
+      death_certificate:{ label: 'Death Certificate (Official)',            required: true,  icon: '📜', hint: 'Official death certificate from hospital or government' },
+      burial_permit:    { label: 'Burial Permit',                           required: true,  icon: '📋', hint: 'County government burial permit' },
+      deceased_id:      { label: "Deceased's National ID Copy",             required: true,  icon: '🪪', hint: 'National ID of the deceased' },
+      nok_id:           { label: "Your National ID Copy",                   required: true,  icon: '🪪', hint: 'Your own national ID as next of kin' },
+    },
+    income: {
+      doctors_note:     { label: "Doctor's Note (with doctor name & hospital)", required: true,  icon: '🏥', hint: 'Official note from a registered doctor' },
+      national_id:      { label: 'National ID Copy',                            required: true,  icon: '🪪', hint: 'Clear copy of your national ID' },
+      xray_or_report:   { label: 'X-Ray or Medical Report',                     required: false, icon: '🩻', hint: 'Supporting medical documents (optional but recommended)' },
+    },
+  };
+
   React.useEffect(() => {
     if (!claimType) return;
-    documentsAPI.getTypes(claimType).then(r => setDocTypes(r.data));
+    documentsAPI.getTypes(claimType)
+      .then(r => {
+        if (r.data && Object.keys(r.data).length > 0) {
+          setDocTypes(r.data);
+        } else {
+          setDocTypes(FALLBACK_DOC_TYPES[claimType] || {});
+        }
+      })
+      .catch(() => setDocTypes(FALLBACK_DOC_TYPES[claimType] || {}));
   }, [claimType]);
 
   React.useEffect(() => {
