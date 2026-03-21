@@ -222,6 +222,21 @@ export default function TokensPage() {
             Checking your token status…
           </div>
         ) : !hasContributed ? (
+          <>
+          {/* Show referral code even when locked */}
+          {user?.referralCode && (
+            <div style={{background:'var(--electric-light)',border:'1.5px solid var(--electric)',borderRadius:12,padding:'14px 18px',marginBottom:16,display:'flex',alignItems:'center',gap:14}}>
+              <div style={{flex:1}}>
+                <div style={{fontSize:12,fontWeight:700,color:'var(--electric)',marginBottom:4}}>Your Referral Code</div>
+                <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontWeight:800,fontSize:24,letterSpacing:3,color:'var(--text)'}}>{user.referralCode}</div>
+                <div style={{fontSize:11,color:'var(--muted)',marginTop:4}}>Share with friends — earn 30 tokens when they get KYC approved</div>
+              </div>
+              <button className="btn btn-secondary btn-sm" onClick={() => {
+                navigator.clipboard?.writeText(user.referralCode);
+                flash(true, 'Referral code copied!');
+              }}>Copy</button>
+            </div>
+          )}
           <div style={{background:'linear-gradient(135deg,#FEF3C7,#FFF8E1)',border:'1.5px solid #F59E0B',borderRadius:14,padding:'28px 24px',textAlign:'center',marginBottom:20}}>
             <div style={{fontSize:40,marginBottom:12}}>🔒</div>
             <h3 style={{fontSize:18,fontWeight:800,color:'#92400E',marginBottom:8}}>Tokens Locked</h3>
@@ -232,6 +247,7 @@ export default function TokensPage() {
               Make First Contribution
             </a>
           </div>
+          </>
         ) : (<>
 
         {/* Helmet Modal */}
