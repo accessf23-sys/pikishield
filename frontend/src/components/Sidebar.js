@@ -20,8 +20,15 @@ const NAV = {
   admin: [
     { label: 'Overview', icon: '', path: '/admin' },
     { label: 'Claims Review', icon: '', path: '/admin/claims' },
-    { label: 'Admins', icon: '', path: '/admin/users' },
+    { label: 'Members', icon: '', path: '/admin/users' },
     { label: 'Field Agents', icon: '', path: '/admin/agents' },
+  ],
+  superadmin: [
+    { label: 'Overview', icon: '', path: '/admin' },
+    { label: 'Claims Review', icon: '', path: '/admin/claims' },
+    { label: 'Members', icon: '', path: '/admin/users' },
+    { label: 'Field Agents', icon: '', path: '/admin/agents' },
+    { label: 'Admins', icon: '', path: '/admin/admins' },
   ],
   agent: [
     { label: 'Dashboard', icon: '', path: '/agent' },
@@ -88,7 +95,7 @@ export default function Sidebar() {
 
   if (!user) return null;
 
-  const navRole = user.role === 'superadmin' ? 'admin' : user.role;
+  const navRole = user.role;
   const items = NAV[navRole] || NAV.rider;
   const initials = (user?.fullName || '?')
     .split(' ')
