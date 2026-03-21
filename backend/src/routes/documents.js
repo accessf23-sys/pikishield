@@ -51,7 +51,7 @@ const DOC_TYPES = {
 };
 
 // ── Upload KYC docs (temp store) ──────────────────────────────────────────────
-router.post('/upload-kyc', auth, (req, res, next) => upload.array('files', 5)(req, res, next), async (req, res) => {
+router.post('/upload-kyc', auth, upload.array('files', 5), async (req, res) => {
   try {
     const { tempUploadId, docType } = req.body;
     if (!req.files?.length) return res.status(400).json({ error: 'No files uploaded' });
@@ -83,7 +83,7 @@ router.post('/upload-kyc', auth, (req, res, next) => upload.array('files', 5)(re
 });
 
 // ── Upload claim docs ─────────────────────────────────────────────────────────
-router.post('/upload', auth, (req, res, next) => upload.array('files', 5)(req, res, next), async (req, res) => {
+router.post('/upload', auth, upload.array('files', 5), async (req, res) => {
   try {
     const { docType, tempUploadId, claimId } = req.body;
     if (!req.files?.length) return res.status(400).json({ error: 'No files uploaded' });
