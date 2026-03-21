@@ -152,11 +152,16 @@ export default function TokensPage() {
 
   const handleQuizComplete = async (passed) => {
     setShowQuiz(false);
-    if (!passed) return;
     setLoading('safety_quiz');
     try {
-      const res = await usersAPI.earnTokens('safety_quiz');
-      flash(true, res.data.message);
+      if (passed) {
+        const res = await usersAPI.earnTokens('safety_quiz');
+        flash(true, res.data.message);
+      } else {
+        // Record attempt even on failure to enforce 24h cooldown
+        await usersAPI.earnTokens('safety_quiz_attempt').catch(() => {});
+        flash(false, 'Score too low — quiz locked for 24 hours. Study the highway code!');
+      }
       refreshUser();
     } catch (err) { flash(false, err.response?.data?.error || 'Failed'); }
     finally { setLoading(''); }
@@ -326,6 +331,21 @@ export default function TokensPage() {
           )}
         </div>
 
+        {/* Referral code card */}
+        {user?.referralCode && (
+          <div style={{background:'var(--electric-light)',border:'1.5px solid var(--electric)',borderRadius:12,padding:'14px 18px',marginBottom:16,display:'flex',alignItems:'center',gap:14}}>
+            <div style={{flex:1}}>
+              <div style={{fontSize:12,fontWeight:700,color:'var(--electric)',marginBottom:4}}>Your Referral Code</div>
+              <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontWeight:800,fontSize:24,letterSpacing:3,color:'var(--text)'}}>{user.referralCode}</div>
+              <div style={{fontSize:11,color:'var(--muted)',marginTop:4}}>Share with friends — earn 30 tokens when they get KYC approved</div>
+            </div>
+            <button className="btn btn-secondary btn-sm" onClick={() => {
+              navigator.clipboard?.writeText(user.referralCode);
+              flash(true, 'Referral code copied!');
+            }}>Copy</button>
+          </div>
+        )}
+
         {msg   && <div className="alert alert-success">{msg}</div>}
         {error && <div className="alert alert-error">{error}</div>}
 
@@ -338,8 +358,8 @@ export default function TokensPage() {
             </div>
             <div style={{display:'flex',flexDirection:'column',gap:8}}>
               {EARN.map(a => {
-                const locked = isLocked(a.key);
-                const hours  = hoursLeft(a.key);
+                const locked = isLocked(a.key) || (a.key === 'safety_quiz' && isLocked('safety_quiz_attempt'));
+                const hours  = hoursLeft(a.key) || (a.key === 'safety_quiz' ? hoursLeft('safety_quiz_attempt') : 0);
                 return (
                   <div key={a.key} style={{
                     display:'flex',alignItems:'center',gap:10,padding:'10px 12px',

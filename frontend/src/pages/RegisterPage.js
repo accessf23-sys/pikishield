@@ -86,7 +86,7 @@ function RiderRegister({ onBack }) {
   const [form, setForm] = useState({
     fullName:'', phone:'', email:'', password:'', confirmPassword:'',
     nationalId:'', county:'Nairobi', licenseNumber:'', bikeReg:'', bikeType:'Petrol',
-    isBikeOwner:true, ownerName:'', ownerPhone:'',
+    isBikeOwner:true, ownerName:'', ownerPhone:'', referralCode:'',
   });
   const up = (k,v) => setForm(f=>({...f,[k]:v}));
   const handleUploaded = (docType, doc) => setKycDocs(prev=>({...prev,[docType]:doc}));
@@ -181,6 +181,11 @@ function RiderRegister({ onBack }) {
 
       {step===2 && (
         <form onSubmit={next}>
+          <div className="form-group">
+            <label className="form-label">Referral Code <span style={{color:'var(--muted)',fontWeight:400}}>(optional)</span></label>
+            <input className="form-input" placeholder="e.g. REF-AB3X7" value={form.referralCode} onChange={e=>up('referralCode',e.target.value.toUpperCase())} style={{letterSpacing:2}}/>
+            <div style={{fontSize:11,color:'var(--muted)',marginTop:4}}>If a friend referred you, enter their code to give them bonus tokens</div>
+          </div>
           <div className="two-col">
             <div className="form-group"><label className="form-label">National ID Number</label>
               <input className="form-input" placeholder="12345678" value={form.nationalId} onChange={e=>up('nationalId',e.target.value)} required/></div>
@@ -365,6 +370,11 @@ function MemberRegister({ onBack }) {
 
       {step===2 && (
         <form onSubmit={next}>
+          <div className="form-group">
+            <label className="form-label">Referral Code <span style={{color:'var(--muted)',fontWeight:400}}>(optional)</span></label>
+            <input className="form-input" placeholder="e.g. REF-AB3X7" value={form.referralCode} onChange={e=>up('referralCode',e.target.value.toUpperCase())} style={{letterSpacing:2}}/>
+            <div style={{fontSize:11,color:'var(--muted)',marginTop:4}}>If a friend referred you, enter their code to give them bonus tokens</div>
+          </div>
           <div className="two-col">
             <div className="form-group"><label className="form-label">National ID Number *</label>
               <input className="form-input" placeholder="12345678" value={form.nationalId} onChange={e=>up('nationalId',e.target.value)} required/></div>

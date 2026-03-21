@@ -47,6 +47,10 @@ const userSchema = new mongoose.Schema(
 
     shieldTokens: { type: Number, default: 0 },
 
+    referralCode:  { type: String, unique: true, sparse: true },
+    referredBy:    { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+    referralCount: { type: Number, default: 0 },
+
     profile: { type: Object, default: {} },
     notifications: { type: Array, default: [] },
 
@@ -58,6 +62,17 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Auto-generate referral code
+userSchema.pre('save', async function(next) {
+  if (this.isNew && this.role === 'rider' && !this.referralCode) {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = 'REF-';
+    for (let i = 0; i < 5; i++) code += chars[Math.floor(Math.random() * chars.length)];
+    this.referralCode = code;
+  }
+  next();
+});
+
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
   this.password = await bcrypt.hash(this.password, 10);
@@ -67,6 +82,17 @@ userSchema.pre('save', async function (next) {
 userSchema.methods.comparePassword = async function (plainPassword) {
   return bcrypt.compare(plainPassword, this.password);
 };
+
+// Auto-generate referral code
+userSchema.pre('save', async function(next) {
+  if (this.isNew && this.role === 'rider' && !this.referralCode) {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = 'REF-';
+    for (let i = 0; i < 5; i++) code += chars[Math.floor(Math.random() * chars.length)];
+    this.referralCode = code;
+  }
+  next();
+});
 
 userSchema.pre('save', async function (next) {
   if (this.role === 'member' && !this.memberNumber) {
