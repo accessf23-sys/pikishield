@@ -405,10 +405,10 @@ export default function TokensPage() {
                     <button
                       className="btn btn-primary btn-sm"
                       onClick={() => earn(a.key)}
-                      disabled={!!loading || locked}
+                      disabled={!!loading || locked || !!a.auto}
                       style={{flexShrink:0}}
                     >
-                      {loading===a.key ? '…' : locked ? 'Locked' : `+${a.tokens}`}
+                      {a.auto ? 'System' : loading===a.key ? '…' : locked ? 'Locked' : `+${a.tokens}`}
                     </button>
                   </div>
                 );
