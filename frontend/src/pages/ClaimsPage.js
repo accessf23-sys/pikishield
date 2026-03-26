@@ -9,7 +9,7 @@ const sd = (v) => s(v, '—');
 
 async function dlDoc(id, name) {
   try {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('piki_token');
     const res = await fetch(`/api/documents/${id}/download`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {}
     });
@@ -280,8 +280,14 @@ export default function ClaimsPage() {
   const isNok = user?.role === 'nok';
   const isMember = user?.role === 'member';
   const isNokOrMember = isNok || isMember;
-  const kycApproved = user?.kycStatus === 'approved';
-  const canClaim = (user?.role === 'rider' || isNok || isMember) && kycApproved;
+  // 5-month active policy rule
+  const activePolicyStartDate = policies.find(p => p.status === 'active')?.createdAt || policies.find(p => p.status === 'active')?.startDate;
+  const monthsActive = activePolicyStartDate
+    ? (new Date() - new Date(activePolicyStartDate)) / (1000 * 60 * 60 * 24 * 30)
+    : 0;
+  const hasServedWaitingPeriod = monthsActive >= 5;
+  const canClaim = (user?.role === 'rider' || isNok || isMember) && hasServedWaitingPeriod;
+  const monthsRemaining = Math.max(0, Math.ceil(5 - monthsActive));
 
   const [claims, setClaims] = useState([]);
   const [policies, setPolicies] = useState([]);
@@ -442,15 +448,12 @@ export default function ClaimsPage() {
           <button
             className="btn btn-primary"
             onClick={() => {
-              if (!kycApproved) return;
               setShowForm(s => !s);
               setError('');
               setSuccess('');
               setUploadedDocs({});
               setNokDocs({});
             }}
-            disabled={!kycApproved && !showForm}
-            title={!kycApproved ? 'KYC verification required before submitting claims' : ''}
           >
             {showForm ? '✕ Cancel' : '+ Submit Claim'}
           </button>
@@ -513,6 +516,11 @@ export default function ClaimsPage() {
                   </div>
                   {!isNokOrMember && policies.length === 0 && (
                     <div className="alert alert-warning" style={{ marginTop: 10 }}>⚠️ You need an active policy before submitting a claim.</div>
+                    {policies.some(p=>p.status==='active') && !hasServedWaitingPeriod && (
+                      <div className="alert alert-warning" style={{ marginTop: 10 }}>
+                        ⏳ Claims are available after 5 active months. You have {monthsRemaining} month{monthsRemaining!==1?'s':''} remaining.
+                      </div>
+                    )}
                   )}
                 </div>
               )}
