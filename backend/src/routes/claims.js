@@ -8,7 +8,7 @@ const User        = require('../models/User');
 const { auth, roles } = require('../middleware/auth');
 
 // ── Waiting period: 90 days from policy start ──────────────────────────────────
-const WAITING_PERIOD_MS = 90 * 24 * 60 * 60 * 1000;
+const WAITING_PERIOD_MS = 150 * 24 * 60 * 60 * 1000;
 
 // ── GET /api/claims ───────────────────────────────────────────────────────────
 // ?all=1 → admin gets every claim; otherwise rider/nok gets own claims
@@ -80,7 +80,7 @@ router.post('/', auth, async (req, res) => {
 
       const elapsed = Date.now() - new Date(policy.startDate).getTime();
       if (elapsed < WAITING_PERIOD_MS)
-        return res.status(400).json({ error: 'Claims open after 3 months of cover' });
+        return res.status(400).json({ error: 'Claims open after 5 months of cover' });
     }
 
     // ── NOK fraud prevention: verify principal member number ──────────────────
