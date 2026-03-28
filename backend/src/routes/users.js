@@ -555,7 +555,7 @@ router.post('/admin/generate-referral-codes', auth, async (req, res) => {
   try {
     if (req.user.role !== 'superadmin') return res.status(403).json({ error: 'Forbidden' });
     // Also generate member numbers for riders/members missing them
-    const noNumber = await User.find({ role: { $in: ['rider','member'] }, memberNumber: { $exists: false } });
+    const noNumber = await User.find({ role: { $in: ['rider','member'] }, $or: [{ memberNumber: { $exists: false } }, { memberNumber: '' }, { memberNumber: null }] });
     const chars2 = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     for (const u of noNumber) {
       const rand5 = () => Array.from({length:5}, () => chars2[Math.floor(Math.random()*chars2.length)]).join('');
