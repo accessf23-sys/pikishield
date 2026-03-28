@@ -554,6 +554,14 @@ router.post('/helmet-checkin', auth, uploadHelmet.single('photo'), async (req, r
 router.post('/admin/generate-referral-codes', auth, async (req, res) => {
   try {
     if (req.user.role !== 'superadmin') return res.status(403).json({ error: 'Forbidden' });
+    // Also generate member numbers for riders/members missing them
+    const noNumber = await User.find({ role: { $in: ['rider','member'] }, memberNumber: { $exists: false } });
+    const chars2 = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    for (const u of noNumber) {
+      const rand5 = () => Array.from({length:5}, () => chars2[Math.floor(Math.random()*chars2.length)]).join('');
+      u.memberNumber = (u.role === 'rider' ? 'PS-R' : 'PS-M') + rand5();
+      await u.save();
+    }
     const riders = await User.find({ role: 'rider', referralCode: { $exists: false } });
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     let count = 0;
