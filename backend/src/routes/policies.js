@@ -35,9 +35,16 @@ router.post('/subscribe', auth, roles('rider','member'), async (req, res) => {
     const existing = await Policy.findOne({ userId: req.user._id, type, status: 'active' });
     if (existing) return res.status(400).json({ error: `You already have an active ${PACKAGES[type].name} policy` });
 
+    const POLICY_NAMES = {
+      'bail': 'Bail Bond Cover',
+      'bail_income': 'Bail + Income Shield',
+      'funeral': 'Funeral Cover',
+      'income': 'Income Stipend',
+    };
     const policy = await Policy.create({
       userId: req.user._id,
       type,
+      name: POLICY_NAMES[type] || 'Protection Cover',
       members: type === 'funeral' ? (members || []) : [],
     });
 
