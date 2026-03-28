@@ -165,13 +165,12 @@ function HeroBanner({ user, totalDailyContrib, policies }) {
         {/* Member tag */}
         <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:18,flexWrap:'wrap'}}>
           <div style={{background:'rgba(0,214,143,.15)',border:'1px solid rgba(0,214,143,.3)',borderRadius:20,padding:'4px 12px',fontSize:11,fontWeight:700,color:'#00D68F',letterSpacing:.3}}>
-            {user.memberNumber ? `Member No: ${user.memberNumber}` : 'KYC Pending'}
+            {user.memberNumber ? user.memberNumber : 'KYC Pending'}
           </div>
           {user.memberNumber && (
-            <div onClick={() => { navigator.clipboard?.writeText(user.memberNumber); }}
-              style={{background:'rgba(0,214,143,.1)',border:'1px solid rgba(0,214,143,.2)',borderRadius:20,padding:'4px 12px',fontSize:11,fontWeight:600,color:'#00D68F',cursor:'pointer',letterSpacing:.3}}
-              title="Tap to copy">
-              📋 Copy Member No.
+            <div onClick={() => { navigator.clipboard?.writeText(user.memberNumber); alert('Member number copied: ' + user.memberNumber); }}
+              style={{background:'rgba(0,214,143,.15)',border:'1px solid rgba(0,214,143,.3)',borderRadius:20,padding:'4px 12px',fontSize:11,fontWeight:700,color:'#00D68F',cursor:'pointer'}}>
+              Copy No.
             </div>
           )}
           <div style={{background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.12)',borderRadius:20,padding:'4px 12px',fontSize:11,fontWeight:600,color:'rgba(255,255,255,.6)'}}>

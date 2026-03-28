@@ -70,9 +70,15 @@ export default function PoliciesPage() {
                   <div style={{ fontSize: 32 }}>{typeIcons[p.type]}</div>
                   <span className={`status-badge status-${p.status}`}>{p.status}</span>
                 </div>
-                <h3 style={{ fontSize: 17, marginBottom: 4 }}>{p.name}</h3>
+                <h3 style={{ fontSize: 17, marginBottom: 4 }}>
+                  {p.name && p.name.length < 30 && !p.name.match(/^[0-9a-f]{24}$/i) ? p.name :
+                    p.type === 'bail_income' ? 'Bail + Income Shield' :
+                    p.type === 'bail' ? 'Bail Bond Cover' :
+                    p.type === 'funeral' ? 'Funeral Cover' :
+                    p.type === 'income' ? 'Income Stipend' : 'Protection Cover'}
+                </h3>
                 <p className="text-muted" style={{ fontSize: 11, marginBottom: 4, fontFamily:'monospace', letterSpacing:.3 }}>
-                  📋 {p.id}
+                  Policy No: {String(p.id||'').slice(-8).toUpperCase()}
                 </p>
                 <p className="text-muted" style={{ fontSize: 12, marginBottom: 16 }}>
                   Since {new Date(p.startDate).toLocaleDateString('en-KE')} · Claims open {getClaimDate(p.startDate)}
