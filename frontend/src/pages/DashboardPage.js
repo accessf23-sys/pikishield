@@ -165,8 +165,15 @@ function HeroBanner({ user, totalDailyContrib, policies }) {
         {/* Member tag */}
         <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:18,flexWrap:'wrap'}}>
           <div style={{background:'rgba(0,214,143,.15)',border:'1px solid rgba(0,214,143,.3)',borderRadius:20,padding:'4px 12px',fontSize:11,fontWeight:700,color:'#00D68F',letterSpacing:.3}}>
-            🏍️ {user.memberNumber || (user.kycStatus === 'pending' ? 'PENDING KYC' : 'APPROVED')}
+            {user.memberNumber ? `Member No: ${user.memberNumber}` : 'KYC Pending'}
           </div>
+          {user.memberNumber && (
+            <div onClick={() => { navigator.clipboard?.writeText(user.memberNumber); }}
+              style={{background:'rgba(0,214,143,.1)',border:'1px solid rgba(0,214,143,.2)',borderRadius:20,padding:'4px 12px',fontSize:11,fontWeight:600,color:'#00D68F',cursor:'pointer',letterSpacing:.3}}
+              title="Tap to copy">
+              📋 Copy Member No.
+            </div>
+          )}
           <div style={{background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.12)',borderRadius:20,padding:'4px 12px',fontSize:11,fontWeight:600,color:'rgba(255,255,255,.6)'}}>
             📍 {typeof user.profile?.county==='object'?'Nairobi':(user.profile?.county||'Nairobi')}
           </div>
@@ -255,13 +262,12 @@ function QuickAction({ icon, label, sub, color, onClick }) {
 
 /* ── Main Dashboard ───────────────────────────────────────────── */
 export default function DashboardPage() {
-  const { user, refreshUser } = useAuth();
+  const { user }      = useAuth();
   const navigate      = useNavigate();
   const [data, setData]       = useState({policies:[],totalPayouts:0,pendingClaims:0,approvedClaims:0,monthlyData:[],allPolicies:[]});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    refreshUser(); // Refresh user data to get latest kycStatus
     usersAPI.getDashboard()
       .then(r => setData(r.data))
       .catch(err => console.error('Dashboard Fetch Error:', err))
@@ -350,7 +356,14 @@ export default function DashboardPage() {
                     border:'1px solid var(--emerald-mid)',
                   }}>
                     <div>
-                      <div style={{fontSize:13,fontWeight:700,color:'var(--text)'}}>{p.name}</div>
+                      <div style={{fontSize:13,fontWeight:700,color:'var(--text)'}}>
+                        {p.name && p.name.length < 30 && !p.name.match(/^[0-9a-f]{24}$/i) ? p.name :
+                          p.type === 'bail_income' ? 'Bail + Income Shield' :
+                          p.type === 'bail' ? 'Bail Bond Cover' :
+                          p.type === 'funeral' ? 'Funeral Cover' :
+                          p.type === 'income' ? 'Income Stipend' :
+                          p.packageName || 'Protection Cover'}
+                      </div>
                       <div style={{fontSize:11,color:'var(--muted)',marginTop:2}}>
                         KES {p.dailyContribution}/day · {new Date(p.startDate).toLocaleDateString('en-KE')}
                       </div>
