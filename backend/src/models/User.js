@@ -62,6 +62,22 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Auto-generate member/rider numbers
+userSchema.pre('save', async function(next) {
+  if (this.isNew) {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const rand5 = () => Array.from({length:5}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
+    if (this.role === 'rider' && !this.memberNumber) {
+      this.memberNumber = 'PS-R' + rand5();
+    } else if (this.role === 'member' && !this.memberNumber) {
+      this.memberNumber = 'PS-M' + rand5();
+    } else if (this.role === 'agent' && !this.agentCode) {
+      this.agentCode = 'AGT-' + rand5();
+    }
+  }
+  next();
+});
+
 // Auto-generate referral code
 userSchema.pre('save', async function(next) {
   if (this.isNew && this.role === 'rider' && !this.referralCode) {
@@ -82,6 +98,22 @@ userSchema.pre('save', async function (next) {
 userSchema.methods.comparePassword = async function (plainPassword) {
   return bcrypt.compare(plainPassword, this.password);
 };
+
+// Auto-generate member/rider numbers
+userSchema.pre('save', async function(next) {
+  if (this.isNew) {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const rand5 = () => Array.from({length:5}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
+    if (this.role === 'rider' && !this.memberNumber) {
+      this.memberNumber = 'PS-R' + rand5();
+    } else if (this.role === 'member' && !this.memberNumber) {
+      this.memberNumber = 'PS-M' + rand5();
+    } else if (this.role === 'agent' && !this.agentCode) {
+      this.agentCode = 'AGT-' + rand5();
+    }
+  }
+  next();
+});
 
 // Auto-generate referral code
 userSchema.pre('save', async function(next) {
