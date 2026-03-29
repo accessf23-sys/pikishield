@@ -516,11 +516,9 @@ export default function ClaimsPage() {
                   </div>
                   {!isNokOrMember && policies.length === 0 && (
                     <div className="alert alert-warning" style={{ marginTop: 10 }}>⚠️ You need an active policy before submitting a claim.</div>
-                    {policies.some(p=>p.status==='active') && !hasServedWaitingPeriod && (
-                      <div className="alert alert-warning" style={{ marginTop: 10 }}>
-                        ⏳ Claims are available after 5 active months. You have {monthsRemaining} month{monthsRemaining!==1?'s':''} remaining.
-                      </div>
-                    )}
+                  )}
+                  {policies.some(p=>p.status==='active') && !hasServedWaitingPeriod && (
+                    <div className="alert alert-warning" style={{ marginTop: 10 }}>⏳ Claims open after 5 active months. {monthsRemaining} month{monthsRemaining!==1?'s':''} remaining.</div>
                   )}
                 </div>
               )}
