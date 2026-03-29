@@ -280,12 +280,7 @@ export default function ClaimsPage() {
   const isNok = user?.role === 'nok';
   const isMember = user?.role === 'member';
   const isNokOrMember = isNok || isMember;
-  // 5-month active policy rule - calculated after policies loaded
-  const activePolicyStartDate = (policies||[]).find(p => p.status === 'active')?.createdAt || (policies||[]).find(p => p.status === 'active')?.startDate;
-  const monthsActive = activePolicyStartDate ? (new Date() - new Date(activePolicyStartDate)) / (1000 * 60 * 60 * 24 * 30) : 0;
-  const hasServedWaitingPeriod = monthsActive >= 5;
-  const monthsRemaining = Math.max(0, Math.ceil(5 - monthsActive));
-  const canClaim = (user?.role === 'rider' || isNok || isMember) && hasServedWaitingPeriod;
+
 
   const [claims, setClaims] = useState([]);
   const [policies, setPolicies] = useState([]);
@@ -428,6 +423,13 @@ export default function ClaimsPage() {
       setSubmitting(false);
     }
   };
+
+
+  const activePolicyStartDate = (policies||[]).find(p=>p.status==='active')?.createdAt || (policies||[]).find(p=>p.status==='active')?.startDate;
+  const monthsActive = activePolicyStartDate ? (new Date()-new Date(activePolicyStartDate))/(1000*60*60*24*30) : 0;
+  const hasServedWaitingPeriod = monthsActive >= 5;
+  const monthsRemaining = Math.max(0, Math.ceil(5-monthsActive));
+  const canClaim = (user?.role==='rider'||isNok||isMember) && hasServedWaitingPeriod;
 
   return (
     <div>
