@@ -86,7 +86,7 @@ function RiderRegister({ onBack }) {
   const [form, setForm] = useState({
     fullName:'', phone:'', email:'', password:'', confirmPassword:'',
     nationalId:'', county:'Nairobi', licenseNumber:'', bikeReg:'', bikeType:'Petrol',
-    isBikeOwner:true, ownerName:'', ownerPhone:'', referralCode:'',
+    isBikeOwner:true, ownerName:'', ownerPhone:'',
   });
   const up = (k,v) => setForm(f=>({...f,[k]:v}));
   const handleUploaded = (docType, doc) => setKycDocs(prev=>({...prev,[docType]:doc}));
@@ -181,11 +181,6 @@ function RiderRegister({ onBack }) {
 
       {step===2 && (
         <form onSubmit={next}>
-          <div className="form-group">
-            <label className="form-label">Referral Code <span style={{color:'var(--muted)',fontWeight:400}}>(optional)</span></label>
-            <input className="form-input" placeholder="e.g. REF-AB3X7" value={form.referralCode} onChange={e=>up('referralCode',e.target.value.toUpperCase())} style={{letterSpacing:2}}/>
-            <div style={{fontSize:11,color:'var(--muted)',marginTop:4}}>If a friend referred you, enter their code to give them bonus tokens</div>
-          </div>
           <div className="two-col">
             <div className="form-group"><label className="form-label">National ID Number</label>
               <input className="form-input" placeholder="12345678" value={form.nationalId} onChange={e=>up('nationalId',e.target.value)} required/></div>
@@ -297,19 +292,16 @@ function MemberRegister({ onBack }) {
     if (form.password!==form.confirmPassword) return setError('Passwords do not match');
     setError(''); setLoading(true);
     try {
-      const regRes = await register({
+      await register({
         ...form,
         phone: normalizePhone(form.phone),
         tempUploadId: tempId,
-        registrationType: 'funeral_member',
+        registrationType: 'funeral_member',  // tells backend to create as member role
       });
       try { await documentsAPI.attachKyc({tempUploadId:tempId}); } catch {}
       const savedPhone = normalizePhone(form.phone);
-      const nokInfo = regRes?.nok
-        ? `\n\n👤 NOK Account Created:\n  Name: ${form.nokName}\n  Phone: ${normalizePhone(form.nokPhone)}\n  NOK No: ${regRes.nok?.nokNumber || '—'}\n  Temp Password: ${regRes.nokTempPassword || '(check SMS)'}\n  They can log in with their phone number.`
-        : '';
       window.confirm(
-        `✅ Registration successful!\n\n📱 Your Phone: ${savedPhone}\n🔑 Your Password: ${form.password}\n${nokInfo}\n\nIMPORTANT: Save these credentials. Your account is pending KYC verification.\n\nPress OK to go to login.`
+        `✅ Registration successful!\n\n📱 Phone: ${savedPhone}\n🔑 Password: ${form.password}\n\nIMPORTANT: Save these credentials — you will need them to log in.\n\nYour account is pending KYC verification. You will be notified once approved.\n\nPress OK to go to login.`
       );
       navigate('/login');
     } catch (err) { setError(err.response?.data?.error || 'Registration failed'); }
@@ -370,11 +362,6 @@ function MemberRegister({ onBack }) {
 
       {step===2 && (
         <form onSubmit={next}>
-          <div className="form-group">
-            <label className="form-label">Referral Code <span style={{color:'var(--muted)',fontWeight:400}}>(optional)</span></label>
-            <input className="form-input" placeholder="e.g. REF-AB3X7" value={form.referralCode} onChange={e=>up('referralCode',e.target.value.toUpperCase())} style={{letterSpacing:2}}/>
-            <div style={{fontSize:11,color:'var(--muted)',marginTop:4}}>If a friend referred you, enter their code to give them bonus tokens</div>
-          </div>
           <div className="two-col">
             <div className="form-group"><label className="form-label">National ID Number *</label>
               <input className="form-input" placeholder="12345678" value={form.nationalId} onChange={e=>up('nationalId',e.target.value)} required/></div>
@@ -479,7 +466,7 @@ export default function RegisterPage() {
                 <div>
                   <div style={{fontWeight:800,fontSize:15,color:'var(--text)',marginBottom:4}}>I am a Boda Boda Rider</div>
                   <div style={{fontSize:12,color:'var(--muted)',lineHeight:1.6}}>
-                    Full protection: bail cover, income stipend, funeral cover + Shield Tokens
+                    Bail cover, income stipend, funeral cover & Shield Tokens
                   </div>
                   <div style={{display:'flex',gap:6,marginTop:8,flexWrap:'wrap'}}>
                     {['🚔 Bail KES 20k','💰 Stipend KES 15k','🕊️ Funeral KES 200k','🪙 Tokens'].map(t=>(
@@ -498,9 +485,9 @@ export default function RegisterPage() {
                 onMouseLeave={e=>{e.currentTarget.style.borderColor='var(--border)';e.currentTarget.style.boxShadow='none';}}>
                 <div style={{width:48,height:48,borderRadius:12,background:'linear-gradient(135deg,#8B5CF6,#5B21B6)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:24,flexShrink:0}}>🕊️</div>
                 <div>
-                  <div style={{fontWeight:800,fontSize:15,color:'var(--text)',marginBottom:4}}>I am NOT a Rider — Funeral Cover Only</div>
+                  <div style={{fontWeight:800,fontSize:14,color:'var(--text)',marginBottom:4}}>Funeral Cover (Non-Rider)</div>
                   <div style={{fontSize:12,color:'var(--muted)',lineHeight:1.6}}>
-                    Funeral protection for you and your household dependants — no bike required
+                    Funeral protection for you and your household — no bike needed
                   </div>
                   <div style={{display:'flex',gap:6,marginTop:8,flexWrap:'wrap'}}>
                     {['🕊️ Funeral KES 200k','👨‍👩‍👧 Covers dependants','📋 Easy claims'].map(t=>(

@@ -57,18 +57,18 @@ export default function MemberDashboardPage() {
               </div>
 
               {/* Cover info row */}
-              <div style={{display:'flex',gap:12,flexWrap:'wrap'}}>
-                <div style={{background:'rgba(255,255,255,.07)',borderRadius:12,padding:'10px 16px',minWidth:140}}>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
+                <div style={{background:'rgba(255,255,255,.07)',borderRadius:12,padding:'10px 12px'}}>
                   <div style={{fontSize:10,color:'rgba(255,255,255,.4)',textTransform:'uppercase',letterSpacing:.8,marginBottom:3}}>Cover Type</div>
-                  <div style={{fontWeight:700,color:'white',fontSize:14}}>🕊️ Funeral Protection</div>
+                  <div style={{fontWeight:700,color:'white',fontSize:13}}>🕊️ Funeral</div>
                 </div>
-                <div style={{background:'rgba(255,255,255,.07)',borderRadius:12,padding:'10px 16px',minWidth:140}}>
+                <div style={{background:'rgba(255,255,255,.07)',borderRadius:12,padding:'10px 12px'}}>
                   <div style={{fontSize:10,color:'rgba(255,255,255,.4)',textTransform:'uppercase',letterSpacing:.8,marginBottom:3}}>Phone</div>
-                  <div style={{fontWeight:700,color:'white',fontSize:14}}>{user?.phone}</div>
+                  <div style={{fontWeight:700,color:'white',fontSize:13,wordBreak:'break-all'}}>{user?.phone}</div>
                 </div>
-                <div style={{background:'rgba(255,255,255,.07)',borderRadius:12,padding:'10px 16px',minWidth:140}}>
+                <div style={{background:'rgba(255,255,255,.07)',borderRadius:12,padding:'10px 12px',gridColumn:'1/-1'}}>
                   <div style={{fontSize:10,color:'rgba(255,255,255,.4)',textTransform:'uppercase',letterSpacing:.8,marginBottom:3}}>Enrolled</div>
-                  <div style={{fontWeight:700,color:'white',fontSize:14}}>{user?.createdAt && !isNaN(Date.parse(user.createdAt)) ? new Date(user.createdAt).toLocaleDateString('en-KE',{month:'short',day:'numeric',year:'numeric'}) : 'New Member'}</div>
+                  <div style={{fontWeight:700,color:'white',fontSize:13}}>{user?.createdAt && !isNaN(Date.parse(user.createdAt)) ? new Date(user.createdAt).toLocaleDateString('en-KE',{month:'short',day:'numeric',year:'numeric'}) : 'New Member'}</div>
                 </div>
               </div>
             </div>
@@ -118,15 +118,13 @@ export default function MemberDashboardPage() {
             style={{background:'linear-gradient(135deg,#050E1F,#07312A)',border:'none',borderRadius:14,
               padding:'18px 16px',cursor:'pointer',textAlign:'left',boxShadow:'0 4px 20px rgba(0,0,0,.15)'}}>
             <div style={{fontSize:28,marginBottom:8}}>📋</div>
-            <div style={{fontWeight:800,fontSize:14,color:'white',marginBottom:3}}>Submit a Claim</div>
-            <div style={{fontSize:11,color:'rgba(255,255,255,.5)',lineHeight:1.4}}>Claim funeral cover for a deceased dependant</div>
+            <div style={{fontWeight:800,fontSize:14,color:'white',marginBottom:3}}>Submit Claim</div>
           </button>
           <button onClick={()=>navigate('/password')}
             style={{background:'linear-gradient(135deg,#1a1040,#2a1860)',border:'none',borderRadius:14,
               padding:'18px 16px',cursor:'pointer',textAlign:'left',boxShadow:'0 4px 20px rgba(0,0,0,.15)'}}>
             <div style={{fontSize:28,marginBottom:8}}>🔐</div>
             <div style={{fontWeight:800,fontSize:14,color:'white',marginBottom:3}}>Security</div>
-            <div style={{fontSize:11,color:'rgba(255,255,255,.5)',lineHeight:1.4}}>Change your password</div>
           </button>
         </div>
 
