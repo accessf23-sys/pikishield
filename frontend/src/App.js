@@ -68,11 +68,11 @@ function roleHome(role) {
 
 const MOBILE_NAV = {
   rider: [
-    { icon:'', label:'Home',      path:'/dashboard' },
-    { icon:'️', label:'Policies',  path:'/policies' },
-    { icon:'', label:'Claims',    path:'/claims' },
-    { icon:'', label:'Pay',       path:'/payments' },
-    { icon:'🪙', label:'Tokens',    path:'/tokens' },
+    { icon:'🏠', label:'Home',     path:'/dashboard' },
+    { icon:'🛡️', label:'Policies', path:'/policies' },
+    { icon:'📋', label:'Claims',   path:'/claims' },
+    { icon:'💳', label:'Pay',      path:'/payments' },
+    { icon:'🪙', label:'Tokens',   path:'/tokens' },
   ],
   nok: [
     { icon:'', label:'Claims',    path:'/claims' },
