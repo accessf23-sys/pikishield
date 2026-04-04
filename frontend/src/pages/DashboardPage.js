@@ -298,14 +298,14 @@ export default function DashboardPage() {
         <HeroBanner user={user} totalDailyContrib={totalDailyContrib} policies={policies}/>
 
         {/* ── 3 compact stat cards — Active Policies already shown in hero ── */}
-        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12,marginBottom:20}}>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginBottom:20}}>
           {[
-            {icon:'💰',label:'Total Payouts',value:`KES ${totalPayouts.toLocaleString()}`,color:'#00D68F',bg:'#E6FBF3',path:'/claims'},
-            {icon:'⏳',label:'Pending Claims',value:pendingClaims,color:'#F59E0B',bg:'#FFFBEB',path:'/claims'},
-            {icon:'✅',label:'Approved Claims',value:approvedClaims,color:'#8B5CF6',bg:'#F5F3FF',path:'/claims'},
+            {icon:'💰',label:'Payouts',value:`KES ${totalPayouts.toLocaleString()}`,color:'#00D68F',bg:'#E6FBF3',path:'/claims'},
+            {icon:'⏳',label:'Pending',value:pendingClaims,color:'#F59E0B',bg:'#FFFBEB',path:'/claims'},
+            {icon:'✅',label:'Approved',value:approvedClaims,color:'#8B5CF6',bg:'#F5F3FF',path:'/claims'},
           ].map(s=>(
             <div key={s.label} onClick={()=>navigate(s.path)} style={{
-              background:'var(--surface)',borderRadius:12,padding:'14px 16px',
+              background:'var(--surface)',borderRadius:12,padding:'12px 8px',
               border:'1px solid var(--border)',cursor:'pointer',
               position:'relative',overflow:'hidden',
               transition:'transform .18s,box-shadow .18s',
@@ -313,11 +313,11 @@ export default function DashboardPage() {
             onMouseEnter={e=>{e.currentTarget.style.boxShadow='0 6px 18px rgba(0,0,0,.09)';}}
             onMouseLeave={e=>{e.currentTarget.style.boxShadow='';}}>
               <div style={{position:'absolute',top:0,left:0,right:0,height:3,background:s.color,opacity:.7,borderRadius:'12px 12px 0 0'}}/>
-              <div style={{display:'flex',alignItems:'center',gap:10}}>
+              <div style={{display:'flex',flexDirection:'column',alignItems:'center',textAlign:'center',gap:5}}>
                 <div style={{width:34,height:34,borderRadius:9,background:s.bg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:16,flexShrink:0}}>{s.icon}</div>
                 <div>
-                  <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontWeight:800,fontSize:18,color:s.color,lineHeight:1}}>{s.value}</div>
-                  <div style={{fontSize:11,color:'var(--muted)',marginTop:2}}>{s.label}</div>
+                  <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontWeight:800,fontSize:14,color:s.color,lineHeight:1,wordBreak:'break-all'}}>{s.value}</div>
+                  <div style={{fontSize:10,color:'var(--muted)',lineHeight:1.2}}>{s.label}</div>
                 </div>
               </div>
             </div>
