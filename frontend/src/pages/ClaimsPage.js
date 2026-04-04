@@ -489,10 +489,7 @@ export default function ClaimsPage() {
                     ].filter(opt => {
                       if (isMember) return opt.type === 'funeral';
                       if (isNok) return opt.type === 'funeral';
-                      // Show bail and income if rider has those policy types
-                      if (opt.type === 'bail') return policies.some(p => p.type === 'bail' || p.type === 'bail_income');
-                      if (opt.type === 'income') return policies.some(p => p.type === 'income' || p.type === 'bail_income');
-                      return true; // always show funeral
+                      return true; // show all types for riders
                     }).map(opt => (
                       <div
                         key={opt.type}
