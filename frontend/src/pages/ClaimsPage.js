@@ -488,7 +488,11 @@ export default function ClaimsPage() {
                       { type: 'funeral', icon: '🕊️', label: 'Funeral', sub: 'Funeral cover', max: 200000, color: '#FF6B35' },
                     ].filter(opt => {
                       if (isMember) return opt.type === 'funeral';
-                      return policies.some(p => p.coverages && p.coverages[opt.type] !== undefined) || opt.type === 'funeral';
+                      if (isNok) return opt.type === 'funeral';
+                      // Show bail and income if rider has those policy types
+                      if (opt.type === 'bail') return policies.some(p => p.type === 'bail' || p.type === 'bail_income');
+                      if (opt.type === 'income') return policies.some(p => p.type === 'income' || p.type === 'bail_income');
+                      return true; // always show funeral
                     }).map(opt => (
                       <div
                         key={opt.type}
