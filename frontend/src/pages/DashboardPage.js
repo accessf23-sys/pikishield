@@ -440,9 +440,9 @@ export default function DashboardPage() {
         <div style={{marginBottom:8}}>
           <h3 style={{fontSize:15,fontWeight:750,marginBottom:14,color:'var(--text)'}}>Quick Actions</h3>
           <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:14}}>
-            <QuickAction icon="📋" label="Submit Claim" sub="File a new insurance claim" color="#00D68F" onClick={()=>navigate('/claims')}/>
-            <QuickAction icon="🛡️" label="My Policies" sub="View & manage your cover" color="#4F46E5" onClick={()=>navigate('/policies')}/>
-            <QuickAction icon="💳" label="Make Payment" sub="Top up your contributions" color="#F59E0B" onClick={()=>navigate('/payments')}/>
+            <QuickAction icon="📋" label="Submit Claim" sub="" color="#00D68F" onClick={()=>navigate('/claims')}/>
+            <QuickAction icon="🛡️" label="My Policies" sub="" color="#4F46E5" onClick={()=>navigate('/policies')}/>
+            <QuickAction icon="💳" label="Make Payment" sub="" color="#F59E0B" onClick={()=>navigate('/payments')}/>
           </div>
         </div>
       </div>
