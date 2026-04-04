@@ -6,10 +6,10 @@ import NotificationBell from './NotificationBell';
 const NAV = {
   rider: [
     { label: 'Dashboard', icon: '', path: '/dashboard' },
-    { label: 'My Policies', icon: '', path: '/policies' },
+    { label: 'Policies', icon: '', path: '/policies' },
     { label: 'Claims', icon: '', path: '/claims' },
-    { label: 'Payments', icon: '', path: '/payments' },
-    { label: 'Shield Tokens', icon: '🪙', path: '/tokens' },
+    { label: 'Pay', icon: '', path: '/payments' },
+    { label: 'Tokens', icon: '🪙', path: '/tokens' },
     { label: 'Transactions', icon: '', path: '/transactions' },
     { divider: true },
     { label: 'Add Cover', icon: '', path: '/subscribe' },
