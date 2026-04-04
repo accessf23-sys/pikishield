@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { policiesAPI, authAPI, documentsAPI } from '../utils/api';
-import { useAuth } from '../context/AuthContext';
 
 const PACKAGE_INFO = {
-  bail:       { icon: '⚖️', color: '#0066FF', features: ['Traffic arrest bail up to KES 20,000', 'Max 2 claims/year', 'Police abstract required', 'Claims open after 3 months of cover'], ideal: 'Ideal for riders with high road exposure' },
-  bail_income:{ icon: '🛡️', color: '#00C896', features: ['Bail up to KES 20,000 + Stipend KES 15,000', 'Bail: max 2 claims/year', 'Stipend: max 2/year (6-month gap)', 'Doctor\'s note & hospital details required for stipend', 'Claims open after 3 months of cover'], ideal: 'Best value — full income protection', popular: true },
+  bail:       { icon: '⚖️', color: '#0066FF', features: ['Traffic arrest bail up to KES 20,000', 'Legal representation for court appearances', 'Lawyer consultation included per claim', 'Max 2 claims/year', 'Police abstract required', 'Claims open after 5 months of cover'], ideal: 'Ideal for riders with high road exposure' },
+  bail_income:{ icon: '🛡️', color: '#00C896', features: ['Bail up to KES 20,000 + Stipend KES 15,000', 'Legal representation for court appearances', 'Lawyer consultation included per bail claim', 'Bail: max 2 claims/year', 'Stipend: max 2/year (6-month gap)', 'Doctor\'s note & hospital details required for stipend', 'Claims open after 5 months of cover'], ideal: 'Best value — full income protection', popular: true },
   funeral:    { icon: '🕊️', color: '#FF6B35', features: ['Up to 3 household members (max age 70)', 'Cover up to KES 200,000 — no minimum', 'Claims open after 3 months', 'NOK can lodge claims directly', 'Death certificate + burial permit required'], ideal: 'Protect loved ones from funeral costs' },
 };
 
@@ -60,8 +59,6 @@ function NokIdUploader({ onUploaded, uploaded, tempId }) {
 }
 
 export default function SubscribePage() {
-  const { user } = useAuth();
-  const kycApproved = user?.kycStatus === 'approved';
   const [packages, setPackages] = useState({});
   const [selected, setSelected] = useState(null);
   const [step, setStep] = useState(1); // 1=pick, 2=members, 3=nok, 4=done
@@ -126,18 +123,6 @@ export default function SubscribePage() {
         {error && <div className="alert alert-error">❌ {error}</div>}
         {success && step < 3 && <div className="alert alert-success">✅ {success}</div>}
 
-        {!kycApproved && (
-          <div style={{ background: '#FEF3C7', border: '2px solid #F59E0B', borderRadius: 12, padding: '14px 18px', marginBottom: 20, display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-            <span style={{ fontSize: 24, flexShrink: 0 }}>⏳</span>
-            <div>
-              <div style={{ fontWeight: 800, fontSize: 13, color: '#92400E', marginBottom: 3 }}>KYC Pending — Browse Only</div>
-              <div style={{ fontSize: 12, color: '#78350F', lineHeight: 1.6 }}>
-                You can explore packages but <strong>cannot enroll or pay</strong> until your KYC is approved by an admin.
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Step 1 — Package selection */}
         {step === 1 && (
           <>
@@ -178,8 +163,8 @@ export default function SubscribePage() {
             {selected && (
               <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
                 <button className="btn btn-secondary" onClick={() => setSelected(null)}>Deselect</button>
-                <button className="btn btn-primary btn-lg" onClick={() => selected === 'funeral' ? setStep(2) : handleSubscribe()} disabled={loading || !kycApproved} title={!kycApproved ? 'KYC verification required to enroll' : ''}>
-                  {loading ? 'Enrolling...' : kycApproved ? `🛡️ Enroll in ${packages[selected]?.name}` : '🔒 KYC Required to Enroll'}
+                <button className="btn btn-primary btn-lg" onClick={() => selected === 'funeral' ? setStep(2) : handleSubscribe()} disabled={loading}>
+                  {loading ? 'Enrolling...' : `🛡️ Enroll in ${packages[selected]?.name}`}
                 </button>
               </div>
             )}
@@ -283,49 +268,32 @@ export default function SubscribePage() {
           </div>
         )}
 
-        {/* Step 4 — Done + show NOK credentials */}
+        {/* Step 4 — Done + show NOK number */}
         {step === 4 && nokResult && (
-          <div className="card" style={{ maxWidth: 560 }}>
-            <div style={{ textAlign: 'center', marginBottom: 20 }}>
+          <div className="card" style={{ maxWidth: 520 }}>
+            <div style={{ textAlign: 'center', marginBottom: 24 }}>
               <div style={{ fontSize: 56 }}>🎉</div>
               <h3 style={{ fontSize: 22, marginTop: 12, marginBottom: 6 }}>All Set!</h3>
               <p className="text-muted">Funeral protection active. NOK account created.</p>
             </div>
-
-            {/* Credentials card — prominent */}
-            <div style={{ background: 'linear-gradient(135deg, #0A1628, #06352A)', borderRadius: 16, padding: 24, marginBottom: 20 }}>
-              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 16, textAlign: 'center' }}>
-                🔐 NOK Login Credentials — Save These Now
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {[
-                  { label: 'Login ID (NOK Number)', value: nokResult.nokNumber, highlight: true },
-                  { label: 'Phone Number', value: nokForm.phone },
-                  { label: 'Password', value: nokForm.password },
-                  { label: 'Login URL', value: 'pikishield.co.ke/login' },
-                ].map(({ label, value, highlight }) => (
-                  <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.07)', borderRadius: 8, padding: '10px 14px' }}>
-                    <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>{label}</span>
-                    <span style={{ fontSize: highlight ? 18 : 13, fontWeight: 800, color: highlight ? '#00D68F' : 'white', letterSpacing: highlight ? 2 : 0 }}>{value}</span>
-                  </div>
-                ))}
-              </div>
-              <div style={{ marginTop: 14, background: 'rgba(255,165,0,0.15)', border: '1px solid rgba(255,165,0,0.4)', borderRadius: 8, padding: '8px 12px', fontSize: 11, color: '#FFD080', textAlign: 'center' }}>
-                ⚠️ Screenshot or write down these credentials. The password will not be shown again.
-              </div>
+            <div style={{ background: 'linear-gradient(135deg, #0F172A, #162B52)', borderRadius: 14, padding: 24, marginBottom: 20, textAlign: 'center' }}>
+              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8 }}>NOK Login Number</div>
+              <div style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontWeight: 800, fontSize: 32, color: 'var(--green)', letterSpacing: 2 }}>{nokResult.nokNumber}</div>
+              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 8 }}>Share this with {nokForm.fullName} — they use it to log in at pikishield.co.ke</div>
             </div>
-
-            {/* Instructions */}
-            <div style={{ background: '#F0FDF4', border: '1px solid #A7F3D0', borderRadius: 10, padding: 14, marginBottom: 20 }}>
-              <div style={{ fontWeight: 700, fontSize: 13, color: '#065F46', marginBottom: 8 }}>📱 Share with {nokForm.fullName}</div>
-              <div style={{ fontSize: 12, color: '#047857', lineHeight: 1.7 }}>
-                Tell them to go to <strong>pikishield.co.ke/login</strong> and enter:<br/>
-                • <strong>NOK Number:</strong> {nokResult.nokNumber}<br/>
-                • <strong>Password:</strong> their password (set above)<br/>
-                They can also log in with their phone number: <strong>{nokForm.phone}</strong>
-              </div>
+            <div style={{ background: 'var(--bg)', borderRadius: 10, padding: 14, marginBottom: 20 }}>
+              <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 8 }}>NOK Account Summary</div>
+              {[
+                ['Name', nokForm.fullName],
+                ['Phone', nokForm.phone],
+                ['NOK Number', nokResult.nokNumber],
+                ['Login with', 'NOK Number + password at pikishield.co.ke'],
+              ].map(([k, v]) => (
+                <div key={k} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 5 }}>
+                  <span className="text-muted">{k}</span><span style={{ fontWeight: 600 }}>{v}</span>
+                </div>
+              ))}
             </div>
-
             <button className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }} onClick={() => navigate('/policies')}>
               Go to My Policies →
             </button>
