@@ -705,9 +705,9 @@ export default function ClaimsPage() {
                 </div>
               )}
 
-              <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap:'wrap' }}>
                 <button type="button" className="btn btn-secondary" onClick={() => setShowForm(false)}>Cancel</button>
-                <button type="submit" className="btn btn-primary btn-lg" disabled={submitting || !canClaim}>
+                <button type="submit" className="btn btn-primary btn-lg" style={{flex:1,justifyContent:'center',minWidth:120}} disabled={submitting || !canClaim}>
                   {submitting ? '⏳ Submitting...' : '📋 Submit'}
                 </button>
               </div>
