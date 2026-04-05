@@ -280,7 +280,7 @@ export default function ClaimsPage() {
   const isNok = user?.role === 'nok';
   const isMember = user?.role === 'member';
   const isNokOrMember = isNok || isMember;
-
+  const canClaim = user?.role === 'rider' || isNok || isMember;
 
   const [claims, setClaims] = useState([]);
   const [policies, setPolicies] = useState([]);
@@ -424,13 +424,6 @@ export default function ClaimsPage() {
     }
   };
 
-
-  const activePolicyStartDate = (policies||[]).find(p=>p.status==='active')?.createdAt || (policies||[]).find(p=>p.status==='active')?.startDate;
-  const monthsActive = activePolicyStartDate ? (new Date()-new Date(activePolicyStartDate))/(1000*60*60*24*30) : 0;
-  const hasServedWaitingPeriod = monthsActive >= 5;
-  const monthsRemaining = Math.max(0, Math.ceil(5-monthsActive));
-  const canClaim = (user?.role==='rider'||isNok||isMember) && hasServedWaitingPeriod;
-
   return (
     <div>
       <div className="page-header">
@@ -466,12 +459,12 @@ export default function ClaimsPage() {
 
         {showForm && (
           <div className="card" style={{ marginBottom: 24 }}>
-            <h3 style={{ fontSize: 16, marginBottom: 4 }}>New {isNok ? 'Funeral ' : isMember ? 'Household Funeral ' : ''}Claim</h3>
+            <h3 style={{ fontSize: 15, marginBottom: 4, lineHeight: 1.3 }}>New {isNok ? 'Funeral' : isMember ? 'Funeral' : ''} Claim</h3>
             <p className="text-muted" style={{ fontSize: 12, marginBottom: 20 }}>
               {isNok
                 ? 'All 4 documents below are required. This claim is for the deceased principal rider.'
                 : isMember
-                ? "Claim funeral cover for a deceased household member covered under the principal rider's policy. All 4 documents are required."
+                ? "Funeral cover for a deceased household member. All 4 documents are required."
                 : 'All claims are AI pre-screened. Fraudulent submissions result in permanent suspension.'}
             </p>
 
@@ -488,8 +481,7 @@ export default function ClaimsPage() {
                       { type: 'funeral', icon: '🕊️', label: 'Funeral', sub: 'Funeral cover', max: 200000, color: '#FF6B35' },
                     ].filter(opt => {
                       if (isMember) return opt.type === 'funeral';
-                      if (isNok) return opt.type === 'funeral';
-                      return true; // show all types for riders
+                      return policies.some(p => p.coverages && p.coverages[opt.type] !== undefined) || opt.type === 'funeral';
                     }).map(opt => (
                       <div
                         key={opt.type}
@@ -517,9 +509,6 @@ export default function ClaimsPage() {
                   </div>
                   {!isNokOrMember && policies.length === 0 && (
                     <div className="alert alert-warning" style={{ marginTop: 10 }}>⚠️ You need an active policy before submitting a claim.</div>
-                  )}
-                  {policies.some(p=>p.status==='active') && !hasServedWaitingPeriod && (
-                    <div className="alert alert-warning" style={{ marginTop: 10 }}>⏳ Claims open after 5 active months. {monthsRemaining} month{monthsRemaining!==1?'s':''} remaining.</div>
                   )}
                 </div>
               )}

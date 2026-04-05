@@ -139,14 +139,14 @@ export default function MemberDashboardPage() {
           </div>
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
             {[
-              ['Toll-Free Helpline','0800 724 547'],
-              ['WhatsApp','0700 PIKI 00'],
+              ['Toll-Free','0800 724 547'],
+              ['WhatsApp','0700 000 001'],
               ['Email','support@pikishield.co.ke'],
               ['SMS','HELP to 22547'],
             ].map(([l,v])=>(
-              <div key={l} style={{background:'var(--bg)',borderRadius:8,padding:'10px 14px',border:'1px solid var(--border)'}}>
+              <div key={l} style={{background:'var(--bg)',borderRadius:8,padding:'10px 12px',border:'1px solid var(--border)'}}>
                 <div style={{fontSize:10,color:'var(--muted)',textTransform:'uppercase',letterSpacing:.5,marginBottom:3,fontWeight:600}}>{l}</div>
-                <div style={{fontSize:13,fontWeight:700,color:'var(--text)'}}>{v}</div>
+                <div style={{fontSize:12,fontWeight:700,color:'var(--text)',wordBreak:'break-all',lineHeight:1.3}}>{v}</div>
               </div>
             ))}
           </div>
