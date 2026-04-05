@@ -439,7 +439,7 @@ export default function ClaimsPage() {
             </p>
           </div>
           <button
-            className="btn btn-primary"
+            className="btn btn-primary" style={{justifyContent:"center",minWidth:80}}
             onClick={() => {
               setShowForm(s => !s);
               setError('');
