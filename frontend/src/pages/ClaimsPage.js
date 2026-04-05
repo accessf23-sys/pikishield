@@ -448,7 +448,7 @@ export default function ClaimsPage() {
               setNokDocs({});
             }}
           >
-            {showForm ? '✕' : '+ Claim'}
+            {showForm ? '✕' : 'Claim'}
           </button>
         </div>
       </div>
