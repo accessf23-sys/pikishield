@@ -137,11 +137,11 @@ export default function MemberDashboardPage() {
               <div style={{fontSize:12,color:'var(--muted)'}}>PikiShield support is available 8am–6pm</div>
             </div>
           </div>
-          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(2,minmax(0,1fr))',gap:8}}>
             {[
               ['Toll-Free','0800 724 547'],
               ['WhatsApp','0700 000 001'],
-              ['Email','support@pikishield.co.ke'],
+              ['Email','info@pikishield.co.ke'],
               ['SMS','HELP to 22547'],
             ].map(([l,v])=>(
               <div key={l} style={{background:'var(--bg)',borderRadius:8,padding:'10px 12px',border:'1px solid var(--border)'}}>
