@@ -708,7 +708,7 @@ export default function ClaimsPage() {
               <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                 <button type="button" className="btn btn-secondary" onClick={() => setShowForm(false)}>Cancel</button>
                 <button type="submit" className="btn btn-primary btn-lg" disabled={submitting || !canClaim}>
-                  {submitting ? '⏳ Submitting...' : `📋 Submit Claim${!isNok && totalDocs > 0 ? ` · ${totalDocs} doc${totalDocs !== 1 ? 's' : ''}` : ''}`}
+                  {submitting ? '⏳ Submitting...' : '📋 Submit'}
                 </button>
               </div>
             </form>
