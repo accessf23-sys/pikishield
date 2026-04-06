@@ -576,4 +576,16 @@ router.post('/admin/generate-referral-codes', auth, async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+
+router.delete('/:id', auth, async (req, res) => {
+  try {
+    if (!['admin','superadmin'].includes(req.user.role)) return res.status(403).json({ error: 'Forbidden' });
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (['admin','superadmin'].includes(user.role)) return res.status(403).json({ error: 'Cannot delete admin accounts' });
+    await User.findByIdAndDelete(req.params.id);
+    res.json({ message: 'User deleted' });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 module.exports = router;
