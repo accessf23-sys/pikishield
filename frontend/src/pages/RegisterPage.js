@@ -262,6 +262,12 @@ function MemberRegister({ onBack }) {
     nationalId:'', county:'Nairobi',
     // NOK details
     nokName:'', nokPhone:'', nokRelationship:'',
+    // Family members (up to 3)
+    members:[
+      {name:'',dob:'',relationship:''},
+      {name:'',dob:'',relationship:''},
+      {name:'',dob:'',relationship:''},
+    ],
   });
   const up = (k,v) => setForm(f=>({...f,[k]:v}));
   const handleUploaded = (docType, doc) => setKycDocs(prev=>({...prev,[docType]:doc}));
@@ -282,6 +288,8 @@ function MemberRegister({ onBack }) {
       if (!form.nokName.trim()) return setError("Next of Kin's name is required");
       if (!form.nokPhone.trim()) return setError("Next of Kin's phone is required");
       if (!form.nokRelationship) return setError("Please select your relationship to your Next of Kin");
+      const filledMembers = form.members.filter(m=>m.name.trim());
+      if (filledMembers.length===0) return setError('Please add at least 1 family member to nominate');
       setError(''); setStep(3);
     }
   };
@@ -296,7 +304,8 @@ function MemberRegister({ onBack }) {
         ...form,
         phone: normalizePhone(form.phone),
         tempUploadId: tempId,
-        registrationType: 'funeral_member',  // tells backend to create as member role
+        registrationType: 'funeral_member',
+        members: form.members.filter(m=>m.name.trim()),
       });
       try { await documentsAPI.attachKyc({tempUploadId:tempId}); } catch {}
       const savedPhone = normalizePhone(form.phone);
@@ -466,7 +475,7 @@ export default function RegisterPage() {
                 <div>
                   <div style={{fontWeight:800,fontSize:15,color:'var(--text)',marginBottom:4}}>I am a Boda Boda Rider</div>
                   <div style={{fontSize:12,color:'var(--muted)',lineHeight:1.6}}>
-                    Bail cover, income stipend, funeral cover & Shield Tokens
+                    Full protection: bail cover, income stipend, funeral cover + Shield Tokens
                   </div>
                   <div style={{display:'flex',gap:6,marginTop:8,flexWrap:'wrap'}}>
                     {['🚔 Bail KES 20k','💰 Stipend KES 15k','🕊️ Funeral KES 200k','🪙 Tokens'].map(t=>(
@@ -485,9 +494,9 @@ export default function RegisterPage() {
                 onMouseLeave={e=>{e.currentTarget.style.borderColor='var(--border)';e.currentTarget.style.boxShadow='none';}}>
                 <div style={{width:48,height:48,borderRadius:12,background:'linear-gradient(135deg,#8B5CF6,#5B21B6)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:24,flexShrink:0}}>🕊️</div>
                 <div>
-                  <div style={{fontWeight:800,fontSize:14,color:'var(--text)',marginBottom:4}}>Funeral Cover (Non-Rider)</div>
+                  <div style={{fontWeight:800,fontSize:15,color:'var(--text)',marginBottom:4}}>I am NOT a Rider — Funeral Cover Only</div>
                   <div style={{fontSize:12,color:'var(--muted)',lineHeight:1.6}}>
-                    Funeral protection for you and your household — no bike needed
+                    Funeral protection for you and your household dependants — no bike required
                   </div>
                   <div style={{display:'flex',gap:6,marginTop:8,flexWrap:'wrap'}}>
                     {['🕊️ Funeral KES 200k','👨‍👩‍👧 Covers dependants','📋 Easy claims'].map(t=>(
