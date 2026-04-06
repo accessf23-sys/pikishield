@@ -262,11 +262,11 @@ function MemberRegister({ onBack }) {
     nationalId:'', county:'Nairobi',
     // NOK details
     nokName:'', nokPhone:'', nokRelationship:'',
-    // Family members (up to 3)
-    members:[
-      {name:'',dob:'',relationship:''},
-      {name:'',dob:'',relationship:''},
-      {name:'',dob:'',relationship:''},
+    // Household nominees (up to 3)
+    household:[
+      {name:'',dob:'',relationship:'',nationalId:''},
+      {name:'',dob:'',relationship:'',nationalId:''},
+      {name:'',dob:'',relationship:'',nationalId:''},
     ],
   });
   const up = (k,v) => setForm(f=>({...f,[k]:v}));
@@ -288,8 +288,6 @@ function MemberRegister({ onBack }) {
       if (!form.nokName.trim()) return setError("Next of Kin's name is required");
       if (!form.nokPhone.trim()) return setError("Next of Kin's phone is required");
       if (!form.nokRelationship) return setError("Please select your relationship to your Next of Kin");
-      const filledMembers = form.members.filter(m=>m.name.trim());
-      if (filledMembers.length===0) return setError('Please add at least 1 family member to nominate');
       setError(''); setStep(3);
     }
   };
@@ -300,12 +298,13 @@ function MemberRegister({ onBack }) {
     if (form.password!==form.confirmPassword) return setError('Passwords do not match');
     setError(''); setLoading(true);
     try {
+      const householdMembers = form.household.filter(h=>h.name.trim());
       await register({
         ...form,
         phone: normalizePhone(form.phone),
         tempUploadId: tempId,
         registrationType: 'funeral_member',
-        members: form.members.filter(m=>m.name.trim()),
+        householdMembers,
       });
       try { await documentsAPI.attachKyc({tempUploadId:tempId}); } catch {}
       const savedPhone = normalizePhone(form.phone);
@@ -396,6 +395,37 @@ function MemberRegister({ onBack }) {
                   <option value="other">Other</option>
                 </select></div>
             </div>
+          </div>
+          {/* Household nominees */}
+          <div style={{background:'#F5F3FF',border:'1px solid #DDD6FE',borderRadius:10,padding:'14px 16px',marginBottom:16}}>
+            <div style={{fontSize:12,fontWeight:700,color:'#5B21B6',marginBottom:10}}>👨‍👩‍👧 Household Nominees (up to 3)</div>
+            <div style={{fontSize:11,color:'var(--muted)',marginBottom:12}}>Add up to 3 household members to be covered under your funeral policy (max age 70)</div>
+            {form.household.map((h,i)=>(
+              <div key={i} style={{background:'white',borderRadius:8,padding:'12px',marginBottom:10,border:'1px solid #DDD6FE'}}>
+                <div style={{fontSize:11,fontWeight:700,color:'#5B21B6',marginBottom:8}}>Member {i+1} {i===0?'':'(optional)'}</div>
+                <div className="two-col">
+                  <div className="form-group" style={{marginBottom:8}}><label className="form-label">Full Name</label>
+                    <input className="form-input" placeholder="Full name" value={h.name}
+                      onChange={e=>{const hh=[...form.household];hh[i]={...hh[i],name:e.target.value};up('household',hh);}}/></div>
+                  <div className="form-group" style={{marginBottom:8}}><label className="form-label">Date of Birth</label>
+                    <input className="form-input" type="date" value={h.dob}
+                      onChange={e=>{const hh=[...form.household];hh[i]={...hh[i],dob:e.target.value};up('household',hh);}}/></div>
+                  <div className="form-group" style={{marginBottom:0}}><label className="form-label">Relationship</label>
+                    <select className="form-input" value={h.relationship}
+                      onChange={e=>{const hh=[...form.household];hh[i]={...hh[i],relationship:e.target.value};up('household',hh);}}>
+                      <option value="">Select…</option>
+                      <option value="spouse">Spouse</option>
+                      <option value="child">Child</option>
+                      <option value="parent">Parent</option>
+                      <option value="sibling">Sibling</option>
+                      <option value="other">Other</option>
+                    </select></div>
+                  <div className="form-group" style={{marginBottom:0}}><label className="form-label">National ID</label>
+                    <input className="form-input" placeholder="ID number" value={h.nationalId}
+                      onChange={e=>{const hh=[...form.household];hh[i]={...hh[i],nationalId:e.target.value};up('household',hh);}}/></div>
+                </div>
+              </div>
+            ))}
           </div>
           <div style={{display:'flex',gap:10}}>
             <button className="btn btn-secondary" type="button" onClick={()=>setStep(1)}>← Back</button>
