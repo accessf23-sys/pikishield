@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { documentsAPI } from '../utils/api';
+import { documentsAPI, authAPI } from '../utils/api';
 import CameraCapture from '../components/CameraCapture';
 import PikiLogo from '../components/PikiLogo';
 
@@ -257,16 +257,21 @@ function MemberRegister({ onBack }) {
   const [loading, setLoading] = useState(false);
   const [kycDocs, setKycDocs] = useState({});
   const tempId = useRef(`mem-${Date.now()}`).current;
+  const nokTempId = useRef(`nok-${Date.now()}`).current;
+  const [nokDocs, setNokDocs] = useState({});
+  const [nokResult, setNokResult] = useState(null);
   const [form, setForm] = useState({
     fullName:'', phone:'', email:'', password:'', confirmPassword:'',
     nationalId:'', county:'Nairobi',
-    // NOK details
     nokName:'', nokPhone:'', nokRelationship:'',
+    household:[],
   });
+  const [nokPassword, setNokPassword] = useState('');
   const up = (k,v) => setForm(f=>({...f,[k]:v}));
   const handleUploaded = (docType, doc) => setKycDocs(prev=>({...prev,[docType]:doc}));
+  const handleNokUploaded = (docType, doc) => setNokDocs(prev=>({...prev,[docType]:doc}));
 
-  const STEPS = ['Account','Personal Info','Documents'];
+  const STEPS = ['Account','Personal Info','Documents','NOK Setup'];
 
   const next = (e) => {
     e.preventDefault();
@@ -292,19 +297,34 @@ function MemberRegister({ onBack }) {
     if (form.password!==form.confirmPassword) return setError('Passwords do not match');
     setError(''); setLoading(true);
     try {
+      const householdMembers = form.household.filter(h=>h.name.trim());
       await register({
         ...form,
         phone: normalizePhone(form.phone),
         tempUploadId: tempId,
-        registrationType: 'funeral_member',  // tells backend to create as member role
+        registrationType: 'funeral_member',
+        householdMembers,
       });
       try { await documentsAPI.attachKyc({tempUploadId:tempId}); } catch {}
-      const savedPhone = normalizePhone(form.phone);
-      window.confirm(
-        `✅ Registration successful!\n\n📱 Phone: ${savedPhone}\n🔑 Password: ${form.password}\n\nIMPORTANT: Save these credentials — you will need them to log in.\n\nYour account is pending KYC verification. You will be notified once approved.\n\nPress OK to go to login.`
-      );
-      navigate('/login');
+      setStep(4);
     } catch (err) { setError(err.response?.data?.error || 'Registration failed'); }
+    finally { setLoading(false); }
+  };
+
+  const handleNokRegister = async () => {
+    if (!form.nokName||!form.nokPhone||!nokPassword) return setError('NOK name, phone and password are required');
+    setLoading(true); setError('');
+    try {
+      const res = await authAPI.registerNok({
+        fullName: form.nokName,
+        phone: normalizePhone(form.nokPhone),
+        nationalId: form.nokNationalId || '',
+        password: nokPassword,
+        tempUploadId: nokTempId,
+      });
+      try { await documentsAPI.attachKyc({tempUploadId: nokTempId}); } catch {}
+      setNokResult(res.data);
+    } catch(err){ setError(err.response?.data?.error||'NOK registration failed'); }
     finally { setLoading(false); }
   };
 
@@ -332,10 +352,10 @@ function MemberRegister({ onBack }) {
       </div>
 
       <h2 style={{fontSize:22,fontWeight:800,marginBottom:2}}>
-        {step===1?'Create Your Account':step===2?'Personal & NOK Details':'Upload Documents'}
+        {step===1?'Create Your Account':step===2?'Personal & NOK Details':step===3?'Upload Documents':'NOK Setup'}
       </h2>
       <p className="text-muted" style={{marginBottom:18,fontSize:12}}>
-        {step===1?'Step 1 of 3 — Account details':step===2?'Step 2 of 3 — ID & Next of Kin':'Step 3 of 3 — Identity verification'}
+        {step===1?'Step 1 of 4 — Account details':step===2?'Step 2 of 4 — ID & Next of Kin':step===3?'Step 3 of 4 — Identity verification':'Step 4 of 4 — Register your NOK'}
       </p>
       {error && <div className="alert alert-error">{error}</div>}
 
@@ -371,7 +391,7 @@ function MemberRegister({ onBack }) {
           </div>
           {/* NOK details */}
           <div style={{background:'#F0FDF4',border:'1px solid var(--green-border)',borderRadius:10,padding:'14px 16px',marginBottom:16}}>
-            <div style={{fontSize:12,fontWeight:700,color:'var(--green)',marginBottom:10}}>👨‍👩‍👧 Next of Kin Details (Required)</div>
+            <div style={{fontSize:12,fontWeight:700,color:'var(--green)',marginBottom:10}}>👤 Next of Kin Details (Required)</div>
             <div className="form-group" style={{marginBottom:8}}><label className="form-label">NOK Full Name *</label>
               <input className="form-input" placeholder="e.g. Peter Wanjiru" value={form.nokName} onChange={e=>up('nokName',e.target.value)} required/></div>
             <div className="two-col">
@@ -387,6 +407,45 @@ function MemberRegister({ onBack }) {
                   <option value="other">Other</option>
                 </select></div>
             </div>
+          </div>
+          {/* Household nominees */}
+          <div style={{background:'#F5F3FF',border:'1px solid #DDD6FE',borderRadius:10,padding:'14px 16px',marginBottom:16}}>
+            <div style={{fontSize:12,fontWeight:700,color:'#5B21B6',marginBottom:4}}>👨‍👩‍👧 Nominate Household Members</div>
+            <div style={{fontSize:11,color:'var(--muted)',marginBottom:12}}>Up to 3 members · Maximum age 70 years</div>
+            {form.household.map((h,i)=>(
+              <div key={i} style={{background:'white',borderRadius:8,padding:'12px',marginBottom:10,border:'1px solid #DDD6FE'}}>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+                  <div style={{fontSize:11,fontWeight:700,color:'#5B21B6'}}>Member {i+1}</div>
+                  <button type="button" onClick={()=>up('household',form.household.filter((_,idx)=>idx!==i))}
+                    style={{background:'none',border:'none',color:'#EF4444',cursor:'pointer',fontSize:16}}>✕</button>
+                </div>
+                <div className="two-col">
+                  <div className="form-group" style={{marginBottom:8}}><label className="form-label">Full Name</label>
+                    <input className="form-input" placeholder="Full name" value={h.name}
+                      onChange={e=>{const hh=[...form.household];hh[i]={...hh[i],name:e.target.value};up('household',hh);}}/></div>
+                  <div className="form-group" style={{marginBottom:8}}><label className="form-label">Age (max 70)</label>
+                    <input className="form-input" type="number" placeholder="e.g. 45" min="1" max="70" value={h.age||''}
+                      onChange={e=>{if(parseInt(e.target.value)>70){setError('Maximum age is 70');return;}setError('');const hh=[...form.household];hh[i]={...hh[i],age:e.target.value};up('household',hh);}}/></div>
+                  <div className="form-group" style={{marginBottom:0,gridColumn:'1/-1'}}><label className="form-label">Relationship</label>
+                    <select className="form-input" value={h.relationship}
+                      onChange={e=>{const hh=[...form.household];hh[i]={...hh[i],relationship:e.target.value};up('household',hh);}}>
+                      <option value="">Select…</option>
+                      <option value="mother">Mother</option>
+                      <option value="father">Father</option>
+                      <option value="spouse">Spouse</option>
+                      <option value="child">Child</option>
+                      <option value="sibling">Sibling</option>
+                    </select></div>
+                </div>
+              </div>
+            ))}
+            {form.household.length < 3 && (
+              <button type="button"
+                onClick={()=>up('household',[...form.household,{name:'',age:'',relationship:''}])}
+                style={{width:'100%',padding:'10px',borderRadius:8,border:'1.5px dashed #A78BFA',background:'transparent',color:'#5B21B6',fontWeight:700,fontSize:13,cursor:'pointer'}}>
+                + Add Member
+              </button>
+            )}
           </div>
           <div style={{display:'flex',gap:10}}>
             <button className="btn btn-secondary" type="button" onClick={()=>setStep(1)}>← Back</button>
@@ -406,14 +465,77 @@ function MemberRegister({ onBack }) {
           <div style={{display:'flex',gap:10}}>
             <button className="btn btn-secondary" type="button" onClick={()=>setStep(2)}>← Back</button>
             <button className="btn btn-primary btn-lg" style={{flex:1,justifyContent:'center',background:'var(--violet)',borderColor:'var(--violet)'}} type="submit" disabled={loading}>
-              {loading?'⏳ Creating account…':'🕊️ Create Funeral Cover Account'}</button>
+              {loading?'⏳ Creating account…':'Continue to NOK Setup →'}</button>
           </div>
         </form>
+      )}
+
+      {step===4 && (
+        <div>
+          {!nokResult ? (
+            <>
+              <div style={{background:'#F0FDF4',border:'1px solid var(--green-border)',borderRadius:10,padding:'14px 16px',marginBottom:16}}>
+                <div style={{fontSize:12,fontWeight:700,color:'var(--green)',marginBottom:6}}>🔗 Why register a NOK?</div>
+                <div style={{fontSize:12,color:'var(--muted)',lineHeight:1.6}}>
+                  If you pass away, your NOK can log in using their unique NOK number and lodge a funeral claim on behalf of the family — without needing your credentials.
+                </div>
+              </div>
+              <div className="form-group"><label className="form-label">NOK Full Name *</label>
+                <input className="form-input" placeholder="e.g. Jane Wanjiru" value={form.nokName} readOnly style={{background:'var(--bg)'}}/></div>
+              <div className="form-group"><label className="form-label">NOK Phone *</label>
+                <input className="form-input" value={form.nokPhone} readOnly style={{background:'var(--bg)'}}/></div>
+              <div className="form-group"><label className="form-label">NOK National ID</label>
+                <input className="form-input" placeholder="12345678" value={form.nokNationalId||''} onChange={e=>up('nokNationalId',e.target.value)}/></div>
+              <div className="form-group"><label className="form-label">NOK Password (they will use this to log in) *</label>
+                <input className="form-input" type="password" placeholder="Min 8 characters" value={nokPassword} onChange={e=>setNokPassword(e.target.value)}/></div>
+              <div style={{marginBottom:16}}>
+                <KycUploader label="NOK National ID Copy" docType="nok_id" required={false} onUploaded={handleNokUploaded} tempId={nokTempId} uploaded={nokDocs.nok_id}/>
+              </div>
+              {error && <div className="alert alert-error">{error}</div>}
+              <div style={{display:'flex',gap:10,marginTop:8}}>
+                <button className="btn btn-secondary" type="button"
+                  onClick={()=>{
+                    const phone = normalizePhone(form.phone);
+                    window.alert(`✅ Account created!\n\n📱 Phone: ${phone}\n🔑 Password: ${form.password}\n\nSave these credentials. You can register your NOK later from your dashboard.`);
+                    navigate('/login');
+                  }}>
+                  Skip (do later)
+                </button>
+                <button className="btn btn-primary btn-lg" style={{flex:1,justifyContent:'center',background:'var(--violet)',borderColor:'var(--violet)'}}
+                  disabled={loading} onClick={handleNokRegister}>
+                  {loading?'⏳ Registering…':'🔗 Register NOK Account'}
+                </button>
+              </div>
+            </>
+          ) : (
+            <div style={{textAlign:'center',padding:'20px 0'}}>
+              <div style={{fontSize:48,marginBottom:16}}>🎉</div>
+              <h3 style={{fontSize:20,fontWeight:800,marginBottom:8}}>All Done!</h3>
+              <p style={{fontSize:13,color:'var(--muted)',marginBottom:20}}>Save these credentials carefully</p>
+              <div style={{background:'var(--navy)',borderRadius:14,padding:'20px',marginBottom:20,textAlign:'left'}}>
+                {[
+                  ['Your Phone', normalizePhone(form.phone)],
+                  ['Your Password', form.password],
+                  ['NOK Login Number', nokResult.nokNumber||'—'],
+                  ['NOK Password', nokPassword],
+                ].map(([l,v])=>(
+                  <div key={l} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'10px 0',borderBottom:'1px solid rgba(255,255,255,.08)'}}>
+                    <span style={{fontSize:12,color:'rgba(255,255,255,.5)'}}>{l}</span>
+                    <span style={{fontSize:13,fontWeight:700,color:'white',fontFamily:'monospace',letterSpacing:1}}>{v}</span>
+                  </div>
+                ))}
+              </div>
+              <button className="btn btn-primary btn-lg" style={{width:'100%',justifyContent:'center',background:'var(--violet)'}}
+                onClick={()=>navigate('/login')}>
+                Go to Login →
+              </button>
+            </div>
+          )}
+        </div>
       )}
     </>
   );
 }
-
 // ── MAIN RegisterPage with type selector ────────────────────────────────────
 export default function RegisterPage() {
   // null = not chosen yet, 'rider' = boda boda rider, 'member' = funeral member
