@@ -588,4 +588,19 @@ router.delete('/:id', auth, async (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+
+router.post('/admin/reset-all-data', auth, async (req, res) => {
+  try {
+    if (req.user.role !== 'superadmin') return res.status(403).json({ error: 'Forbidden' });
+    const Policy = require('../models/Policy');
+    const Claim = require('../models/Claim');
+    const Payment = require('../models/Payment');
+    await Policy.deleteMany({});
+    await Claim.deleteMany({});
+    await Payment.deleteMany({});
+    await User.deleteMany({ role: { $nin: ['superadmin'] } });
+    res.json({ message: 'All data cleared. Superadmin intact.' });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 module.exports = router;
