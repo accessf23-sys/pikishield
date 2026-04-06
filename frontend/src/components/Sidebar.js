@@ -26,9 +26,8 @@ const NAV = {
   superadmin: [
     { label: 'Overview', icon: '', path: '/admin' },
     { label: 'Claims Review', icon: '', path: '/admin/claims' },
-    { label: 'Members', icon: '', path: '/admin/users' },
+    { label: 'Admins', icon: '', path: '/admin/users' },
     { label: 'Field Agents', icon: '', path: '/admin/agents' },
-    { label: 'Admins', icon: '', path: '/admin/admins' },
   ],
   agent: [
     { label: 'Dashboard', icon: '', path: '/agent' },
