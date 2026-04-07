@@ -602,5 +602,26 @@ router.post('/admin/reset-all-data', auth, async (req, res) => {
     res.json({ message: 'All data cleared. Superadmin intact.' });
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
+// ADD THIS ROUTE to backend/src/routes/users.js
+// Place it anywhere before the module.exports line.
+// It lets a logged-in NOK fetch the member they are linked to.
 
+router.get('/nok/linked-member', auth, async (req, res) => {
+  try {
+    if (req.user.role !== 'nok') {
+      return res.status(403).json({ error: 'Only NOK accounts can access this endpoint' });
+    }
+    if (!req.user.nokFor) {
+      return res.status(404).json({ error: 'No linked member found' });
+    }
+    const member = await User.findById(req.user.nokFor)
+      .select('fullName phone memberNumber kycStatus createdAt profile');
+    if (!member) {
+      return res.status(404).json({ error: 'Linked member not found' });
+    }
+    res.json({ member });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
 module.exports = router;
