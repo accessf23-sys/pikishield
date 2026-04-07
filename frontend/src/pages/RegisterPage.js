@@ -259,6 +259,7 @@ function MemberRegister({ onBack }) {
   const [nokDocs, setNokDocs] = React.useState({});
   const [nokResult, setNokResult] = React.useState(null);
   const [nokPassword, setNokPassword] = React.useState('');
+  const [nokSubmitted, setNokSubmitted] = React.useState(false);
   const tempId = React.useRef(`mem-${Date.now()}`).current;
   const nokTempId = React.useRef(`nok-${Date.now()}`).current;
   const [form, setForm] = React.useState({
@@ -307,12 +308,14 @@ function MemberRegister({ onBack }) {
   const handleNokRegister = async () => {
     if (!nokPassword) return setError('NOK password is required');
     if (nokPassword.length<8) return setError('NOK password must be at least 8 characters');
+    if (nokSubmitted) return;
+    setNokSubmitted(true);
     setLoading(true); setError('');
     try {
       const res = await authAPI.registerNok({ fullName: form.nokName, phone: normalizePhone(form.nokPhone), nationalId: form.nokNationalId||'', password: nokPassword, tempUploadId: nokTempId });
       try { await documentsAPI.attachKyc({tempUploadId: nokTempId}); } catch {}
       setNokResult(res.data);
-    } catch(err){ setError(err.response?.data?.error||'NOK registration failed'); }
+    } catch(err){ setError(err.response?.data?.error||'NOK registration failed'); setNokSubmitted(false); }
     finally { setLoading(false); }
   };
 
