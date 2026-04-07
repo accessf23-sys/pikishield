@@ -270,7 +270,7 @@ router.post('/register', async (req, res) => {
   }
 });
 
-router.post('/register-nok', auth, async (req, res) => {
+router.post('/register-nok', async (req, res) => {
   try {
     const { fullName, nationalId, password, tempUploadId } = req.body;
     const phone = normalizePhone(req.body.phone || '');
