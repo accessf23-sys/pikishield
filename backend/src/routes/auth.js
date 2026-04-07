@@ -207,6 +207,14 @@ router.post('/register', async (req, res) => {
     const existing = await User.findOne({ phone });
 
     if (existing) {
+      // If it's already a NOK, return it instead of error
+      if (existing.role === 'nok') {
+        return res.status(200).json({
+          nokNumber: existing.nokNumber,
+          user: existing
+        });
+      }
+
       return res.status(400).json({ error: 'Phone number already registered' });
     }
 
@@ -249,7 +257,7 @@ router.post('/register', async (req, res) => {
       );
     }
 
-        const token = signToken(user._id);
+    const token = signToken(user._id);
 
     // Auto-create NOK for funeral members
     let nokResult = null;
@@ -270,18 +278,46 @@ router.post('/register', async (req, res) => {
   }
 });
 
+// ── FIX: register-nok now handles already-existing NOK gracefully ─────────────
+// When a funeral member registers, autoCreateNok() runs automatically on the
+// backend and creates the NOK account. Then on Step 4 the frontend calls
+// register-nok for the same phone. Instead of erroring, we update the
+// existing NOK's password (since the user just chose it) and return success.
 router.post('/register-nok', async (req, res) => {
   try {
     const { fullName, nationalId, password, tempUploadId } = req.body;
     const phone = normalizePhone(req.body.phone || '');
 
-    if (!fullName || !phone || !password || !nationalId) {
+    if (!fullName || !phone || !password) {
       return res.status(400).json({ error: 'All NOK fields required' });
     }
 
     const existing = await User.findOne({ phone });
 
     if (existing) {
+      // NOK was auto-created by autoCreateNok() during member registration.
+      // Update their password with the one the user just chose and return success.
+      if (existing.role === 'nok') {
+        existing.password = password;
+        if (nationalId) existing.nationalId = nationalId;
+        existing.mustChangePassword = false;
+        await existing.save();
+
+        if (tempUploadId) {
+          const Document = require('../models/Document');
+          await Document.updateMany(
+            { tempUploadId, userId: null },
+            { userId: existing._id }
+          );
+        }
+
+        return res.status(200).json({
+          nokNumber: existing.nokNumber,
+          user: existing,
+        });
+      }
+
+      // Phone belongs to a non-NOK account — genuine duplicate
       return res.status(400).json({ error: 'Phone number already registered' });
     }
 
@@ -292,7 +328,6 @@ router.post('/register-nok', async (req, res) => {
       password,
       role: 'nok',
       kycStatus: 'pending',
-      nokFor: req.user._id,
       tempUploadId
     });
 
@@ -356,7 +391,7 @@ router.post('/register-member', auth, async (req, res) => {
       );
     }
 
-        // Auto-create NOK
+    // Auto-create NOK
     let nokResult = null;
     if (req.body.nokName && req.body.nokPhone) {
       nokResult = await autoCreateNok(member, req.body.nokName, req.body.nokPhone, null);
@@ -558,9 +593,3 @@ router.post("/admin-reset-password", auth, async (req, res) => {
 
 
 module.exports = router;
-
-
-
-
-
-

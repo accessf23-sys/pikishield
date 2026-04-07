@@ -119,6 +119,7 @@ function RiderRegister({ onBack }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return; // prevent double submit
     const missing = [];
     if (!kycDocs.national_id) missing.push('National ID');
     if (!kycDocs.riders_license) missing.push("Rider's License");
@@ -259,7 +260,7 @@ function MemberRegister({ onBack }) {
   const [nokDocs, setNokDocs] = React.useState({});
   const [nokResult, setNokResult] = React.useState(null);
   const [nokPassword, setNokPassword] = React.useState('');
-  const [nokSubmitted, setNokSubmitted] = React.useState(false);
+  const [nokSubmitted, setNokSubmitted] = React.useState(false); // ← double-submit guard
   const tempId = React.useRef(`mem-${Date.now()}`).current;
   const nokTempId = React.useRef(`nok-${Date.now()}`).current;
   const [form, setForm] = React.useState({
@@ -294,6 +295,7 @@ function MemberRegister({ onBack }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return; // prevent double submit
     if (!kycDocs.national_id) return setError('Please upload your National ID');
     setError(''); setLoading(true);
     try {
@@ -305,18 +307,38 @@ function MemberRegister({ onBack }) {
     finally { setLoading(false); }
   };
 
-  const handleNokRegister = async () => {
+  // ── FIX: NOK registration with proper double-submit prevention ──
+  const handleNokRegister = async (e) => {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
     if (!nokPassword) return setError('NOK password is required');
-    if (nokPassword.length<8) return setError('NOK password must be at least 8 characters');
-    if (nokSubmitted) return;
-    setNokSubmitted(true);
-    setLoading(true); setError('');
+    if (nokPassword.length < 8) return setError('NOK password must be at least 8 characters');
+    if (nokSubmitted || loading) return; // ← hard block on double-submit
+    setNokSubmitted(true); // ← set BEFORE the async call
+    setLoading(true);
+    setError('');
     try {
-      const res = await authAPI.registerNok({ fullName: form.nokName, phone: normalizePhone(form.nokPhone), nationalId: form.nokNationalId||'', password: nokPassword, tempUploadId: nokTempId });
-      try { await documentsAPI.attachKyc({tempUploadId: nokTempId}); } catch {}
+      const res = await authAPI.registerNok({
+        fullName: form.nokName,
+        phone: normalizePhone(form.nokPhone),
+        nationalId: form.nokNationalId || '',
+        password: nokPassword,
+        tempUploadId: nokTempId,
+      });
+      try { await documentsAPI.attachKyc({ tempUploadId: nokTempId }); } catch {}
       setNokResult(res.data);
-    } catch(err){ setError(err.response?.data?.error||'NOK registration failed'); setNokSubmitted(false); }
-    finally { setLoading(false); }
+    } catch (err) {
+      const msg = err.response?.data?.error || 'NOK registration failed';
+      // If the NOK phone was already auto-created by the backend during step 3,
+      // treat it as a success rather than showing an error.
+      if (msg.toLowerCase().includes('already registered')) {
+        setNokResult({ nokNumber: 'See your dashboard', alreadyExisted: true });
+      } else {
+        setError(msg);
+        setNokSubmitted(false); // only re-enable on genuine errors
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -468,8 +490,15 @@ function MemberRegister({ onBack }) {
               {error && <div className="alert alert-error">{error}</div>}
               <div style={{display:'flex',gap:10,marginTop:8}}>
                 <button className="btn btn-secondary" type="button" onClick={()=>{window.alert(`✅ Account created!\n\nPhone: ${normalizePhone(form.phone)}\nPassword: ${form.password}\n\nSave these credentials.`);navigate('/login');}}>Skip</button>
-                <button className="btn btn-primary btn-lg" style={{flex:1,justifyContent:'center',minWidth:0,background:'var(--violet)'}} disabled={loading} onClick={handleNokRegister}>
-                  {loading?'⏳…':'🔗 Register NOK'}
+                {/* FIX: disabled when loading OR already submitted — prevents double-click race condition */}
+                <button
+                  type="button"
+                  className="btn btn-primary btn-lg"
+                  style={{flex:1,justifyContent:'center',minWidth:0,background:'var(--violet)'}}
+                  disabled={loading || nokSubmitted}
+                  onClick={handleNokRegister}
+                >
+                  {loading ? '⏳ Registering…' : '🔗 Register NOK'}
                 </button>
               </div>
             </>
@@ -498,7 +527,6 @@ function MemberRegister({ onBack }) {
 
 // ── MAIN RegisterPage with type selector ────────────────────────────────────
 export default function RegisterPage() {
-  // null = not chosen yet, 'rider' = boda boda rider, 'member' = funeral member
   const [regType, setRegType] = useState(null);
 
   return (
@@ -529,7 +557,6 @@ export default function RegisterPage() {
       <div className="auth-form-panel">
         <div className="auth-form-inner">
 
-          {/* ── TYPE SELECTOR — shown first ── */}
           {!regType && (
             <>
               <h2 style={{fontSize:22,fontWeight:800,marginBottom:4}}>Create Your Account</h2>
@@ -537,7 +564,6 @@ export default function RegisterPage() {
                 Choose the type of protection you need
               </p>
 
-              {/* Rider option */}
               <button type="button" onClick={()=>setRegType('rider')}
                 style={{width:'100%',background:'white',border:'2px solid var(--border)',borderRadius:14,
                   padding:'20px 18px',marginBottom:12,cursor:'pointer',textAlign:'left',
@@ -558,7 +584,6 @@ export default function RegisterPage() {
                 </div>
               </button>
 
-              {/* Funeral member option */}
               <button type="button" onClick={()=>setRegType('member')}
                 style={{width:'100%',background:'white',border:'2px solid var(--border)',borderRadius:14,
                   padding:'20px 18px',marginBottom:24,cursor:'pointer',textAlign:'left',
