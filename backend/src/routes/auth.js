@@ -555,34 +555,7 @@ router.post("/admin-reset-password", auth, async (req, res) => {
 });
 
 
-router.post('/register-nok', async (req, res) => {
-  try {
-    const { fullName, phone, nationalId, password, policyId } = req.body;
-    const normalizePhone = (p='') => {
-      let s = String(p).replace(/[^0-9]/g,'');
-      if (s.startsWith('0')) s = '254'+s.slice(1);
-      else if (!s.startsWith('254')) s = '254'+s;
-      return s;
-    };
-    if (!fullName || !phone || !password) return res.status(400).json({ error: 'Name, phone and password required' });
-    const normalizedPhone = normalizePhone(phone);
-    const existing = await User.findOne({ phone: normalizedPhone });
-    if (existing) return res.status(400).json({ error: 'Phone number already registered' });
 
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    let nokNumber = 'NOK-';
-    for (let i=0; i<6; i++) nokNumber += chars[Math.floor(Math.random()*chars.length)];
-
-    const hashed = await bcrypt.hash(password, 10);
-    const nok = new User({
-      fullName, phone: normalizedPhone, password: hashed,
-      role: 'nok', nokNumber, nationalId: nationalId||'',
-      kycStatus: 'pending',
-    });
-    await nok.save();
-    res.status(201).json({ message: 'NOK registered', nokNumber, nokId: nok._id });
-  } catch(e) { res.status(500).json({ error: e.message }); }
-});
 
 module.exports = router;
 
