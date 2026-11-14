@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { policiesAPI, usersAPI } from '../utils/api';
 
+import { getCache, setCache } from '../utils/pageCache';
 const REDEEM = [
   { label:'Data Bundle 500MB',          tokens:50,   value:'data_500mb',      icon:'' },
   { label:'5% Contribution Discount',   tokens:80,   value:'contrib_5pct',    icon:'' },
@@ -192,11 +193,11 @@ export default function TokensPage() {
     return Math.max(0, Math.ceil(h));
   };
 
-  const [policies, setPolicies] = React.useState([]);
-  const [policiesLoading, setPoliciesLoading] = React.useState(true);
+  const [policies, setPolicies] = React.useState(getCache('policies') || []);
+  const [policiesLoading, setPoliciesLoading] = React.useState(!getCache('policies'));
   React.useEffect(() => {
     policiesAPI.getMyPolicies()
-      .then(r => setPolicies(r.data || []))
+      .then(r => { setCache('policies', r.data || []); setPolicies(r.data || []); })
       .catch(()=>{})
       .finally(() => setPoliciesLoading(false));
   }, []);

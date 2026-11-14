@@ -4,6 +4,7 @@ import CameraCapture from '../components/CameraCapture';
 import { useAuth } from '../context/AuthContext';
 import DocumentUploader from '../components/DocumentUploader';
 
+import { getCache, setCache } from '../utils/pageCache';
 const s = (v, fb = '') => v == null ? fb : typeof v === 'object' ? fb : String(v) || fb;
 const sd = (v) => s(v, '—');
 
@@ -282,10 +283,10 @@ export default function ClaimsPage() {
   const isNokOrMember = isNok || isMember;
   const canClaim = user?.role === 'rider' || isNok || isMember;
 
-  const [claims, setClaims] = useState([]);
+  const [claims, setClaims] = useState(getCache('claims') || []);
   const [policies, setPolicies] = useState([]);
   const [showForm, setShowForm] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!getCache('claims'));
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
@@ -311,11 +312,12 @@ export default function ClaimsPage() {
   });
 
   const load = async () => {
-    setLoading(true);
+    if (!getCache('claims')) setLoading(true);
     setError('');
 
     try {
       const claimsRes = await claimsAPI.getMyClaims();
+      setCache('claims', claimsRes.data || []);
       setClaims(claimsRes.data || []);
 
       if (isNokOrMember) {
@@ -364,6 +366,11 @@ export default function ClaimsPage() {
     if (form.type === 'income' && !isNok) {
       if (!form.doctorName.trim()) return setError("Please enter the attending doctor's name");
       if (!form.hospitalName.trim()) return setError('Please enter the hospital or clinic name');
+    }
+
+    if (form.type === 'income' && !isNokOrMember) {
+      const hasMedical = Object.values(uploadedDocs).flat().some(d => /medical|doctor/i.test((d && d.docType) || ''));
+      if (!hasMedical) return setError("Please attach the doctor's medical report for a stipend claim");
     }
 
     const derivedPolicyId = form.policyId || policies.find(p => p.coverages?.[form.type])?.id;
@@ -517,9 +524,9 @@ export default function ClaimsPage() {
                 <div className="form-group">
                   <label className="form-label">
                     Amount Requested (KES)
-                    {form.type === 'bail' && ' — Max KES 20,000'}
-                    {form.type === 'income' && ' — Max KES 15,000'}
-                    {form.type === 'funeral' && ' — Max KES 200,000 (no minimum)'}
+                    {form.type === 'bail' && ' — any amount up to KES 20,000'}
+                    {form.type === 'income' && ' — up to KES 15,000'}
+                    {form.type === 'funeral' && ' — up to KES 200,000 (no minimum)'}
                   </label>
                   <input
                     className="form-input"
@@ -541,6 +548,9 @@ export default function ClaimsPage() {
                     min={0}
                     max={form.type === 'bail' ? 20000 : form.type === 'income' ? 15000 : 200000}
                   />
+                  {form.type === 'bail' && (
+                    <p className="text-muted" style={{ fontSize: 11, marginTop: 4 }}>You can claim part of the limit. You do not have to claim the full KES 20,000.</p>
+                  )}
                 </div>
               )}
 
@@ -569,6 +579,9 @@ export default function ClaimsPage() {
               {form.type === 'income' && !isNok && (
                 <div style={{ background: '#EEF6F2', border: '1px solid var(--green-border)', borderRadius: 8, padding: '12px 14px', marginBottom: 14 }}>
                   <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--green)', marginBottom: 10 }}> Medical Details (Required for Stipend)</div>
+                  <div style={{ fontSize: 12, color: '#0B1F3A', background: '#fff', border: '1px solid var(--border)', borderRadius: 8, padding: '8px 10px', marginBottom: 10, lineHeight: 1.5 }}>
+                    If the claim is for an <strong>accident injury</strong>, you must attach the <strong>doctor's medical report</strong> below. A stipend claim cannot be processed without it.
+                  </div>
                   <div className="two-col">
                     <div className="form-group" style={{ marginBottom: 0 }}>
                       <label className="form-label">Doctor's Full Name *</label>

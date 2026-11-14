@@ -121,3 +121,17 @@ tr:hover td { background: #F7F9FA; }
 .table-wrap { border-radius: 12px; }
 /* icon boxes left empty after emoji removal */
 div[style*="justify-content: center"][style*="width"]:empty { display: none; }
+
+
+/* ── Phones: nothing may overflow the screen ── */
+:root { --violet: #3B4B6B; --violet-light: #EEF1F6; --violet-border: #C9D1E0; }
+@media (max-width: 768px) {
+  .two-col, .three-col { grid-template-columns: 1fr !important; }
+  .two-col > *, .three-col > * { min-width: 0; }
+  .card { min-width: 0; max-width: 100%; box-sizing: border-box; }
+  .form-input, select.form-input, textarea.form-input { max-width: 100%; width: 100%; box-sizing: border-box; }
+  .page-body { overflow-x: hidden; }
+  .page-body * { max-width: 100%; }
+  .page-body table { max-width: none; }
+  .page-body svg { max-width: none; }
+}

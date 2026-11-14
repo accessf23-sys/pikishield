@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import PikiLogo from '../components/PikiLogo';
 import AuthTabs from '../components/AuthTabs';
+import { clearCache } from '../utils/pageCache';
 import { RegisterPanel } from './RegisterPage';
 
 // Plans shown on the sign-in screen. Keep in sync with the Terms and Conditions.
@@ -23,6 +24,7 @@ export default function LoginPage({ initialMode = 'login' }) {
   const [loading, setLoading]   = useState(false);
 
   const doLogin = async (identifier, pw) => {
+    clearCache(); // never show a previous user's saved data
     setError('');
     setLoading(true);
     try {

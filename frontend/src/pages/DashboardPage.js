@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { usersAPI } from '../utils/api';
 import Icon from '../components/Icons';
 
+import { getCache, setCache } from '../utils/pageCache';
 /* ── Animated SVG Hero ────────────────────────────────────────── */
 function HeroBanner({ user, totalDailyContrib, policies }) {
   const navigate = useNavigate();
@@ -249,12 +250,12 @@ function QuickAction({ icon, label, sub, color, onClick }) {
 export default function DashboardPage() {
   const { user, refreshUser } = useAuth();
   const navigate      = useNavigate();
-  const [data, setData]       = useState({policies:[],totalPayouts:0,pendingClaims:0,approvedClaims:0,monthlyData:[],allPolicies:[]});
+  const [data, setData]       = useState(getCache('dash') || {policies:[],totalPayouts:0,pendingClaims:0,approvedClaims:0,monthlyData:[],allPolicies:[]});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     usersAPI.getDashboard()
-      .then(r => setData(r.data))
+      .then(r => { setCache('dash', r.data); setData(r.data); })
       .catch(err => console.error('Dashboard Fetch Error:', err))
       .finally(() => setLoading(false));
   }, []);

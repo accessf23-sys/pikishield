@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { usersAPI } from '../utils/api';
+import { getCache, setCache } from '../utils/pageCache';
 const s=(v,fb='')=>v==null?fb:typeof v==='object'?fb:String(v)||fb; const sd=(v)=>s(v,'—');
 
 
@@ -10,13 +11,13 @@ const TYPE_META = {
 };
 
 export default function TransactionsPage() {
-  const [txns, setTxns]     = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [txns, setTxns]     = useState(getCache('txns') || []);
+  const [loading, setLoading] = useState(!getCache('txns'));
   const [filter, setFilter] = useState('all');
 
   useEffect(() => {
-    setLoading(true);
-    usersAPI.getTransactions().then(r => setTxns(r.data)).catch(console.error).finally(()=>setLoading(false));
+    if (!getCache('txns')) setLoading(true);
+    usersAPI.getTransactions().then(r => { setCache('txns', r.data); setTxns(r.data); }).catch(console.error).finally(()=>setLoading(false));
   }, []);
 
   // Exclude contributions entirely

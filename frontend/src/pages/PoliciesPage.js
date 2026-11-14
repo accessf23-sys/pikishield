@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { policiesAPI } from '../utils/api';
 
+import { getCache, setCache } from '../utils/pageCache';
 const WAITING_PERIOD_MS = 150 * 24 * 60 * 60 * 1000;
 const getClaimDate = (startDate) => {
   const start = new Date(startDate);
@@ -10,15 +11,15 @@ const getClaimDate = (startDate) => {
 };
 
 export default function PoliciesPage() {
-  const [policies, setPolicies] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [policies, setPolicies] = useState(getCache('policies') || []);
+  const [loading, setLoading] = useState(!getCache('policies'));
   const [cancelling, setCancelling] = useState(null);
   const navigate = useNavigate();
 
   const load = () => {
-    setLoading(true);
+    if (!getCache('policies')) setLoading(true);
     policiesAPI.getMyPolicies()
-      .then(r => setPolicies(r.data))
+      .then(r => { setCache('policies', r.data); setPolicies(r.data); })
       .catch(err => console.error('Failed to load policies', err))
       .finally(() => setLoading(false));
   };

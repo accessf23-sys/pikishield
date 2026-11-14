@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { paymentsAPI, policiesAPI } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 
+import { getCache, setCache } from '../utils/pageCache';
 export default function PaymentsPage() {
   const { user } = useAuth();
   const kycApproved = user?.kycStatus === 'approved';
-  const [policies, setPolicies] = useState([]);
-  const [history, setHistory] = useState([]);
+  const [policies, setPolicies] = useState(getCache('pay_policies') || []);
+  const [history, setHistory] = useState(getCache('pay_history') || []);
   const [method, setMethod] = useState('mpesa');
   const [form, setForm] = useState({
     amount: '',
@@ -16,7 +17,7 @@ export default function PaymentsPage() {
     cardExpiry: '',
     cardCvv: ''
   });
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!getCache('pay_policies'));
   // eslint-disable-next-line no-unused-vars
   const [polling, setPolling] = useState(null);
   const [success, setSuccess] = useState('');
@@ -27,7 +28,7 @@ export default function PaymentsPage() {
     let mounted = true;
 
     const load = async () => {
-      setLoading(true);
+      if (!getCache('pay_policies')) setLoading(true);
       setError('');
 
       const [policiesResult, historyResult] = await Promise.allSettled([
@@ -39,6 +40,7 @@ export default function PaymentsPage() {
 
       if (policiesResult.status === 'fulfilled') {
         const active = (policiesResult.value.data || []).filter(p => p.status === 'active');
+        setCache('pay_policies', active);
         setPolicies(active);
         if (active.length > 0) {
           setForm(f => ({
@@ -53,6 +55,7 @@ export default function PaymentsPage() {
       }
 
       if (historyResult.status === 'fulfilled') {
+        setCache('pay_history', historyResult.value.data || []);
         setHistory(historyResult.value.data || []);
       } else {
         console.error('Failed to load payment history:', historyResult.reason);
@@ -236,7 +239,7 @@ export default function PaymentsPage() {
               </select>
 
               {selectedPolicy && (
-                <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
                   <button type="button" className="btn btn-secondary btn-sm" onClick={() => setForm(f => ({ ...f, amount: selectedPolicy.dailyContribution }))}>
                     Daily (KES {selectedPolicy.dailyContribution})
                   </button>
@@ -263,7 +266,7 @@ export default function PaymentsPage() {
               />
             </div>
 
-            <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
               {[
                 { key: 'mpesa', label: ' M-Pesa' },
                 { key: 'card', label: ' Card' },
