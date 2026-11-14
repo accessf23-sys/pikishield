@@ -226,10 +226,10 @@ export default function TokensPage() {
           <>
           {/* Show referral code even when locked */}
           {user?.referralCode && (
-            <div style={{background:'var(--electric-light)',border:'1.5px solid var(--electric)',borderRadius:6,padding:'14px 18px',marginBottom:16,display:'flex',alignItems:'center',gap:14}}>
+            <div style={{background:'var(--electric-light)',border:'1.5px solid var(--electric)',borderRadius:12,padding:'8px 12px',marginBottom:10,display:'flex',alignItems:'center',gap:10}}>
               <div style={{flex:1}}>
-                <div style={{fontSize:12,fontWeight:700,color:'var(--electric)',marginBottom:4}}>Your Referral Code</div>
-                <div style={{fontFamily:"'Source Serif 4',Georgia,serif",fontWeight:700,fontSize:24,letterSpacing:3,color:'var(--text)'}}>{user.referralCode}</div>
+                <div style={{fontSize:11,fontWeight:700,color:'var(--electric)',marginBottom:1}}>Your Referral Code</div>
+                <div style={{fontFamily:"'Source Serif 4',Georgia,serif",fontWeight:700,fontSize:17,letterSpacing:2,color:'var(--text)'}}>{user.referralCode}</div>
                 <div style={{fontSize:11,color:'var(--muted)',marginTop:4}}>Share with friends — earn 30 tokens when they get KYC approved</div>
               </div>
               <button className="btn btn-secondary btn-sm" onClick={() => {
@@ -321,13 +321,13 @@ export default function TokensPage() {
         {/* Balance card */}
         <div style={{
           background:'#0B1F3A',
-          borderRadius:'var(--r)', padding:'18px 20px', marginBottom:16,
+          borderRadius:14, padding:'12px 14px', marginBottom:10,
         }}>
-          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
             <div>
-              <div style={{fontSize:11,color:'rgba(255,255,255,.4)',textTransform:'uppercase',letterSpacing:1,marginBottom:4}}>Your Balance</div>
-              <div style={{fontFamily:"'Source Serif 4',Georgia,serif",fontWeight:700,fontSize:36,color:'white',lineHeight:1}}>
-                {bal} <span style={{fontSize:20}}>tokens</span>
+              <div style={{fontSize:10,color:'rgba(255,255,255,.4)',textTransform:'uppercase',letterSpacing:1,marginBottom:4}}>Your Balance</div>
+              <div style={{fontFamily:"'Source Serif 4',Georgia,serif",fontWeight:700,fontSize:26,color:'white',lineHeight:1}}>
+                {bal} <span style={{fontSize:14}}>tokens</span>
               </div>
               <div style={{color:'rgba(255,255,255,.35)',marginTop:4,fontSize:11}}>
                 {streak > 0 ? `${streak} day safe streak` : 'Start your streak today'}
@@ -335,7 +335,7 @@ export default function TokensPage() {
             </div>
             <div style={{textAlign:'right'}}>
               <div style={{fontSize:11,color:'rgba(255,255,255,.4)',marginBottom:3}}>Next reward</div>
-              <div style={{fontFamily:"'Source Serif 4',Georgia,serif",fontWeight:700,fontSize:22,color:'var(--emerald)'}}>
+              <div style={{fontFamily:"'Source Serif 4',Georgia,serif",fontWeight:700,fontSize:17,color:'#FDC703'}}>
                 {tokensToNext > 0 ? `-${tokensToNext}` : 'Ready!'}
               </div>
               <div style={{fontSize:10,color:'rgba(255,255,255,.35)'}}>{nextRedeem?.label || 'All unlocked'}</div>
@@ -356,10 +356,10 @@ export default function TokensPage() {
 
         {/* Referral code card */}
         {user?.referralCode && (
-          <div style={{background:'var(--electric-light)',border:'1.5px solid var(--electric)',borderRadius:6,padding:'14px 18px',marginBottom:16,display:'flex',alignItems:'center',gap:14}}>
+          <div style={{background:'var(--electric-light)',border:'1.5px solid var(--electric)',borderRadius:12,padding:'8px 12px',marginBottom:10,display:'flex',alignItems:'center',gap:10}}>
             <div style={{flex:1}}>
-              <div style={{fontSize:12,fontWeight:700,color:'var(--electric)',marginBottom:4}}>Your Referral Code</div>
-              <div style={{fontFamily:"'Source Serif 4',Georgia,serif",fontWeight:700,fontSize:24,letterSpacing:3,color:'var(--text)'}}>{user.referralCode}</div>
+              <div style={{fontSize:11,fontWeight:700,color:'var(--electric)',marginBottom:1}}>Your Referral Code</div>
+              <div style={{fontFamily:"'Source Serif 4',Georgia,serif",fontWeight:700,fontSize:17,letterSpacing:2,color:'var(--text)'}}>{user.referralCode}</div>
               <div style={{fontSize:11,color:'var(--muted)',marginTop:4}}>Share with friends — earn 30 tokens when they get KYC approved</div>
             </div>
             <button className="btn btn-secondary btn-sm" onClick={() => {
@@ -375,28 +375,23 @@ export default function TokensPage() {
         <div className="two-col">
           {/* Earn */}
           <div className="card">
-            <div style={{marginBottom:14}}>
-              <div style={{fontSize:14,fontWeight:700}}>Earn Tokens</div>
+            <div style={{marginBottom:8}}>
+              <div style={{fontSize:13,fontWeight:700}}>Earn Tokens</div>
               <div style={{fontSize:11,color:'var(--muted)',marginTop:2}}>Daily actions have a 24-hour cooldown</div>
             </div>
-            <div style={{display:'flex',flexDirection:'column',gap:8}}>
+            <div style={{display:'flex',flexDirection:'column',gap:6}}>
               {EARN.map(a => {
                 const locked = isLocked(a.key) || (a.key === 'safety_quiz' && isLocked('safety_quiz_attempt'));
                 const hours  = hoursLeft(a.key) || (a.key === 'safety_quiz' ? hoursLeft('safety_quiz_attempt') : 0);
                 return (
                   <div key={a.key} style={{
-                    display:'flex',alignItems:'center',gap:10,padding:'10px 12px',
+                    display:'flex',alignItems:'center',gap:8,padding:'6px 10px',
                     border:`1.5px solid ${locked ? 'var(--border)' : 'var(--border)'}`,
                     borderRadius:6,
                     background: locked ? '#FAFAFA' : 'white',
                     opacity: locked ? 0.7 : 1,
                     transition:'all .15s',
                   }}>
-                    <div style={{
-                      width:36,height:36,borderRadius:8,flexShrink:0,
-                      background:'var(--green-light)',
-                      display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,
-                    }}>{a.icon}</div>
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{fontSize:12,fontWeight:600}}>{a.label}</div>
                       <div style={{fontSize:11,color:'var(--muted)'}}>
@@ -419,26 +414,25 @@ export default function TokensPage() {
 
           {/* Redeem */}
           <div className="card">
-            <div style={{marginBottom:14}}>
-              <div style={{fontSize:14,fontWeight:700}}>Redeem Tokens</div>
+            <div style={{marginBottom:8}}>
+              <div style={{fontSize:13,fontWeight:700}}>Redeem Tokens</div>
               <div style={{fontSize:11,color:'var(--muted)',marginTop:2}}>Button activates when you reach the required amount</div>
             </div>
             <div style={{fontSize:11,color:'#7A5A12',background:'#FFF8E1',border:'1px solid #F3E2A8',borderRadius:8,padding:'7px 10px',marginBottom:10}}>
               Tokens can be redeemed after 3 months of active cover.
             </div>
-            <div style={{display:'flex',flexDirection:'column',gap:8}}>
+            <div style={{display:'flex',flexDirection:'column',gap:6}}>
               {REDEEM.map(opt => {
                 const ok = bal >= opt.tokens;
                 return (
                   <div key={opt.value} style={{
-                    display:'flex',alignItems:'center',gap:10,padding:'10px 12px',
+                    display:'flex',alignItems:'center',gap:8,padding:'6px 10px',
                     border:`1.5px solid ${ok ? 'var(--green)' : 'var(--border)'}`,
                     borderRadius:6,
                     background: ok ? 'var(--green-light)' : '#FAFAFA',
                     opacity: ok ? 1 : 0.6,
                     transition:'all .15s',
                   }}>
-                    <div style={{fontSize:22,flexShrink:0}}>{opt.icon}</div>
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{fontSize:12,fontWeight:600}}>{opt.label}</div>
                       <div style={{fontSize:11,fontWeight:700,color:ok?'var(--green)':'var(--muted)',marginTop:1}}>
