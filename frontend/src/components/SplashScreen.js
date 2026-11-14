@@ -1,36 +1,44 @@
 import React, { useEffect, useState } from 'react';
-import { LOGO_TILE } from './logoAssets';
+import { LOGO_MARK } from './logoAssets';
 
+// Splash: PikiShield yellow with the helmet mark. The mark image is the same yellow, so it blends in.
 export default function SplashScreen({ onDone }) {
   const [phase, setPhase] = useState(0);
 
   useEffect(() => {
     const t1 = setTimeout(() => setPhase(1), 150);
-    const t2 = setTimeout(() => setPhase(2), 2000);   // start fade out
+    const t2 = setTimeout(() => setPhase(2), 1200);   // start fade out
     const t3 = setTimeout(() => {
       sessionStorage.setItem('piki_splashed', '1');
       if (onDone) onDone();
-    }, 2700);                                          // after the fade completes
+    }, 1800);                                          // after the fade completes
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, zIndex: 99999, background: '#0B1F3A',
+      position: 'fixed', inset: 0, zIndex: 99999, background: '#FDC703',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       opacity: phase === 2 ? 0 : 1, transition: 'opacity 0.7s ease',
       pointerEvents: phase === 2 ? 'none' : 'all',
       fontFamily: "'Inter', sans-serif",
     }}>
-      <div style={{ opacity: phase >= 1 ? 1 : 0, transition: 'opacity 0.6s ease', textAlign: 'center' }}>
-        <img src={LOGO_TILE} alt="PikiShield" width={150} height={150} style={{ width: 150, height: 150, borderRadius: 34, display: 'block', margin: '0 auto', boxShadow: '0 10px 40px rgba(0,0,0,.35)' }} />
-        <div style={{ width: 64, height: 1, background: '#FFC907', margin: '24px auto 14px' }} />
-        <div style={{ fontSize: 13, letterSpacing: '1.5px', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase' }}>
+      <div style={{
+        opacity: phase >= 1 ? 1 : 0, transform: phase >= 1 ? 'translateY(0) scale(1)' : 'translateY(12px) scale(.94)',
+        transition: 'opacity .6s ease, transform .6s ease', textAlign: 'center', padding: '0 24px',
+      }}>
+        <img src={LOGO_MARK} alt="PikiShield" width={190} height={190}
+          style={{ width: 190, height: 190, display: 'block', margin: '0 auto', maxWidth: '55vw', maxHeight: '55vw' }} />
+        <div style={{ fontFamily: "'Source Serif 4', Georgia, serif", fontWeight: 700, fontSize: 38, color: '#111111', marginTop: 6, lineHeight: 1.1 }}>
+          PikiShield
+        </div>
+        <div style={{ width: 56, height: 2, background: '#111111', margin: '16px auto 12px' }} />
+        <div style={{ fontSize: 12.5, letterSpacing: '1.8px', color: 'rgba(17,17,17,.75)', textTransform: 'uppercase', fontWeight: 600 }}>
           Protecting every ride, every day
         </div>
       </div>
-      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 3, background: 'rgba(255,255,255,0.08)' }}>
-        <div style={{ height: '100%', background: '#FFC907', width: phase === 2 ? '100%' : phase === 1 ? '75%' : '5%', transition: phase === 1 ? 'width 1.8s ease' : 'width 0.5s ease' }} />
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 4, background: 'rgba(17,17,17,.12)' }}>
+        <div style={{ height: '100%', background: '#111111', width: phase === 2 ? '100%' : phase === 1 ? '75%' : '5%', transition: phase === 1 ? "width 1.1s ease" : 'width 0.5s ease' }} />
       </div>
     </div>
   );

@@ -94,10 +94,34 @@ const normalizePhone = (phone) => {
 };
 
 // ── RIDER REGISTRATION (existing 3-step flow) ───────────────────────────────
+function SubmittedNotice({ phone, onSignIn }) {
+  return (
+    <div style={{textAlign:'center',padding:'28px 8px'}}>
+      <div style={{width:56,height:56,borderRadius:'50%',background:'#0F7B5C',margin:'0 auto 16px',display:'flex',alignItems:'center',justifyContent:'center'}}>
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.5 L10 17.5 L19 7"/></svg>
+      </div>
+      <h3 style={{fontSize:20,fontWeight:700,marginBottom:8}}>Details submitted successfully</h3>
+      <p style={{fontSize:13,color:'var(--muted)',lineHeight:1.7,marginBottom:18}}>
+        Thank you. Your account details and documents are now under review.
+        Once your account is approved, you will receive a message and you can sign in.
+      </p>
+      {phone && (
+        <div style={{background:'#F4F6FA',border:'1px solid var(--border)',borderRadius:8,padding:'12px 14px',marginBottom:18,fontSize:13,textAlign:'left'}}>
+          Your login phone number: <strong>{phone}</strong><br/>
+          <span style={{color:'var(--muted)',fontSize:12}}>Use the password you created. For your security it is not shown again.</span>
+        </div>
+      )}
+      <button type="button" className="btn btn-secondary btn-lg" style={{width:'100%',justifyContent:'center'}} onClick={onSignIn}>Back to sign in</button>
+    </div>
+  );
+}
+
 function RiderRegister({ onBack }) {
   const { register } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
+  const [submitted, setSubmitted] = useState(false);
+  const [savedPhoneShown, setSavedPhoneShown] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [kycDocs, setKycDocs] = useState({});
@@ -152,16 +176,13 @@ function RiderRegister({ onBack }) {
       await register({...form, phone:normalizePhone(form.phone), tempUploadId:tempId, acceptedTerms:true, termsVersion:TERMS_VERSION});
       try { await documentsAPI.attachKyc({tempUploadId:tempId}); } catch {}
       const savedPhone = normalizePhone(form.phone);
-            window.alert(`Registration successful.
-
-Your login phone number is ${savedPhone}.
-Use the password you just created. For your security it is not shown again.
-
-Press OK to go to login.`);
-      navigate('/login');
+      setSavedPhoneShown(savedPhone);
+      setSubmitted(true);
     } catch (err) { setError(err.response?.data?.error || 'Registration failed'); }
     finally { setLoading(false); }
   };
+
+  if (submitted) return <SubmittedNotice phone={savedPhoneShown} onSignIn={()=>navigate('/login')} />;
 
   return (
     <>
@@ -284,6 +305,7 @@ function MemberRegister({ onBack }) {
   const [nokDocs, setNokDocs] = React.useState({});
   const [nokResult, setNokResult] = React.useState(null);
   const [nokPassword, setNokPassword] = React.useState('');
+  const [skipped, setSkipped] = React.useState(false);
   const [nokSubmitted, setNokSubmitted] = React.useState(false); //  double-submit guard
   const tempId = React.useRef(`mem-${Date.now()}`).current;
   const nokTempId = React.useRef(`nok-${Date.now()}`).current;
@@ -366,6 +388,8 @@ function MemberRegister({ onBack }) {
       setLoading(false);
     }
   };
+
+  if (skipped) return <SubmittedNotice phone={normalizePhone(form.phone)} onSignIn={()=>navigate('/login')} />;
 
   return (
     <>
@@ -516,7 +540,7 @@ function MemberRegister({ onBack }) {
               </div>
               {error && <div className="alert alert-error">{error}</div>}
               <div style={{display:'flex',gap:10,marginTop:8}}>
-                <button className="btn btn-secondary" type="button" onClick={()=>{window.alert(`Account created.\n\nYour login phone number is ${normalizePhone(form.phone)}. Use the password you created.`);navigate('/login');}}>Skip</button>
+                <button className="btn btn-secondary" type="button" onClick={()=>setSkipped(true)}>Skip</button>
                 {/* FIX: disabled when loading OR already submitted — prevents double-click race condition */}
                 <button
                   type="button"
@@ -532,8 +556,8 @@ function MemberRegister({ onBack }) {
           ) : (
             <div style={{textAlign:'center',padding:'20px 0'}}>
               <div style={{fontSize:48,marginBottom:12}}></div>
-              <h3 style={{fontSize:20,fontWeight:700,marginBottom:8}}>All Done!</h3>
-              <p style={{fontSize:13,color:'var(--muted)',marginBottom:20}}>Keep your phone number and password safe. Passwords are never displayed or stored in readable form.</p>
+              <h3 style={{fontSize:20,fontWeight:700,marginBottom:8}}>Details submitted successfully</h3>
+              <p style={{fontSize:13,color:'var(--muted)',marginBottom:20}}>Your account is now under review. Once it is approved you will receive a message. Keep your phone number and password safe; passwords are never displayed.</p>
               <div style={{background:'var(--navy)',borderRadius:8,padding:'20px',marginBottom:20,textAlign:'left'}}>
                 {[['Your Phone',normalizePhone(form.phone)],['Your Password','(as you entered it)'],['NOK Number',nokResult.nokNumber||'—'],['NOK Password','(as set above)']].map(([l,v])=>(
                   <div key={l} style={{display:'flex',justifyContent:'space-between',padding:'10px 0',borderBottom:'1px solid rgba(255,255,255,.08)'}}>
