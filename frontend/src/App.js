@@ -351,7 +351,13 @@ function AppRoutes() {
 
 export default function App() {
   const [splashDone, setSplashDone] = useState(
-    () => sessionStorage.getItem('piki_splashed') === '1'
+    () => {
+      try {
+        // Installed app: the phone already shows its own start-up screen, so skip ours.
+        const installed = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
+        return installed || sessionStorage.getItem('piki_splashed') === '1';
+      } catch { return false; }
+    }
   );
 
   return (
