@@ -35,7 +35,7 @@ export default function SetupPage() {
     try {
       const res = await authAPI.setupAdmin({ fullName:form.fullName, phone:form.phone, email:form.email||undefined, password:form.password });
       // Store token + user directly
-      localStorage.setItem('piki_token', res.data.token);
+      localStorage.setItem('token', res.data.token);
       navigate('/admin', { replace: true });
     } catch(err) { setError(err.response?.data?.error || 'Setup failed'); }
     finally { setLoading(false); }
@@ -50,23 +50,23 @@ export default function SetupPage() {
   return (
     <div style={{minHeight:'100vh',display:'flex',background:'#F1F5F9'}}>
       {/* Left */}
-      <div style={{flex:1,background:'linear-gradient(160deg,#050E1F 0%,#07312A 60%,#050E1F 100%)',display:'flex',flexDirection:'column',justifyContent:'center',alignItems:'flex-start',padding:'60px 56px',minWidth:0}}>
+      <div style={{flex:1,background:'#0B1F3A',display:'flex',flexDirection:'column',justifyContent:'center',alignItems:'flex-start',padding:'60px 56px',minWidth:0}}>
         <div style={{marginBottom:48}}><PikiLogo size={36} textSize={17} light /></div>
         <div style={{maxWidth:380}}>
-          <div style={{display:'inline-block',background:'rgba(0,214,143,.15)',border:'1px solid rgba(0,214,143,.3)',borderRadius:20,padding:'4px 14px',fontSize:11,color:'#00D68F',fontWeight:700,letterSpacing:1,marginBottom:20,textTransform:'uppercase'}}>
+          <div style={{display:'inline-block',background:'rgba(0,214,143,.15)',border:'1px solid rgba(0,214,143,.3)',borderRadius:8,padding:'4px 14px',fontSize:11,color:'#1A9F73',fontWeight:700,letterSpacing:1,marginBottom:20,textTransform:'uppercase'}}>
             Super Admin Setup
           </div>
-          <h1 style={{fontSize:34,fontWeight:800,color:'white',lineHeight:1.2,marginBottom:16,letterSpacing:'-0.5px'}}>
-            Welcome to<br/><span style={{color:'#00D68F'}}>PikiShield</span>
+          <h1 style={{fontSize:34,fontWeight:700,color:'white',lineHeight:1.2,marginBottom:16,letterSpacing:0}}>
+            Welcome to<br/><span style={{color:'#1A9F73'}}>PikiShield</span>
           </h1>
           <p style={{color:'rgba(255,255,255,.5)',fontSize:14,lineHeight:1.75,marginBottom:36}}>
             Create the one Super Admin account. This is a one-time step. The Super Admin is the only account that can create other admins.
           </p>
           {[
-            ['👤','After setup, log in with your phone number'],
-            ['🤝','Create field agents from the admin panel'],
-            ['🛡️','Agents register riders and collect contributions'],
-            ['💳','M-Pesa integration built-in — configure in .env'],
+            ['','After setup, log in with your phone number'],
+            ['','Create field agents from the admin panel'],
+            ['','Agents register riders and collect contributions'],
+            ['','M-Pesa integration built-in — configure in .env'],
           ].map(([icon,text])=>(
             <div key={text} style={{display:'flex',alignItems:'flex-start',gap:12,marginBottom:12}}>
               <span style={{fontSize:16,marginTop:1}}>{icon}</span>
@@ -74,7 +74,7 @@ export default function SetupPage() {
             </div>
           ))}
         </div>
-        <div style={{fontSize:11,color:'rgba(255,255,255,.18)',marginTop:'auto',paddingTop:48}}>© 2025 PikiShield Ltd · Licensed by IRA Kenya</div>
+        <div style={{fontSize:11,color:'rgba(255,255,255,.18)',marginTop:'auto',paddingTop:48}}>© PikiShield Ltd</div>
       </div>
 
       {/* Right */}
@@ -82,15 +82,15 @@ export default function SetupPage() {
         <div style={{width:'100%',maxWidth:380}}>
           <div style={{marginBottom:28}}>
             <div style={{display:'inline-flex',alignItems:'center',gap:6,background:'#FEF9C3',border:'1px solid #FDE047',borderRadius:8,padding:'5px 12px',fontSize:12,color:'#713F12',fontWeight:600,marginBottom:16}}>
-              ⚡ One-time setup
+               One-time setup
             </div>
-            <h2 style={{fontSize:22,fontWeight:800,color:'#0F172A',marginBottom:4}}>Create Super Admin Account</h2>
+            <h2 style={{fontSize:22,fontWeight:700,color:'#0F172A',marginBottom:4}}>Create Super Admin Account</h2>
             <p style={{fontSize:13,color:'#64748B'}}>This screen disappears after setup is complete.</p>
           </div>
 
           {error && (
-            <div style={{background:'#FEF2F2',border:'1px solid #FECACA',borderRadius:10,padding:'10px 14px',fontSize:13,color:'#991B1B',marginBottom:16}}>
-              ❌ {error}
+            <div style={{background:'#FEF2F2',border:'1px solid #FECACA',borderRadius:6,padding:'10px 14px',fontSize:13,color:'#991B1B',marginBottom:16}}>
+               {error}
             </div>
           )}
 
@@ -107,10 +107,10 @@ export default function SetupPage() {
                   {f2.label}{f2.req&&<span style={{color:'#EF4444',marginLeft:2}}>*</span>}
                 </label>
                 <input
-                  style={{width:'100%',border:'1.5px solid #E2E8F0',borderRadius:10,padding:'10px 14px',fontSize:13,outline:'none',boxSizing:'border-box',fontFamily:'inherit',transition:'border 0.15s'}}
+                  style={{width:'100%',border:'1.5px solid #E2E8F0',borderRadius:6,padding:'10px 14px',fontSize:13,outline:'none',boxSizing:'border-box',fontFamily:'inherit',transition:'border 0.15s'}}
                   type={f2.type} placeholder={f2.placeholder}
                   value={form[f2.k]} onChange={f(f2.k)} onKeyDown={handleKeyDown}
-                  onFocus={e=>e.target.style.borderColor='#00D68F'}
+                  onFocus={e=>e.target.style.borderColor='#1A9F73'}
                   onBlur={e=>e.target.style.borderColor='#E2E8F0'}
                 />
               </div>
@@ -119,13 +119,13 @@ export default function SetupPage() {
 
           <button
             onClick={handleSubmit} disabled={loading}
-            style={{width:'100%',marginTop:20,padding:'13px',background:loading?'#9CA3AF':'linear-gradient(135deg,#059669,#00D68F)',color:'white',border:'none',borderRadius:10,fontWeight:800,fontSize:14,cursor:loading?'not-allowed':'pointer',transition:'opacity 0.15s'}}>
-            {loading ? '⏳ Creating account…' : '🔐 Create Super Admin Account'}
+            style={{width:'100%',marginTop:20,padding:'13px',background:loading?'#9CA3AF':'#0F7B5C',color:'white',border:'none',borderRadius:6,fontWeight:700,fontSize:14,cursor:loading?'not-allowed':'pointer',transition:'opacity 0.15s'}}>
+            {loading ? ' Creating account…' : ' Create Super Admin Account'}
           </button>
 
-          <div style={{marginTop:16,padding:'12px 14px',background:'#F8FAFC',borderRadius:10,fontSize:12,color:'#64748B',lineHeight:1.6}}>
+          <div style={{marginTop:16,padding:'12px 14px',background:'#F8FAFC',borderRadius:6,fontSize:12,color:'#64748B',lineHeight:1.6}}>
             <strong>Already have an account?</strong> This page only appears when no Super Admin exists.{' '}
-            <span style={{color:'#059669',cursor:'pointer',fontWeight:600}} onClick={()=>navigate('/login')}>Go to login →</span>
+            <span style={{color:'#0F7B5C',cursor:'pointer',fontWeight:600}} onClick={()=>navigate('/login')}>Go to login →</span>
           </div>
         </div>
       </div>

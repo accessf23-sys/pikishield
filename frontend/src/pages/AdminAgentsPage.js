@@ -27,15 +27,15 @@ function KycDocViewer({ userId }) {
   const [docs,setDocs]=useState([]); const [loading,setLoading]=useState(false);
   useEffect(()=>{ documentsAPI.getForUser(userId).then(r=>setDocs(r.data||[])).catch(()=>setDocs([])).finally(()=>setLoading(false)); },[userId]);
   
-  if (!docs.length) return <div style={{background:'#FFFBEB',border:'1px solid #FDE68A',borderRadius:8,padding:'10px 12px',fontSize:12,color:'#92400E'}}>⚠️ No KYC documents uploaded yet.</div>;
+  if (!docs.length) return <div style={{background:'#FFFBEB',border:'1px solid #FDE68A',borderRadius:8,padding:'10px 12px',fontSize:12,color:'#92400E'}}> No KYC documents uploaded yet.</div>;
   return (
     <div style={{display:'flex',flexDirection:'column',gap:7}}>
       {docs.map(d=>(
         <div key={d.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',background:'#F8FAFC',borderRadius:8,padding:'9px 11px',border:'1px solid #E5E7EB'}}>
-          <div style={{fontSize:12,fontWeight:600,color:'#374151'}}>📄 {d.docType||d.originalName}</div>
+          <div style={{fontSize:12,fontWeight:600,color:'#374151'}}> {d.docType||d.originalName}</div>
           <div style={{display:'flex',gap:5}}>
-            <button style={{fontSize:11,padding:'3px 8px',background:'#EFF6FF',color:'#1D4ED8',border:'1px solid #BFDBFE',borderRadius:5,cursor:'pointer',fontWeight:600}} onClick={()=>previewDoc(d.id)}>👁 View</button>
-            <button style={{fontSize:11,padding:'3px 8px',background:'#F0FDF4',color:'#15803D',border:'1px solid #BBF7D0',borderRadius:5,cursor:'pointer',fontWeight:600}} onClick={()=>downloadDoc(d.id,d.originalName)}>⬇ Save</button>
+            <button style={{fontSize:11,padding:'3px 8px',background:'#EEF3F8',color:'#1E3A5F',border:'1px solid #C9D6E6',borderRadius:5,cursor:'pointer',fontWeight:600}} onClick={()=>previewDoc(d.id)}> View</button>
+            <button style={{fontSize:11,padding:'3px 8px',background:'#EEF6F2',color:'#15803D',border:'1px solid #BBF7D0',borderRadius:5,cursor:'pointer',fontWeight:600}} onClick={()=>downloadDoc(d.id,d.originalName)}> Save</button>
           </div>
         </div>
       ))}
@@ -61,40 +61,40 @@ function AgentPanel({ agent, onClose, onUpdate }) {
   return (
     <div className="admin-modal-backdrop" onClick={onClose}>
       <div style={{background:'white',width:'100%',maxWidth:500,maxHeight:'calc(100vh - 40px)',
-        overflowY:'auto',borderRadius:16,boxShadow:'0 32px 80px rgba(0,0,0,.5)',
+        overflowY:'auto',borderRadius:8,boxShadow:'var(--shadow-lg)',
         display:'flex',flexDirection:'column',boxSizing:'border-box'}}
         onClick={e=>e.stopPropagation()}>
 
         {/* Dark header — same style as claims review */}
-        <div style={{background:'linear-gradient(135deg,#050E1F 0%,#07312A 100%)',
-          borderRadius:'16px 16px 0 0',padding:'20px 22px',flexShrink:0}}>
+        <div style={{background:'#0B1F3A',
+          borderRadius:'8px 8px 0 0',padding:'20px 22px',flexShrink:0}}>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
             <div>
               <div style={{fontSize:11,color:'rgba(255,255,255,.45)',fontWeight:600,textTransform:'uppercase',letterSpacing:1,marginBottom:6}}>Field Agent</div>
-              <div style={{fontWeight:800,fontSize:18,color:'white',letterSpacing:'-0.3px',marginBottom:8}}>{agent.fullName}</div>
+              <div style={{fontWeight:700,fontSize:18,color:'white',letterSpacing:0,marginBottom:8}}>{agent.fullName}</div>
               <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
-                <span style={{background:'rgba(0,214,143,.18)',border:'1px solid rgba(0,214,143,.4)',borderRadius:20,padding:'3px 10px',fontSize:11,fontWeight:700,color:'#00D68F'}}>
+                <span style={{background:'rgba(0,214,143,.18)',border:'1px solid rgba(0,214,143,.4)',borderRadius:8,padding:'3px 10px',fontSize:11,fontWeight:700,color:'#1A9F73'}}>
                   {agent.agentCode||agent.memberNumber}
                 </span>
-                <span style={{background:'rgba(255,255,255,.08)',border:'1px solid rgba(255,255,255,.15)',borderRadius:20,padding:'3px 10px',fontSize:11,fontWeight:600,color:'rgba(255,255,255,.7)'}}>
-                  📍 {county.toUpperCase()||'—'}
+                <span style={{background:'rgba(255,255,255,.08)',border:'1px solid rgba(255,255,255,.15)',borderRadius:8,padding:'3px 10px',fontSize:11,fontWeight:600,color:'rgba(255,255,255,.7)'}}>
+                   {county.toUpperCase()||'—'}
                 </span>
-                {agent.suspended && <span style={{background:'rgba(239,68,68,.2)',border:'1px solid rgba(239,68,68,.4)',borderRadius:20,padding:'3px 10px',fontSize:11,fontWeight:700,color:'#FCA5A5'}}>SUSPENDED</span>}
-                <span style={{background:'rgba(255,255,255,.08)',border:'1px solid rgba(255,255,255,.15)',borderRadius:20,padding:'3px 10px',fontSize:11,fontWeight:600,color:'rgba(255,255,255,.7)'}}>
-                  {agent.kycStatus==='approved'?'✅':'⏳'} KYC {agent.kycStatus||'pending'}
+                {agent.suspended && <span style={{background:'rgba(239,68,68,.2)',border:'1px solid rgba(239,68,68,.4)',borderRadius:8,padding:'3px 10px',fontSize:11,fontWeight:700,color:'#FCA5A5'}}>SUSPENDED</span>}
+                <span style={{background:'rgba(255,255,255,.08)',border:'1px solid rgba(255,255,255,.15)',borderRadius:8,padding:'3px 10px',fontSize:11,fontWeight:600,color:'rgba(255,255,255,.7)'}}>
+                  {agent.kycStatus==='approved'?'':''} KYC {agent.kycStatus||'pending'}
                 </span>
               </div>
             </div>
-            <button onClick={onClose} style={{background:'rgba(255,255,255,.12)',border:'none',borderRadius:8,width:32,height:32,cursor:'pointer',color:'white',fontSize:16,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>✕</button>
+            <button onClick={onClose} style={{background:'rgba(255,255,255,.12)',border:'none',borderRadius:8,width:32,height:32,cursor:'pointer',color:'white',fontSize:16,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>×</button>
           </div>
         </div>
 
         {/* Body */}
         <div style={{padding:'18px 22px 24px',display:'flex',flexDirection:'column',gap:14}}>
-          {msg && <div style={{background:'#F0FDF4',border:'1px solid #A7F3D0',borderRadius:8,padding:'10px 14px',fontSize:13,color:'#065F46'}}>{msg}</div>}
+          {msg && <div style={{background:'#EEF6F2',border:'1px solid #BFDCCF',borderRadius:8,padding:'10px 14px',fontSize:13,color:'#065F46'}}>{msg}</div>}
 
           {/* Agent Details */}
-          <div style={{background:'#F8FAFC',borderRadius:12,border:'1px solid #E5E7EB',padding:'14px 16px'}}>
+          <div style={{background:'#F8FAFC',borderRadius:6,border:'1px solid #E5E7EB',padding:'14px 16px'}}>
             <div style={{fontSize:10,fontWeight:700,color:'#9CA3AF',textTransform:'uppercase',letterSpacing:1,marginBottom:2}}>Agent Details</div>
             <InfoRow label="Agent Code" value={agent.agentCode||agent.memberNumber}/>
             <InfoRow label="Phone" value={agent.phone}/>
@@ -106,8 +106,8 @@ function AgentPanel({ agent, onClose, onUpdate }) {
           </div>
 
           {/* Account Control */}
-          <div style={{background:'#F8FAFC',borderRadius:12,border:'1px solid #E5E7EB',padding:'14px 16px'}}>
-            <div style={{fontSize:10,fontWeight:700,color:'#9CA3AF',textTransform:'uppercase',letterSpacing:1,marginBottom:10}}>⚠️ Account Control</div>
+          <div style={{background:'#F8FAFC',borderRadius:6,border:'1px solid #E5E7EB',padding:'14px 16px'}}>
+            <div style={{fontSize:10,fontWeight:700,color:'#9CA3AF',textTransform:'uppercase',letterSpacing:1,marginBottom:10}}> Account Control</div>
             {!agent.suspended ? (
               <>
                 <div className="form-group" style={{marginBottom:8}}>
@@ -115,7 +115,7 @@ function AgentPanel({ agent, onClose, onUpdate }) {
                   <input className="form-input" placeholder="e.g. Policy violation..." value={reason} onChange={e=>setReason(e.target.value)}/>
                 </div>
                 <button className="btn btn-danger" style={{width:'100%',justifyContent:'center'}} onClick={suspend} disabled={suspending}>
-                  {suspending?'Suspending…':'🔒 Suspend Agent'}
+                  {suspending?'Suspending…':' Suspend Agent'}
                 </button>
               </>
             ) : (
@@ -125,15 +125,15 @@ function AgentPanel({ agent, onClose, onUpdate }) {
                   <div>{agent.suspendReason||'No reason recorded'}</div>
                 </div>
                 <button className="btn btn-primary" style={{width:'100%',justifyContent:'center'}} onClick={unsuspend} disabled={suspending}>
-                  {suspending?'Reinstating…':'✅ Reinstate Agent'}
+                  {suspending?'Reinstating…':' Reinstate Agent'}
                 </button>
               </>
             )}
           </div>
 
           {/* KYC Documents */}
-          <div style={{background:'#F8FAFC',borderRadius:12,border:'1px solid #E5E7EB',padding:'14px 16px'}}>
-            <div style={{fontSize:10,fontWeight:700,color:'#9CA3AF',textTransform:'uppercase',letterSpacing:1,marginBottom:10}}>📎 KYC Documents</div>
+          <div style={{background:'#F8FAFC',borderRadius:6,border:'1px solid #E5E7EB',padding:'14px 16px'}}>
+            <div style={{fontSize:10,fontWeight:700,color:'#9CA3AF',textTransform:'uppercase',letterSpacing:1,marginBottom:10}}> KYC Documents</div>
             <KycDocViewer userId={agent.id}/>
           </div>
         </div>
@@ -220,33 +220,33 @@ Pass:  ${adminForm.password}`); setAdminForm({fullName:'',phone:'',email:'',pass
     pendingKYC:Number(reportData?.totals?.pendingKYC||0) || agents.reduce((s,a)=>s+(Number(a.pendingKYC)||0),0),
     claims:    Number(reportData?.totals?.claims||0) || agents.reduce((s,a)=>s+(Number(a.claimsCount)||0),0),
   };
-  const chartData=agents.map(a=>({name:(a.name||a.fullName||'').split(' ')[0],riders:a.ridersCount,members:a.membersCount,policies:a.activePolicies}));
+  const chartData=agents.map(a=>({name:(a.name||a.fullName||'').split('')[0],riders:a.ridersCount,members:a.membersCount,policies:a.activePolicies}));
 
   return (
     <div>
       {/* Create Agent Modal */}
       {showCreate&&(
         <div key={agentModalKey} className="admin-modal-backdrop" onClick={()=>{setShowCreate(false);setCreateErr('');setCreateOk('');}}>
-          <div style={{width:'100%',maxWidth:520,background:'white',borderRadius:16,boxShadow:'0 32px 80px rgba(0,0,0,.45)',overflow:'hidden'}} onClick={e=>e.stopPropagation()}>
-            <div style={{background:'linear-gradient(135deg,#050E1F,#07312A)',padding:'14px 18px',display:'flex',justifyContent:'space-between',alignItems:'center',borderRadius:'16px 16px 0 0'}}>
+          <div style={{width:'100%',maxWidth:520,background:'white',borderRadius:8,boxShadow:'var(--shadow-lg)',overflow:'hidden'}} onClick={e=>e.stopPropagation()}>
+            <div style={{background:'#0B1F3A',padding:'14px 18px',display:'flex',justifyContent:'space-between',alignItems:'center',borderRadius:'8px 8px 0 0'}}>
               <div style={{display:'flex',alignItems:'center',gap:9}}>
-                <div style={{width:32,height:32,borderRadius:7,background:'rgba(0,214,143,.2)',border:'1px solid rgba(0,214,143,.4)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:15}}>🤝</div>
-                <div><div style={{fontWeight:800,fontSize:13,color:'white'}}>Create Field Agent</div><div style={{fontSize:10,color:'rgba(255,255,255,.4)'}}>Agent logs in at the same login page</div></div>
+                <div style={{width:32,height:32,borderRadius:7,background:'rgba(0,214,143,.2)',border:'1px solid rgba(0,214,143,.4)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:15}}></div>
+                <div><div style={{fontWeight:700,fontSize:13,color:'white'}}>Create Field Agent</div><div style={{fontSize:10,color:'rgba(255,255,255,.4)'}}>Agent logs in at the same login page</div></div>
               </div>
-              <button onClick={()=>{setShowCreate(false);setCreateErr('');setCreateOk('');}} style={{background:'rgba(255,255,255,.1)',border:'none',borderRadius:7,width:28,height:28,color:'white',cursor:'pointer',fontSize:15,display:'flex',alignItems:'center',justifyContent:'center'}}>✕</button>
+              <button onClick={()=>{setShowCreate(false);setCreateErr('');setCreateOk('');}} style={{background:'rgba(255,255,255,.1)',border:'none',borderRadius:7,width:28,height:28,color:'white',cursor:'pointer',fontSize:15,display:'flex',alignItems:'center',justifyContent:'center'}}>×</button>
             </div>
             <div style={{padding:'14px 16px 16px',maxHeight:'calc(90vh - 62px)',overflowY:'auto'}}>
-              {createErr&&<div style={{background:'#FEF2F2',border:'1px solid #FECACA',borderRadius:7,padding:'8px 11px',fontSize:12,color:'#991B1B',marginBottom:10}}>❌ {createErr}</div>}
+              {createErr&&<div style={{background:'#FEF2F2',border:'1px solid #FECACA',borderRadius:7,padding:'8px 11px',fontSize:12,color:'#991B1B',marginBottom:10}}> {createErr}</div>}
               {createOk?(
                 <div>
-                  <div style={{background:'#F0FDF4',border:'2px solid #A7F3D0',borderRadius:10,padding:'13px',marginBottom:10}}>
-                    <div style={{fontWeight:700,fontSize:13,color:'#065F46',marginBottom:7}}>✅ Agent Created Successfully!</div>
-                    <div style={{fontSize:12,color:'#047857',fontFamily:'monospace',background:'#ECFDF5',borderRadius:5,padding:'9px',whiteSpace:'pre',lineHeight:1.9}}>{createOk}</div>
-                    <div style={{fontSize:11,color:'#6B7280',marginTop:7,padding:'6px 9px',background:'#F9FAFB',borderRadius:5,lineHeight:1.5}}>📱 <strong>Agent login:</strong> Main login page → phone + password above.</div>
+                  <div style={{background:'#EEF6F2',border:'2px solid #BFDCCF',borderRadius:6,padding:'13px',marginBottom:10}}>
+                    <div style={{fontWeight:700,fontSize:13,color:'#065F46',marginBottom:7}}> Agent Created Successfully!</div>
+                    <div style={{fontSize:12,color:'#047857',fontFamily:'monospace',background:'#EEF6F2',borderRadius:5,padding:'9px',whiteSpace:'pre',lineHeight:1.9}}>{createOk}</div>
+                    <div style={{fontSize:11,color:'#6B7280',marginTop:7,padding:'6px 9px',background:'#F9FAFB',borderRadius:5,lineHeight:1.5}}> <strong>Agent login:</strong> Main login page → phone + password above.</div>
                   </div>
                   <div style={{display:'flex',gap:7}}>
-                    <button style={{flex:1,padding:'9px',background:'linear-gradient(135deg,#059669,#00D68F)',color:'white',border:'none',borderRadius:7,fontWeight:700,fontSize:12,cursor:'pointer'}} onClick={()=>{setCreateOk('');setForm({fullName:'',phone:'',email:'',nationalId:'',region:'',password:'',commission:''});}}>➕ Create Another</button>
-                    <button style={{flex:1,padding:'9px',background:'#F3F4F6',color:'#374151',border:'none',borderRadius:7,fontWeight:700,fontSize:12,cursor:'pointer'}} onClick={()=>{setShowCreate(false);setCreateOk('');}}>✓ Done</button>
+                    <button style={{flex:1,padding:'9px',background:'#0F7B5C',color:'white',border:'none',borderRadius:7,fontWeight:700,fontSize:12,cursor:'pointer'}} onClick={()=>{setCreateOk('');setForm({fullName:'',phone:'',email:'',nationalId:'',region:'',password:'',commission:''});}}> Create Another</button>
+                    <button style={{flex:1,padding:'9px',background:'#F3F4F6',color:'#374151',border:'none',borderRadius:7,fontWeight:700,fontSize:12,cursor:'pointer'}} onClick={()=>{setShowCreate(false);setCreateOk('');}}> Done</button>
                   </div>
                 </div>
               ):(
@@ -265,42 +265,42 @@ Pass:  ${adminForm.password}`); setAdminForm({fullName:'',phone:'',email:'',pass
                         <label style={{fontSize:11,fontWeight:700,color:'#374151',display:'block',marginBottom:2}}>{f.label}{f.req&&<span style={{color:'#EF4444',marginLeft:2}}>*</span>}</label>
                         <input type={f.type} placeholder={f.placeholder} style={{width:'100%',border:'1.5px solid #E5E7EB',borderRadius:6,padding:'6px 9px',fontSize:12,outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
                           autoComplete={f.key==='password'?'new-password':'off'} value={form[f.key]||''} onChange={e=>setForm(p=>({...p,[f.key]:e.target.value}))}
-                          onFocus={e=>e.target.style.borderColor='#00D68F'} onBlur={e=>e.target.style.borderColor='#E5E7EB'}/>
+                          onFocus={e=>e.target.style.borderColor='#1A9F73'} onBlur={e=>e.target.style.borderColor='#E5E7EB'}/>
                       </div>
                     ))}
                   </div>
-                  <div style={{background:'#EFF6FF',border:'1px solid #BFDBFE',borderRadius:6,padding:'8px 10px',marginTop:10,fontSize:11,color:'#1E40AF',lineHeight:1.5}}>
-                    ℹ️ Agent code like <strong>AGT-NAI-0001</strong> is auto-generated.
+                  <div style={{background:'#EEF3F8',border:'1px solid #C9D6E6',borderRadius:6,padding:'8px 10px',marginTop:10,fontSize:11,color:'#1E3A5F',lineHeight:1.5}}>
+                    ℹ Agent code like <strong>AGT-NAI-0001</strong> is auto-generated.
                   </div>
                   {/* ID Document Upload */}
                   <div>
-                    <label style={{fontSize:11,fontWeight:700,color:'#374151',display:'block',marginBottom:4}}>📎 Copy of National ID <span style={{fontSize:10,color:'#9CA3AF'}}>(photo or scan · optional but recommended)</span></label>
-                    <div style={{border:`2px dashed ${agentIdDoc?'#059669':'#D1D5DB'}`,borderRadius:8,padding:'10px 12px',textAlign:'center',background:agentIdDoc?'#F0FDF4':'#FAFAFA',transition:'all .2s'}}>
+                    <label style={{fontSize:11,fontWeight:700,color:'#374151',display:'block',marginBottom:4}}> Copy of National ID <span style={{fontSize:10,color:'#9CA3AF'}}>(photo or scan · optional but recommended)</span></label>
+                    <div style={{border:`2px dashed ${agentIdDoc?'#0F7B5C':'#D1D5DB'}`,borderRadius:8,padding:'10px 12px',textAlign:'center',background:agentIdDoc?'#EEF6F2':'#FAFAFA',transition:'all .2s'}}>
                       {agentIdDoc ? (
                         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8}}>
-                          <span style={{fontSize:11,color:'#059669',fontWeight:700}}>✅ {agentIdDoc.originalName} · {agentIdDoc.size?(agentIdDoc.size/1024).toFixed(0)+'KB':''}</span>
-                          <button type="button" onClick={()=>setAgentIdDoc(null)} style={{fontSize:10,color:'#EF4444',background:'none',border:'none',cursor:'pointer',fontWeight:700}}>✕ Remove</button>
+                          <span style={{fontSize:11,color:'#0F7B5C',fontWeight:700}}> {agentIdDoc.originalName} · {agentIdDoc.size?(agentIdDoc.size/1024).toFixed(0)+'KB':''}</span>
+                          <button type="button" onClick={()=>setAgentIdDoc(null)} style={{fontSize:10,color:'#EF4444',background:'none',border:'none',cursor:'pointer',fontWeight:700}}>× Remove</button>
                         </div>
                       ) : (
                         <div>
-                          <div style={{fontSize:11,color:'#6B7280',marginBottom:6}}>{agentIdUploading?'⏳ Uploading…':'📷 Take a photo or browse to upload ID'}</div>
+                          <div style={{fontSize:11,color:'#6B7280',marginBottom:6}}>{agentIdUploading?' Uploading…':' Take a photo or browse to upload ID'}</div>
                           <input type="file" accept="image/*,application/pdf" style={{display:'none'}} id="agentIdFile"
                             onChange={e=>uploadIdDoc(e.target.files[0],agentTempId,setAgentIdDoc,setAgentIdUploading,'agent')}/>
                           <div style={{display:'flex',gap:6,justifyContent:'center'}}>
                             <button type="button" disabled={agentIdUploading}
                               onClick={()=>document.getElementById('agentIdFile')?.click()}
                               style={{fontSize:11,padding:'5px 12px',background:'white',border:'1.5px solid #D1D5DB',borderRadius:6,cursor:'pointer',fontWeight:600}}>
-                              📁 Browse File
+                               Browse File
                             </button>
-                            <CameraCapture disabled={agentIdUploading} color="#059669"
+                            <CameraCapture disabled={agentIdUploading} color="#0F7B5C"
                               onCapture={f=>uploadIdDoc(f,agentTempId,setAgentIdDoc,setAgentIdUploading,'agent')}/>
                           </div>
                         </div>
                       )}
                     </div>
                   </div>
-                  <button style={{width:'100%',marginTop:10,padding:'10px',background:'linear-gradient(135deg,#059669,#00D68F)',color:'white',border:'none',borderRadius:8,fontWeight:800,fontSize:13,cursor:'pointer'}} onClick={handleCreate} disabled={creating}>
-                    {creating?'⏳ Creating…':'🤝 Create Agent Account'}
+                  <button style={{width:'100%',marginTop:10,padding:'10px',background:'#0F7B5C',color:'white',border:'none',borderRadius:8,fontWeight:700,fontSize:13,cursor:'pointer'}} onClick={handleCreate} disabled={creating}>
+                    {creating?' Creating…':' Create Agent Account'}
                   </button>
                 </div>
               )}
@@ -312,26 +312,26 @@ Pass:  ${adminForm.password}`); setAdminForm({fullName:'',phone:'',email:'',pass
       {/* Create Admin Modal */}
       {showAdmin&&(
         <div key={adminModalKey} className="admin-modal-backdrop" onClick={()=>{setShowAdmin(false);setAdminErr('');setAdminOk('');}}>
-          <div style={{width:'100%',maxWidth:380,background:'white',borderRadius:16,boxShadow:'0 32px 80px rgba(0,0,0,.45)',overflow:'hidden'}} onClick={e=>e.stopPropagation()}>
-            <div style={{background:'linear-gradient(135deg,#1E1B4B,#312E81)',padding:'14px 18px',display:'flex',justifyContent:'space-between',alignItems:'center',borderRadius:'16px 16px 0 0'}}>
+          <div style={{width:'100%',maxWidth:380,background:'white',borderRadius:8,boxShadow:'var(--shadow-lg)',overflow:'hidden'}} onClick={e=>e.stopPropagation()}>
+            <div style={{background:'#0B1F3A',padding:'14px 18px',display:'flex',justifyContent:'space-between',alignItems:'center',borderRadius:'8px 8px 0 0'}}>
               <div style={{display:'flex',alignItems:'center',gap:9}}>
-                <div style={{width:32,height:32,borderRadius:7,background:'rgba(165,180,252,.2)',border:'1px solid rgba(165,180,252,.4)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:15}}>🏢</div>
-                <div><div style={{fontWeight:800,fontSize:13,color:'white'}}>Create Admin Account</div><div style={{fontSize:10,color:'rgba(255,255,255,.4)'}}>Full system access — use carefully</div></div>
+                <div style={{width:32,height:32,borderRadius:7,background:'rgba(165,180,252,.2)',border:'1px solid rgba(165,180,252,.4)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:15}}></div>
+                <div><div style={{fontWeight:700,fontSize:13,color:'white'}}>Create Admin Account</div><div style={{fontSize:10,color:'rgba(255,255,255,.4)'}}>Full system access — use carefully</div></div>
               </div>
-              <button onClick={()=>{setShowAdmin(false);setAdminErr('');setAdminOk('');}} style={{background:'rgba(255,255,255,.1)',border:'none',borderRadius:7,width:28,height:28,color:'white',cursor:'pointer',fontSize:15,display:'flex',alignItems:'center',justifyContent:'center'}}>✕</button>
+              <button onClick={()=>{setShowAdmin(false);setAdminErr('');setAdminOk('');}} style={{background:'rgba(255,255,255,.1)',border:'none',borderRadius:7,width:28,height:28,color:'white',cursor:'pointer',fontSize:15,display:'flex',alignItems:'center',justifyContent:'center'}}>×</button>
             </div>
             <div style={{padding:'14px 16px 16px'}}>
-              {adminErr&&<div style={{background:'#FEF2F2',border:'1px solid #FECACA',borderRadius:7,padding:'8px 11px',fontSize:12,color:'#991B1B',marginBottom:10}}>❌ {adminErr}</div>}
+              {adminErr&&<div style={{background:'#FEF2F2',border:'1px solid #FECACA',borderRadius:7,padding:'8px 11px',fontSize:12,color:'#991B1B',marginBottom:10}}> {adminErr}</div>}
               {adminOk?(
                 <div>
-                  <div style={{background:'#F0FDF4',border:'2px solid #A7F3D0',borderRadius:10,padding:'13px',marginBottom:10}}>
-                    <div style={{fontWeight:700,fontSize:13,color:'#065F46',marginBottom:7}}>✅ Admin Account Created!</div>
-                    <div style={{fontSize:12,color:'#047857',fontFamily:'monospace',background:'#ECFDF5',borderRadius:5,padding:'9px',whiteSpace:'pre',lineHeight:1.9}}>{adminOk}</div>
-                    <div style={{fontSize:11,color:'#6B7280',marginTop:7,lineHeight:1.5}}>🔐 Share these credentials securely. Admin logs in from the main login page.</div>
+                  <div style={{background:'#EEF6F2',border:'2px solid #BFDCCF',borderRadius:6,padding:'13px',marginBottom:10}}>
+                    <div style={{fontWeight:700,fontSize:13,color:'#065F46',marginBottom:7}}> Admin Account Created!</div>
+                    <div style={{fontSize:12,color:'#047857',fontFamily:'monospace',background:'#EEF6F2',borderRadius:5,padding:'9px',whiteSpace:'pre',lineHeight:1.9}}>{adminOk}</div>
+                    <div style={{fontSize:11,color:'#6B7280',marginTop:7,lineHeight:1.5}}> Share these credentials securely. Admin logs in from the main login page.</div>
                   </div>
                   <div style={{display:'flex',gap:7}}>
-                    <button style={{flex:1,padding:'9px',background:'linear-gradient(135deg,#4F46E5,#7C3AED)',color:'white',border:'none',borderRadius:7,fontWeight:700,fontSize:12,cursor:'pointer'}} onClick={()=>{setAdminOk('');setAdminForm({fullName:'',phone:'',email:'',password:''});}}>➕ Create Another</button>
-                    <button style={{flex:1,padding:'9px',background:'#F3F4F6',color:'#374151',border:'none',borderRadius:7,fontWeight:700,fontSize:12,cursor:'pointer'}} onClick={()=>{setShowAdmin(false);setAdminOk('');}}>✓ Done</button>
+                    <button style={{flex:1,padding:'9px',background:'#1E3A5F',color:'white',border:'none',borderRadius:7,fontWeight:700,fontSize:12,cursor:'pointer'}} onClick={()=>{setAdminOk('');setAdminForm({fullName:'',phone:'',email:'',password:''});}}> Create Another</button>
+                    <button style={{flex:1,padding:'9px',background:'#F3F4F6',color:'#374151',border:'none',borderRadius:7,fontWeight:700,fontSize:12,cursor:'pointer'}} onClick={()=>{setShowAdmin(false);setAdminOk('');}}> Done</button>
                   </div>
                 </div>
               ):(
@@ -342,42 +342,42 @@ Pass:  ${adminForm.password}`); setAdminForm({fullName:'',phone:'',email:'',pass
                         <label style={{fontSize:11,fontWeight:700,color:'#374151',display:'block',marginBottom:2}}>{f.label}{f.req&&<span style={{color:'#EF4444',marginLeft:2}}>*</span>}</label>
                         <input type={f.type} placeholder={f.placeholder} style={{width:'100%',border:'1.5px solid #E5E7EB',borderRadius:6,padding:'6px 9px',fontSize:12,outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
                           value={adminForm[f.key]||''} onChange={e=>setAdminForm(p=>({...p,[f.key]:e.target.value}))} autoComplete={f.key==='password'?'new-password':f.key==='email'?'off':'on'}
-                          onFocus={e=>e.target.style.borderColor='#7C3AED'} onBlur={e=>e.target.style.borderColor='#E5E7EB'}/>
+                          onFocus={e=>e.target.style.borderColor='#3B4B6B'} onBlur={e=>e.target.style.borderColor='#E5E7EB'}/>
                       </div>
                     ))}
                   </div>
                   <div style={{background:'#FEF3C7',border:'1px solid #FCD34D',borderRadius:6,padding:'8px 10px',marginTop:10,fontSize:11,color:'#92400E',lineHeight:1.5}}>
-                    ⚠️ Admin accounts have <strong>full system access</strong>. Only create for trusted team members.
+                     Admin accounts have <strong>full system access</strong>. Only create for trusted team members.
                   </div>
                   {/* Admin ID Document Upload */}
                   <div>
-                    <label style={{fontSize:11,fontWeight:700,color:'#374151',display:'block',marginBottom:4}}>📎 Copy of National ID <span style={{fontSize:10,color:'#9CA3AF'}}>(photo or scan · optional but recommended)</span></label>
-                    <div style={{border:`2px dashed ${adminIdDoc?'#4F46E5':'#D1D5DB'}`,borderRadius:8,padding:'10px 12px',textAlign:'center',background:adminIdDoc?'#EEF2FF':'#FAFAFA',transition:'all .2s'}}>
+                    <label style={{fontSize:11,fontWeight:700,color:'#374151',display:'block',marginBottom:4}}> Copy of National ID <span style={{fontSize:10,color:'#9CA3AF'}}>(photo or scan · optional but recommended)</span></label>
+                    <div style={{border:`2px dashed ${adminIdDoc?'#1E3A5F':'#D1D5DB'}`,borderRadius:8,padding:'10px 12px',textAlign:'center',background:adminIdDoc?'#EEF1F6':'#FAFAFA',transition:'all .2s'}}>
                       {adminIdDoc ? (
                         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:8}}>
-                          <span style={{fontSize:11,color:'#4F46E5',fontWeight:700}}>✅ {adminIdDoc.originalName} · {adminIdDoc.size?(adminIdDoc.size/1024).toFixed(0)+'KB':''}</span>
-                          <button type="button" onClick={()=>setAdminIdDoc(null)} style={{fontSize:10,color:'#EF4444',background:'none',border:'none',cursor:'pointer',fontWeight:700}}>✕ Remove</button>
+                          <span style={{fontSize:11,color:'#1E3A5F',fontWeight:700}}> {adminIdDoc.originalName} · {adminIdDoc.size?(adminIdDoc.size/1024).toFixed(0)+'KB':''}</span>
+                          <button type="button" onClick={()=>setAdminIdDoc(null)} style={{fontSize:10,color:'#EF4444',background:'none',border:'none',cursor:'pointer',fontWeight:700}}>× Remove</button>
                         </div>
                       ) : (
                         <div>
-                          <div style={{fontSize:11,color:'#6B7280',marginBottom:6}}>{adminIdUploading?'⏳ Uploading…':'📷 Take a photo or browse to upload ID'}</div>
+                          <div style={{fontSize:11,color:'#6B7280',marginBottom:6}}>{adminIdUploading?' Uploading…':' Take a photo or browse to upload ID'}</div>
                           <input type="file" accept="image/*,application/pdf" style={{display:'none'}} id="adminIdFile"
                             onChange={e=>uploadIdDoc(e.target.files[0],adminTempId,setAdminIdDoc,setAdminIdUploading,'admin')}/>
                           <div style={{display:'flex',gap:6,justifyContent:'center'}}>
                             <button type="button" disabled={adminIdUploading}
                               onClick={()=>document.getElementById('adminIdFile')?.click()}
                               style={{fontSize:11,padding:'5px 12px',background:'white',border:'1.5px solid #D1D5DB',borderRadius:6,cursor:'pointer',fontWeight:600}}>
-                              📁 Browse File
+                               Browse File
                             </button>
-                            <CameraCapture disabled={adminIdUploading} color="#4F46E5"
+                            <CameraCapture disabled={adminIdUploading} color="#1E3A5F"
                               onCapture={f=>uploadIdDoc(f,adminTempId,setAdminIdDoc,setAdminIdUploading,'admin')}/>
                           </div>
                         </div>
                       )}
                     </div>
                   </div>
-                  <button style={{width:'100%',marginTop:10,padding:'10px',background:'linear-gradient(135deg,#4F46E5,#7C3AED)',color:'white',border:'none',borderRadius:8,fontWeight:800,fontSize:13,cursor:'pointer'}} onClick={handleCreateAdmin} disabled={adminCreating}>
-                    {adminCreating?'⏳ Creating…':'🏢 Create Admin Account'}
+                  <button style={{width:'100%',marginTop:10,padding:'10px',background:'#1E3A5F',color:'white',border:'none',borderRadius:8,fontWeight:700,fontSize:13,cursor:'pointer'}} onClick={handleCreateAdmin} disabled={adminCreating}>
+                    {adminCreating?' Creating…':' Create Admin Account'}
                   </button>
                 </div>
               )}
@@ -397,16 +397,16 @@ Pass:  ${adminForm.password}`); setAdminForm({fullName:'',phone:'',email:'',pass
           <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
             {['list','report'].map(t=>(
               <button key={t} className={`btn btn-sm ${tab===t?'btn-primary':'btn-secondary'}`} onClick={()=>setTab(t)}>
-                {t==='list'?'📋 Agent List':'📊 Performance'}
+                {t==='list'?' Agent List':' Performance'}
               </button>
             ))}
             <button className="btn btn-sm btn-primary" onClick={()=>{setAgentModalKey(k=>k+1);setShowCreate(true);}}>
-              🤝 New Agent
+               New Agent
             </button>
             {isSuperAdmin && (
               <button className="btn btn-sm" onClick={()=>{setAdminModalKey(k=>k+1);setShowAdmin(true);}}
-                style={{background:'linear-gradient(135deg,#4F46E5,#7C3AED)',color:'white',border:'none'}}>
-                🏢 New Admin
+                style={{background:'#1E3A5F',color:'white',border:'none'}}>
+                 New Admin
               </button>
             )}
           </div>
@@ -416,16 +416,16 @@ Pass:  ${adminForm.password}`); setAdminForm({fullName:'',phone:'',email:'',pass
       <div className="page-body">
         <input type="text" style={{display:"none"}} /><input type="password" style={{display:"none"}} /><div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))',gap:10,marginBottom:16,minHeight:'100px'}}>
           {[
-            {icon:'🤝',value:allAgents.length,label:'Total Agents',color:'#00D68F',bg:'#E6FBF3'},
-            {icon:'👥',value:Number(totals.total)||0,label:'Members Onboarded',color:'#3B82F6',bg:'#EFF6FF'},
-            {icon:'🛡️',value:Number(totals.policies)||0,label:'Active Policies',color:'#4F46E5',bg:'#EEF2FF'},
-            {icon:'⏳',value:Number(totals.pendingKYC)||0,label:'Pending KYC',color:'#F59E0B',bg:'#FFFBEB'},
+            {icon:'',value:allAgents.length,label:'Total Agents',color:'#1A9F73',bg:'#E8F3EF'},
+            {icon:'',value:Number(totals.total)||0,label:'Members Onboarded',color:'#2F5D8C',bg:'#EEF3F8'},
+            {icon:'',value:Number(totals.policies)||0,label:'Active Policies',color:'#1E3A5F',bg:'#EEF1F6'},
+            {icon:'',value:Number(totals.pendingKYC)||0,label:'Pending KYC',color:'#B08A3E',bg:'#FFFBEB'},
           ].map(s=>(
-            <div key={s.label} style={{background:'var(--surface)',borderRadius:10,padding:'11px 13px',border:'1px solid var(--border)',position:'relative',overflow:'hidden'}}>
-              <div style={{position:'absolute',top:0,left:0,right:0,height:3,background:s.color,borderRadius:'10px 10px 0 0'}}/>
+            <div key={s.label} style={{background:'var(--surface)',borderRadius:6,padding:'11px 13px',border:'1px solid var(--border)',position:'relative',overflow:'hidden'}}>
+              <div style={{position:'absolute',top:0,left:0,right:0,height:3,background:s.color,borderRadius:'8px 8px 0 0'}}/>
               <div style={{display:'flex',alignItems:'center',gap:8}}>
                 <div style={{width:30,height:30,borderRadius:7,background:s.bg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,flexShrink:0}}>{s.icon}</div>
-                <div><div style={{fontWeight:800,fontSize:18,color:s.color,lineHeight:1}}>{s.value}</div><div style={{fontSize:10,color:'var(--muted)',marginTop:1}}>{s.label}</div></div>
+                <div><div style={{fontWeight:700,fontSize:18,color:s.color,lineHeight:1}}>{s.value}</div><div style={{fontSize:10,color:'var(--muted)',marginTop:1}}>{s.label}</div></div>
               </div>
             </div>
           ))}
@@ -434,7 +434,7 @@ Pass:  ${adminForm.password}`); setAdminForm({fullName:'',phone:'',email:'',pass
         {tab==='list'&&(
           <div className="card">
             <div style={{display:'flex',gap:8,marginBottom:12,flexWrap:'wrap',alignItems:'center'}}>
-              <input className="form-input" placeholder="🔍 Search name, code, county…" value={search} onChange={e=>setSearch(e.target.value)} style={{flex:'1 1 160px',maxWidth:240}}/>
+              <input className="form-input" placeholder=" Search name, code, county…" value={search} onChange={e=>setSearch(e.target.value)} style={{flex:'1 1 160px',maxWidth:240}}/>
               <select className="form-input" value={countyFilter} onChange={e=>setCountyFilter(e.target.value)} style={{width:155}}>
                 <option value="all">All Counties</option>
                 {allCounties.map(c=><option key={c} value={c}>{c}</option>)}
@@ -459,7 +459,7 @@ Pass:  ${adminForm.password}`); setAdminForm({fullName:'',phone:'',email:'',pass
                 <tbody>
                   {filtered.length===0 && (
                     <tr><td colSpan={9} style={{textAlign:'center',color:'var(--muted)',padding:32,fontSize:13}}>
-                      {allAgents.length===0 ? 'No agents yet — click 🤝 New Agent' : 'No agents match your search'}
+                      {allAgents.length===0 ? 'No agents yet — click  New Agent' : 'No agents match your search'}
                     </td></tr>
                   )}
                   {filtered.map(u => {
@@ -469,11 +469,11 @@ Pass:  ${adminForm.password}`); setAdminForm({fullName:'',phone:'',email:'',pass
                       <tr key={u.id} style={{opacity: u.suspended ? 0.65 : 1}}>
                         <td>
                           <div style={{fontWeight:700,fontSize:13}}>{s(u.fullName)}
-                            {u.suspended && <span style={{fontSize:9,background:'#EF4444',color:'white',borderRadius:10,padding:'1px 5px',marginLeft:6,fontWeight:700}}>SUSP</span>}
+                            {u.suspended && <span style={{fontSize:9,background:'#EF4444',color:'white',borderRadius:6,padding:'1px 5px',marginLeft:6,fontWeight:700}}>SUSP</span>}
                           </div>
                         </td>
                         <td>
-                          <span style={{background:'#DCFCE7',color:'#15803D',padding:'2px 9px',borderRadius:20,fontSize:11,fontWeight:700,fontFamily:'monospace'}}>
+                          <span style={{background:'#DCFCE7',color:'#15803D',padding:'2px 9px',borderRadius:8,fontSize:11,fontWeight:700,fontFamily:'monospace'}}>
                             {sd(u.agentCode||u.memberNumber)}
                           </span>
                         </td>
@@ -483,8 +483,8 @@ Pass:  ${adminForm.password}`); setAdminForm({fullName:'',phone:'',email:'',pass
                         <td>
                           {agentData ? (
                             <div style={{display:'flex',gap:4,flexWrap:'wrap'}}>
-                              <span style={{background:'#DCFCE7',color:'#15803D',padding:'1px 7px',borderRadius:10,fontSize:10,fontWeight:700}}>{agentData.ridersCount||0} riders</span>
-                              <span style={{background:'#F5F3FF',color:'#6D28D9',padding:'1px 7px',borderRadius:10,fontSize:10,fontWeight:700}}>{agentData.membersCount||0} mbr</span>
+                              <span style={{background:'#DCFCE7',color:'#15803D',padding:'1px 7px',borderRadius:6,fontSize:10,fontWeight:700}}>{agentData.ridersCount||0} riders</span>
+                              <span style={{background:'#EEF1F6',color:'#3B4B6B',padding:'1px 7px',borderRadius:6,fontSize:10,fontWeight:700}}>{agentData.membersCount||0} mbr</span>
                             </div>
                           ) : <span style={{color:'var(--muted)',fontSize:11}}>—</span>}
                         </td>
@@ -510,34 +510,34 @@ Pass:  ${adminForm.password}`); setAdminForm({fullName:'',phone:'',email:'',pass
                     <XAxis dataKey="name" tick={{fontSize:10}} axisLine={false} tickLine={false}/>
                     <YAxis tick={{fontSize:10}} axisLine={false} tickLine={false}/>
                     <Tooltip/>
-                    <Bar dataKey="riders" name="Riders" fill="#22C55E" radius={[3,3,0,0]}/>
-                    <Bar dataKey="members" name="Members" fill="#8B5CF6" radius={[3,3,0,0]}/>
-                    <Bar dataKey="policies" name="Policies" fill="#3B82F6" radius={[3,3,0,0]}/>
+                    <Bar dataKey="riders" name="Riders" fill="#1A9F73" radius={[3,3,0,0]}/>
+                    <Bar dataKey="members" name="Members" fill="#3B4B6B" radius={[3,3,0,0]}/>
+                    <Bar dataKey="policies" name="Policies" fill="#2F5D8C" radius={[3,3,0,0]}/>
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             )}
             <div style={{display:'flex',flexDirection:'column',gap:9}}>
-              {agents.length===0&&<div className="card"><div className="empty-state"><div className="emoji">🤝</div><p>No agents registered yet.</p></div></div>}
+              {agents.length===0&&<div className="card"><div className="empty-state"><div className="emoji"></div><p>No agents registered yet.</p></div></div>}
               {agents.map(a=>(
                 <div key={a.id} className="card" style={{padding:'11px 14px'}}>
                   <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
                     <div style={{display:'flex',alignItems:'center',gap:8}}>
-                      <div style={{width:32,height:32,borderRadius:7,background:'linear-gradient(135deg,#00D68F22,#00D68F44)',border:'1px solid #00D68F44',display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,flexShrink:0}}>🤝</div>
+                      <div style={{width:32,height:32,borderRadius:7,background:'#0F7B5C',border:'1px solid #1A9F7344',display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,flexShrink:0}}></div>
                       <div>
-                        <div style={{fontWeight:800,fontSize:13}}>{a.name||a.fullName||''}</div>
+                        <div style={{fontWeight:700,fontSize:13}}>{a.name||a.fullName||''}</div>
                         <div style={{fontSize:10,color:'var(--muted)',marginTop:1,display:'flex',alignItems:'center',gap:4}}>
-                          <span style={{background:'#DCFCE7',color:'#15803D',padding:'1px 5px',borderRadius:20,fontSize:9,fontWeight:700}}>{a.agentCode}</span>
+                          <span style={{background:'#DCFCE7',color:'#15803D',padding:'1px 5px',borderRadius:8,fontSize:9,fontWeight:700}}>{a.agentCode}</span>
                           <span>{a.region||''}</span><span style={{color:'var(--border)'}}>·</span><span>{a.phone||''}</span>
                         </div>
                       </div>
                     </div>
-                    <div style={{textAlign:'right'}}><div style={{fontSize:9,color:'var(--muted)'}}>KYC Rate</div><div style={{fontWeight:800,fontSize:17,color:a.kycApprovalRate>70?'#00D68F':a.kycApprovalRate>40?'#F59E0B':'#EF4444',lineHeight:1}}>{a.kycApprovalRate}%</div></div>
+                    <div style={{textAlign:'right'}}><div style={{fontSize:9,color:'var(--muted)'}}>KYC Rate</div><div style={{fontWeight:700,fontSize:17,color:a.kycApprovalRate>70?'#1A9F73':a.kycApprovalRate>40?'#B08A3E':'#EF4444',lineHeight:1}}>{a.kycApprovalRate}%</div></div>
                   </div>
                   <input type="text" style={{display:"none"}} /><input type="password" style={{display:"none"}} /><div style={{display:'grid',gridTemplateColumns:'repeat(6,1fr)',gap:4}}>
-                    {[{label:'Riders',value:a.ridersCount,color:'#00D68F',bg:'#E6FBF3'},{label:'Members',value:a.membersCount,color:'#8B5CF6',bg:'#F5F3FF'},{label:'Total',value:a.totalOnboarded,color:'#3B82F6',bg:'#EFF6FF'},{label:'Policies',value:a.activePolicies,color:'#4F46E5',bg:'#EEF2FF'},{label:'Pending',value:a.pendingKYC,color:'#F59E0B',bg:'#FFFBEB'},{label:'Claims',value:a.claimsCount,color:'#6B7280',bg:'#F9FAFB'}].map(s=>(
+                    {[{label:'Riders',value:a.ridersCount,color:'#1A9F73',bg:'#E8F3EF'},{label:'Members',value:a.membersCount,color:'#3B4B6B',bg:'#EEF1F6'},{label:'Total',value:a.totalOnboarded,color:'#2F5D8C',bg:'#EEF3F8'},{label:'Policies',value:a.activePolicies,color:'#1E3A5F',bg:'#EEF1F6'},{label:'Pending',value:a.pendingKYC,color:'#B08A3E',bg:'#FFFBEB'},{label:'Claims',value:a.claimsCount,color:'#6B7280',bg:'#F9FAFB'}].map(s=>(
                       <div key={s.label} style={{background:s.bg,borderRadius:5,padding:'4px 2px',textAlign:'center',border:`1px solid ${s.color}22`}}>
-                        <div style={{fontSize:13,fontWeight:800,color:s.color,lineHeight:1}}>{s.value}</div>
+                        <div style={{fontSize:13,fontWeight:700,color:s.color,lineHeight:1}}>{s.value}</div>
                         <div style={{fontSize:8.5,color:'var(--muted)',marginTop:1}}>{s.label}</div>
                       </div>
                     ))}

@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { policiesAPI, authAPI, documentsAPI } from '../utils/api';
 
 const PACKAGE_INFO = {
-  bail:       { icon: '⚖️', color: '#0066FF', features: ['Traffic arrest bail up to KES 20,000', 'Legal representation for court appearances', 'Lawyer consultation included per claim', 'Max 2 claims/year', 'Police abstract required', 'Claims open after 5 months of cover'], ideal: 'Ideal for riders with high road exposure' },
-  bail_income:{ icon: '🛡️', color: '#00C896', features: ['Bail up to KES 20,000 + Stipend KES 15,000', 'Legal representation for court appearances', 'Lawyer consultation included per bail claim', 'Bail: max 2 claims/year', 'Stipend: max 2/year (6-month gap)', 'Doctor\'s note & hospital details required for stipend', 'Claims open after 5 months of cover'], ideal: 'Best value — full income protection', popular: true },
-  funeral:    { icon: '🕊️', color: '#FF6B35', features: ['Up to 3 household members (max age 70)', 'Cover up to KES 200,000 — no minimum', 'Claims open after 3 months', 'NOK can lodge claims directly', 'Death certificate + burial permit required'], ideal: 'Protect loved ones from funeral costs' },
+  bail:       { icon: '', color: '#2F5D8C', features: ['Traffic arrest bail up to KES 20,000', 'Legal representation for court appearances', 'Lawyer consultation included per claim', 'Max 2 claims/year', 'Police abstract required', 'Claims open after 5 months of cover'], ideal: 'Ideal for riders with high road exposure' },
+  bail_income:{ icon: '', color: '#1A9F73', features: ['Bail up to KES 20,000 + Stipend KES 15,000', 'Legal representation for court appearances', 'Lawyer consultation included per bail claim', 'Bail: max 2 claims/year', 'Stipend: max 2/year (6-month gap)', 'Doctor\'s note & hospital details required for stipend', 'Claims open after 5 months of cover'], ideal: 'Best value — full income protection', popular: true },
+  funeral:    { icon: '', color: '#B08A3E', features: ['Up to 3 household members (max age 70)', 'Cover up to KES 200,000 — no minimum', 'Claims open after 5 months of cover', 'NOK can lodge claims directly', 'Death certificate + burial permit required'], ideal: 'Protect loved ones from funeral costs' },
 };
 
 const normalizeKEPhone = (phone) => {
@@ -42,16 +42,16 @@ function NokIdUploader({ onUploaded, uploaded, tempId }) {
           <div style={{display:'flex',gap:6,alignItems:'center',marginBottom:3}}>
             <span style={{fontSize:12,fontWeight:600}}>NOK National ID Copy</span>
             {!uploaded && <span style={{fontSize:9,background:'#FEF2F2',color:'var(--red)',padding:'1px 5px',borderRadius:3,fontWeight:700}}>REQUIRED</span>}
-            {uploaded && <span style={{fontSize:9,background:'var(--green-light)',color:'var(--green)',padding:'1px 5px',borderRadius:3,fontWeight:700}}>✓ UPLOADED</span>}
+            {uploaded && <span style={{fontSize:9,background:'var(--green-light)',color:'var(--green)',padding:'1px 5px',borderRadius:3,fontWeight:700}}> UPLOADED</span>}
           </div>
-          {uploaded ? <div style={{fontSize:11,color:'var(--green)'}}>📄 {uploaded.originalName}</div>
+          {uploaded ? <div style={{fontSize:11,color:'var(--green)'}}> {uploaded.originalName}</div>
                     : <div style={{fontSize:11,color:'var(--muted)'}}>PDF, JPG or PNG · max 10MB</div>}
-          {err && <div style={{fontSize:11,color:'var(--red)',marginTop:2}}>⚠️ {err}</div>}
+          {err && <div style={{fontSize:11,color:'var(--red)',marginTop:2}}> {err}</div>}
         </div>
         <input ref={ref} type="file" accept=".pdf,.jpg,.jpeg,.png" style={{display:'none'}} onChange={e=>upload(e.target.files[0])}/>
         <button type="button" onClick={()=>ref.current?.click()} disabled={uploading}
           style={{padding:'6px 12px',borderRadius:6,border:'1.5px solid var(--border)',background:'white',fontSize:12,fontWeight:600,cursor:'pointer',flexShrink:0}}>
-          {uploading?'⏳':uploaded?'↺ Replace':'📎 Browse'}
+          {uploading?'':uploaded?'↺ Replace':' Browse'}
         </button>
       </div>
     </div>
@@ -120,8 +120,8 @@ export default function SubscribePage() {
         <p className="page-subtitle">Select a package that fits your needs and budget</p>
       </div>
       <div className="page-body">
-        {error && <div className="alert alert-error">❌ {error}</div>}
-        {success && step < 3 && <div className="alert alert-success">✅ {success}</div>}
+        {error && <div className="alert alert-error"> {error}</div>}
+        {success && step < 3 && <div className="alert alert-success"> {success}</div>}
 
         {/* Step 1 — Package selection */}
         {step === 1 && (
@@ -138,16 +138,16 @@ export default function SubscribePage() {
                     boxShadow: isSel ? `0 8px 32px ${i?.color}22` : 'var(--shadow)',
                   }}>
                     {i?.popular && <div style={{ position: 'absolute', top: 14, right: -18, background: 'var(--green)', color: 'white', fontSize: 10, fontWeight: 700, padding: '3px 26px', transform: 'rotate(45deg)', letterSpacing: 0.5 }}>POPULAR</div>}
-                    {isSel && <div style={{ position: 'absolute', top: 12, left: 12, width: 22, height: 22, borderRadius: '50%', background: i?.color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 12 }}>✓</div>}
+                    {isSel && <div style={{ position: 'absolute', top: 12, left: 12, width: 22, height: 22, borderRadius: '50%', background: i?.color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: 12 }}></div>}
                     <div style={{ fontSize: 36, marginBottom: 12 }}>{i?.icon}</div>
                     <h3 style={{ fontSize: 17, marginBottom: 4 }}>{pkg.name}</h3>
                     <p className="text-muted" style={{ fontSize: 12, marginBottom: 14 }}>{i?.ideal}</p>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 14 }}>
-                      <span style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontWeight: 800, fontSize: 28, color: i?.color }}>KES {pkg.dailyContribution}</span>
+                      <span style={{ fontFamily: "'Source Serif 4',Georgia,serif", fontWeight:700, fontSize: 28, color: i?.color }}>KES {pkg.dailyContribution}</span>
                       <span className="text-muted" style={{ fontSize: 13 }}>/day</span>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 7, marginBottom: 14 }}>
-                      {i?.features.map(f => <div key={f} style={{ display: 'flex', gap: 8, fontSize: 12 }}><span style={{ color: i?.color, fontWeight: 700, flexShrink: 0 }}>✓</span>{f}</div>)}
+                      {i?.features.map(f => <div key={f} style={{ display: 'flex', gap: 8, fontSize: 12 }}><span style={{ color: i?.color, fontWeight: 700, flexShrink: 0 }}></span>{f}</div>)}
                     </div>
                     <div style={{ background: 'var(--bg)', borderRadius: 8, padding: '10px 12px' }}>
                       {Object.entries(pkg.coverages).map(([k, v]) => (
@@ -164,7 +164,7 @@ export default function SubscribePage() {
               <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
                 <button className="btn btn-secondary" onClick={() => setSelected(null)}>Deselect</button>
                 <button className="btn btn-primary btn-lg" onClick={() => selected === 'funeral' ? setStep(2) : handleSubscribe()} disabled={loading}>
-                  {loading ? 'Enrolling...' : `🛡️ Enroll in ${packages[selected]?.name}`}
+                  {loading ? 'Enrolling...' : ` Enroll in ${packages[selected]?.name}`}
                 </button>
               </div>
             )}
@@ -175,7 +175,7 @@ export default function SubscribePage() {
         {step === 2 && selected === 'funeral' && (
           <div className="card">
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
-              <span style={{ fontSize: 28 }}>🕊️</span>
+              <span style={{ fontSize: 28 }}></span>
               <div>
                 <h3 style={{ fontSize: 17 }}>Nominate Household Members</h3>
                 <p className="text-muted" style={{ fontSize: 12 }}>Up to 3 members · Maximum age 70 years</p>
@@ -204,19 +204,19 @@ export default function SubscribePage() {
                   {m.age && parseInt(m.age,10) > 70 && <div style={{fontSize:10,color:'var(--red)',marginTop:2}}>Max 70 yrs</div>}
                 </div>
                 <input className="form-input" placeholder="National ID" value={m.id} onChange={e => { const ms = [...members]; ms[i].id = e.target.value; setMembers(ms); }} />
-                {members.length > 1 && <button type="button" onClick={() => setMembers(members.filter((_, j) => j !== i))} style={{ background: '#FFF0F0', border: 'none', borderRadius: 8, padding: '7px 10px', cursor: 'pointer', fontSize: 16 }}>✕</button>}
+                {members.length > 1 && <button type="button" onClick={() => setMembers(members.filter((_, j) => j !== i))} style={{ background: '#FFF0F0', border: 'none', borderRadius: 8, padding: '7px 10px', cursor: 'pointer', fontSize: 16 }}>×</button>}
               </div>
             ))}
             {members.length < 3 && (
               <button className="btn btn-secondary btn-sm" style={{ marginBottom: 20 }} onClick={() => setMembers([...members, { name: '', relation: '', age: '', id: '' }])}>+ Add member</button>
             )}
             <div className="alert alert-info">
-              🔗 <strong>Next step:</strong> You'll register a <strong>Next of Kin (NOK)</strong> who can log in and lodge funeral claims on your behalf if needed.
+               <strong>Next step:</strong> You'll register a <strong>Next of Kin (NOK)</strong> who can log in and lodge funeral claims on your behalf if needed.
             </div>
             <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
               <button className="btn btn-secondary" onClick={() => setStep(1)}>← Back</button>
               <button className="btn btn-primary btn-lg" onClick={handleSubscribe} disabled={loading}>
-                {loading ? 'Enrolling...' : '🛡️ Enroll & Continue to NOK Setup'}
+                {loading ? 'Enrolling...' : ' Enroll & Continue to NOK Setup'}
               </button>
             </div>
           </div>
@@ -226,17 +226,17 @@ export default function SubscribePage() {
         {step === 3 && (
           <div className="card" style={{ maxWidth: 560 }}>
             <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 6 }}>
-              <span style={{ fontSize: 32 }}>🔗</span>
+              <span style={{ fontSize: 32 }}></span>
               <div>
                 <h3 style={{ fontSize: 18 }}>Register Next of Kin (NOK)</h3>
                 <p className="text-muted" style={{ fontSize: 13 }}>Your NOK gets a unique login to lodge funeral claims on your behalf</p>
               </div>
             </div>
-            <div className="alert alert-success" style={{ marginBottom: 20 }}>✅ {success}</div>
+            <div className="alert alert-success" style={{ marginBottom: 20 }}> {success}</div>
             <div className="alert alert-info" style={{ marginBottom: 20 }}>
               <strong>Why register a NOK?</strong> If the principal contributor passes away, the NOK can log in using their unique NOK number and lodge a funeral claim on behalf of the family — without needing the principal's credentials.
             </div>
-            {error && <div className="alert alert-error">❌ {error}</div>}
+            {error && <div className="alert alert-error"> {error}</div>}
             <div className="form-group">
               <label className="form-label">NOK Full Name</label>
               <input className="form-input" placeholder="Mary Kamau" value={nokForm.fullName} onChange={e => setNokForm(f => ({ ...f, fullName: e.target.value }))} />
@@ -262,7 +262,7 @@ export default function SubscribePage() {
             <div style={{ display: 'flex', gap: 10 }}>
               <button className="btn btn-secondary" onClick={() => navigate('/policies')}>Skip (do later)</button>
               <button className="btn btn-primary btn-lg" onClick={handleNokRegister} disabled={loading}>
-                {loading ? 'Registering NOK...' : '🔗 Register NOK Account'}
+                {loading ? 'Registering NOK...' : ' Register NOK Account'}
               </button>
             </div>
           </div>
@@ -272,16 +272,16 @@ export default function SubscribePage() {
         {step === 4 && nokResult && (
           <div className="card" style={{ maxWidth: 520 }}>
             <div style={{ textAlign: 'center', marginBottom: 24 }}>
-              <div style={{ fontSize: 56 }}>🎉</div>
+              <div style={{ fontSize: 56 }}></div>
               <h3 style={{ fontSize: 22, marginTop: 12, marginBottom: 6 }}>All Set!</h3>
               <p className="text-muted">Funeral protection active. NOK account created.</p>
             </div>
-            <div style={{ background: 'linear-gradient(135deg, #0F172A, #162B52)', borderRadius: 14, padding: 24, marginBottom: 20, textAlign: 'center' }}>
+            <div style={{ background: '#0B1F3A', borderRadius: 8, padding: 24, marginBottom: 20, textAlign: 'center' }}>
               <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8 }}>NOK Login Number</div>
-              <div style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontWeight: 800, fontSize: 32, color: 'var(--green)', letterSpacing: 2 }}>{nokResult.nokNumber}</div>
+              <div style={{ fontFamily: "'Source Serif 4',Georgia,serif", fontWeight:700, fontSize: 32, color: 'var(--green)', letterSpacing: 2 }}>{nokResult.nokNumber}</div>
               <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 8 }}>Share this with {nokForm.fullName} — they use it to log in at pikishield.co.ke</div>
             </div>
-            <div style={{ background: 'var(--bg)', borderRadius: 10, padding: 14, marginBottom: 20 }}>
+            <div style={{ background: 'var(--bg)', borderRadius: 6, padding: 14, marginBottom: 20 }}>
               <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 8 }}>NOK Account Summary</div>
               {[
                 ['Name', nokForm.fullName],

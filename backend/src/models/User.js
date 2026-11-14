@@ -57,9 +57,35 @@ const userSchema = new mongoose.Schema(
     tempUploadId: { type: String, default: '' },
 
     resetOtp: { type: String, default: undefined },
-    resetOtpExpiry: { type: Date, default: undefined }
+    resetOtpExpiry: { type: Date, default: undefined },
+    resetOtpAttempts: { type: Number, default: 0 },
+
+    // Login lockout
+    failedLogins: { type: Number, default: 0 },
+    lockUntil: { type: Date, default: undefined },
+
+    // Legal consent record (Terms + Privacy)
+    consent: {
+      termsVersion: { type: String, default: undefined },
+      acceptedAt: { type: Date, default: undefined },
+      ip: { type: String, default: undefined }
+    }
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    toJSON: {
+      transform: (doc, ret) => {
+        delete ret.password;
+        delete ret.resetOtp;
+        delete ret.resetOtpExpiry;
+        delete ret.resetOtpAttempts;
+        delete ret.failedLogins;
+        delete ret.lockUntil;
+        delete ret.__v;
+        return ret;
+      }
+    }
+  }
 );
 
 // Auto-generate member/rider numbers

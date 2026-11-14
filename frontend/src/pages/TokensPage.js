@@ -3,13 +3,13 @@ import { useAuth } from '../context/AuthContext';
 import { policiesAPI, usersAPI } from '../utils/api';
 
 const REDEEM = [
-  { label:'Data Bundle 500MB',          tokens:50,   value:'data_500mb',      icon:'📶' },
-  { label:'5% Contribution Discount',   tokens:80,   value:'contrib_5pct',    icon:'💸' },
-  { label:'Airtime KES 50',             tokens:100,  value:'airtime_50',      icon:'📱' },
-  { label:'Jumia Voucher KES 100',       tokens:150,  value:'jumia_100',       icon:'🛍️' },
-  { label:'Fuel / Charge Voucher KES 200', tokens:250, value:'fuel_200',      icon:'⛽' },
-  { label:'10% Contribution Discount',  tokens:350,  value:'contrib_10pct',   icon:'🎯' },
-  { label:'1 Month Free Coverage',      tokens:600,  value:'free_month',      icon:'🛡️' },
+  { label:'Data Bundle 500MB',          tokens:50,   value:'data_500mb',      icon:'' },
+  { label:'5% Contribution Discount',   tokens:80,   value:'contrib_5pct',    icon:'' },
+  { label:'Airtime KES 50',             tokens:100,  value:'airtime_50',      icon:'' },
+  { label:'Jumia Voucher KES 100',       tokens:150,  value:'jumia_100',       icon:'' },
+  { label:'Fuel / Charge Voucher KES 200', tokens:250, value:'fuel_200',      icon:'' },
+  { label:'10% Contribution Discount',  tokens:350,  value:'contrib_10pct',   icon:'' },
+  { label:'1 Month Free Coverage',      tokens:600,  value:'free_month',      icon:'' },
 ];
 
 const QUIZ_QUESTIONS = [
@@ -55,8 +55,8 @@ function SafetyQuiz({ onComplete, onClose }) {
     const passed = score >= 7;
     return (
       <div style={{ textAlign:'center', padding:'24px 16px' }}>
-        <div style={{ fontSize:48, marginBottom:12 }}>{passed ? '🏆' : '📚'}</div>
-        <div style={{ fontSize:20, fontWeight:800, marginBottom:8 }}>
+        <div style={{ fontSize:48, marginBottom:12 }}>{passed ? '' : ''}</div>
+        <div style={{ fontSize:20, fontWeight:700, marginBottom:8 }}>
           {passed ? 'Quiz Passed!' : 'Keep Practicing'}
         </div>
         <div style={{ fontSize:14, color:'var(--muted)', marginBottom:16 }}>
@@ -125,11 +125,11 @@ export default function TokensPage() {
   const isEV = user?.profile?.bikeType === 'EV';
 
   const EARN = [
-    { key:'helmet_check',   label:'Helmet Compliance Check', tokens:3,  icon:'🪖', desc:'Once per day · 24h cooldown' },
-    { key:'safety_quiz',    label:'Complete Safety Quiz',     tokens:5,  icon:'📝', desc:'Once per day · must score 7/10 to earn' },
-    ...(isEV ? [{ key:'ev_charging', label:'EV Charging Logged', tokens:4, icon:'⚡', desc:'Log a full charge · once per day (EV riders)' }] : []),
-    { key:'no_claim_month', label:'No-Claim Month Bonus', tokens:15, icon:'🏆', desc:'Auto-credited after 30 claim-free days', auto:true },
-    { key:'referral', label:'Refer a New Rider', tokens:30, icon:'👥', desc:'Auto-credited when referred rider gets KYC approved', auto:true },
+    { key:'helmet_check',   label:'Helmet Compliance Check', tokens:3,  icon:'', desc:'Once per day · 24h cooldown' },
+    { key:'safety_quiz',    label:'Complete Safety Quiz',     tokens:5,  icon:'', desc:'Once per day · must score 7/10 to earn' },
+    ...(isEV ? [{ key:'ev_charging', label:'EV Charging Logged', tokens:4, icon:'', desc:'Log a full charge · once per day (EV riders)' }] : []),
+    { key:'no_claim_month', label:'No-Claim Month Bonus', tokens:15, icon:'', desc:'Auto-credited after 30 claim-free days', auto:true },
+    { key:'referral', label:'Refer a New Rider', tokens:30, icon:'', desc:'Auto-credited when referred rider gets KYC approved', auto:true },
   ];
 
   const flash = (ok, text) => {
@@ -217,7 +217,7 @@ export default function TokensPage() {
       <div className="page-body">
         {policiesLoading ? (
           <div style={{textAlign:'center',padding:'48px 0',color:'var(--muted)',fontSize:13}}>
-            <div style={{width:32,height:32,border:'3px solid #E2EAF0',borderTopColor:'#00C896',borderRadius:'50%',animation:'spin 0.7s linear infinite',margin:'0 auto 12px'}}/>
+            <div style={{width:32,height:32,border:'3px solid #E2EAF0',borderTopColor:'#1A9F73',borderRadius:'50%',animation:'spin 0.7s linear infinite',margin:'0 auto 12px'}}/>
             <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
             Checking your token status…
           </div>
@@ -225,10 +225,10 @@ export default function TokensPage() {
           <>
           {/* Show referral code even when locked */}
           {user?.referralCode && (
-            <div style={{background:'var(--electric-light)',border:'1.5px solid var(--electric)',borderRadius:12,padding:'14px 18px',marginBottom:16,display:'flex',alignItems:'center',gap:14}}>
+            <div style={{background:'var(--electric-light)',border:'1.5px solid var(--electric)',borderRadius:6,padding:'14px 18px',marginBottom:16,display:'flex',alignItems:'center',gap:14}}>
               <div style={{flex:1}}>
                 <div style={{fontSize:12,fontWeight:700,color:'var(--electric)',marginBottom:4}}>Your Referral Code</div>
-                <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontWeight:800,fontSize:24,letterSpacing:3,color:'var(--text)'}}>{user.referralCode}</div>
+                <div style={{fontFamily:"'Source Serif 4',Georgia,serif",fontWeight:700,fontSize:24,letterSpacing:3,color:'var(--text)'}}>{user.referralCode}</div>
                 <div style={{fontSize:11,color:'var(--muted)',marginTop:4}}>Share with friends — earn 30 tokens when they get KYC approved</div>
               </div>
               <button className="btn btn-secondary btn-sm" onClick={() => {
@@ -237,13 +237,13 @@ export default function TokensPage() {
               }}>Copy</button>
             </div>
           )}
-          <div style={{background:'linear-gradient(135deg,#FEF3C7,#FFF8E1)',border:'1.5px solid #F59E0B',borderRadius:14,padding:'28px 24px',textAlign:'center',marginBottom:20}}>
-            <div style={{fontSize:40,marginBottom:12}}>🔒</div>
-            <h3 style={{fontSize:18,fontWeight:800,color:'#92400E',marginBottom:8}}>Tokens Locked</h3>
+          <div style={{background:'#FBF6EA',border:'1.5px solid #B08A3E',borderRadius:8,padding:'28px 24px',textAlign:'center',marginBottom:20}}>
+            <div style={{fontSize:40,marginBottom:12}}></div>
+            <h3 style={{fontSize:18,fontWeight:700,color:'#92400E',marginBottom:8}}>Tokens Locked</h3>
             <p style={{fontSize:13,color:'#78350F',lineHeight:1.6,maxWidth:360,margin:'0 auto 16px'}}>
               Shield Tokens become available after your first contribution payment.
             </p>
-            <a href="/payments" className="btn btn-primary" style={{background:'#F59E0B',border:'none',color:'white'}}>
+            <a href="/payments" className="btn btn-primary" style={{background:'#B08A3E',border:'none',color:'white'}}>
               Make First Contribution
             </a>
           </div>
@@ -253,10 +253,10 @@ export default function TokensPage() {
         {/* Helmet Modal */}
         {showHelmet && (
           <div style={{position:'fixed',inset:0,zIndex:9999,background:'rgba(0,0,0,.6)',display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
-            <div style={{background:'white',borderRadius:14,width:'100%',maxWidth:400,padding:'20px 24px'}}>
+            <div style={{background:'white',borderRadius:8,width:'100%',maxWidth:400,padding:'20px 24px'}}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
                 <div style={{fontSize:15,fontWeight:700}}>Helmet Check-in</div>
-                <button onClick={() => { setShowHelmet(false); setHelmetFile(null); setHelmetPreview(null); }} style={{background:'#F1F5F9',border:'none',borderRadius:8,padding:'4px 10px',cursor:'pointer',fontSize:13}}>✕</button>
+                <button onClick={() => { setShowHelmet(false); setHelmetFile(null); setHelmetPreview(null); }} style={{background:'#F1F5F9',border:'none',borderRadius:8,padding:'4px 10px',cursor:'pointer',fontSize:13}}>×</button>
               </div>
               <p style={{fontSize:13,color:'var(--muted)',marginBottom:16,lineHeight:1.5}}>
                 Take a selfie wearing your helmet to earn 3 tokens. Photo is saved for compliance records.
@@ -307,10 +307,10 @@ export default function TokensPage() {
         {/* Quiz Modal */}
         {showQuiz && (
           <div style={{position:'fixed',inset:0,zIndex:9999,background:'rgba(0,0,0,.6)',display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
-            <div style={{background:'white',borderRadius:14,width:'100%',maxWidth:480,padding:'20px 24px',maxHeight:'90vh',overflow:'auto'}}>
+            <div style={{background:'white',borderRadius:8,width:'100%',maxWidth:480,padding:'20px 24px',maxHeight:'90vh',overflow:'auto'}}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
                 <div style={{fontSize:15,fontWeight:700}}>Safety Quiz</div>
-                <button onClick={() => setShowQuiz(false)} style={{background:'#F1F5F9',border:'none',borderRadius:8,padding:'4px 10px',cursor:'pointer',fontSize:13}}>✕</button>
+                <button onClick={() => setShowQuiz(false)} style={{background:'#F1F5F9',border:'none',borderRadius:8,padding:'4px 10px',cursor:'pointer',fontSize:13}}>×</button>
               </div>
               <SafetyQuiz onComplete={handleQuizComplete} onClose={() => setShowQuiz(false)} />
             </div>
@@ -319,13 +319,13 @@ export default function TokensPage() {
 
         {/* Balance card */}
         <div style={{
-          background:'linear-gradient(135deg, #0A1628 0%, #0D2444 50%, #06352A 100%)',
+          background:'#0B1F3A',
           borderRadius:'var(--r)', padding:'18px 20px', marginBottom:16,
         }}>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
             <div>
               <div style={{fontSize:11,color:'rgba(255,255,255,.4)',textTransform:'uppercase',letterSpacing:1,marginBottom:4}}>Your Balance</div>
-              <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontWeight:800,fontSize:36,color:'white',lineHeight:1}}>
+              <div style={{fontFamily:"'Source Serif 4',Georgia,serif",fontWeight:700,fontSize:36,color:'white',lineHeight:1}}>
                 {bal} <span style={{fontSize:20}}>tokens</span>
               </div>
               <div style={{color:'rgba(255,255,255,.35)',marginTop:4,fontSize:11}}>
@@ -334,7 +334,7 @@ export default function TokensPage() {
             </div>
             <div style={{textAlign:'right'}}>
               <div style={{fontSize:11,color:'rgba(255,255,255,.4)',marginBottom:3}}>Next reward</div>
-              <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontWeight:800,fontSize:22,color:'var(--emerald)'}}>
+              <div style={{fontFamily:"'Source Serif 4',Georgia,serif",fontWeight:700,fontSize:22,color:'var(--emerald)'}}>
                 {tokensToNext > 0 ? `-${tokensToNext}` : 'Ready!'}
               </div>
               <div style={{fontSize:10,color:'rgba(255,255,255,.35)'}}>{nextRedeem?.label || 'All unlocked'}</div>
@@ -355,10 +355,10 @@ export default function TokensPage() {
 
         {/* Referral code card */}
         {user?.referralCode && (
-          <div style={{background:'var(--electric-light)',border:'1.5px solid var(--electric)',borderRadius:12,padding:'14px 18px',marginBottom:16,display:'flex',alignItems:'center',gap:14}}>
+          <div style={{background:'var(--electric-light)',border:'1.5px solid var(--electric)',borderRadius:6,padding:'14px 18px',marginBottom:16,display:'flex',alignItems:'center',gap:14}}>
             <div style={{flex:1}}>
               <div style={{fontSize:12,fontWeight:700,color:'var(--electric)',marginBottom:4}}>Your Referral Code</div>
-              <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontWeight:800,fontSize:24,letterSpacing:3,color:'var(--text)'}}>{user.referralCode}</div>
+              <div style={{fontFamily:"'Source Serif 4',Georgia,serif",fontWeight:700,fontSize:24,letterSpacing:3,color:'var(--text)'}}>{user.referralCode}</div>
               <div style={{fontSize:11,color:'var(--muted)',marginTop:4}}>Share with friends — earn 30 tokens when they get KYC approved</div>
             </div>
             <button className="btn btn-secondary btn-sm" onClick={() => {
@@ -386,7 +386,7 @@ export default function TokensPage() {
                   <div key={a.key} style={{
                     display:'flex',alignItems:'center',gap:10,padding:'10px 12px',
                     border:`1.5px solid ${locked ? 'var(--border)' : 'var(--border)'}`,
-                    borderRadius:9,
+                    borderRadius:6,
                     background: locked ? '#FAFAFA' : 'white',
                     opacity: locked ? 0.7 : 1,
                     transition:'all .15s',
@@ -429,7 +429,7 @@ export default function TokensPage() {
                   <div key={opt.value} style={{
                     display:'flex',alignItems:'center',gap:10,padding:'10px 12px',
                     border:`1.5px solid ${ok ? 'var(--green)' : 'var(--border)'}`,
-                    borderRadius:9,
+                    borderRadius:6,
                     background: ok ? 'var(--green-light)' : '#FAFAFA',
                     opacity: ok ? 1 : 0.6,
                     transition:'all .15s',
@@ -459,11 +459,11 @@ export default function TokensPage() {
         {/* Info */}
         <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,marginTop:16}}>
           {[
-            ['🛡️','Not Crypto','Closed-loop loyalty credits — no trading or speculation.'],
-            ['🎯','Earn Daily','Helmet +3 · Quiz +5 · No-claim +15 · Referral +30'],
-            ['💳','Real Rewards','Data bundles, airtime, discounts and vouchers.'],
+            ['','Not Crypto','Closed-loop loyalty credits — no trading or speculation.'],
+            ['','Earn Daily','Helmet +3 · Quiz +5 · No-claim +15 · Referral +30'],
+            ['','Real Rewards','Data bundles, airtime, discounts and vouchers.'],
           ].map(([icon,title,desc]) => (
-            <div key={title} style={{background:'var(--bg)',borderRadius:9,padding:'12px 14px',border:'1px solid var(--border)'}}>
+            <div key={title} style={{background:'var(--bg)',borderRadius:6,padding:'12px 14px',border:'1px solid var(--border)'}}>
               <div style={{fontSize:20,marginBottom:6}}>{icon}</div>
               <div style={{fontSize:12,fontWeight:700,marginBottom:3}}>{title}</div>
               <div style={{fontSize:11,color:'var(--muted)',lineHeight:1.5}}>{desc}</div>

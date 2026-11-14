@@ -6,6 +6,25 @@ const fs       = require('fs');
 const jwt      = require('jsonwebtoken');
 const Document = require('../models/Document');
 const { auth, roles } = require('../middleware/auth');
+const { getJwtSecret } = require('../utils/jwtSecret');
+const { uploadLimiter } = require('../middleware/security');
+
+const ALLOWED_MIME = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
+const ISADMIN = (u) => ['admin', 'superadmin'].includes(u.role);
+const safeName = (n = 'file') => String(n).replace(/[^\w.\- ]/g, '_').slice(0, 120);
+const fail = (res, e) => { console.error('[documents]', e && e.message); return res.status(500).json({ error: 'Something went wrong. Please try again.' }); };
+
+// Owner, admin, or the agent who registered the owner may access a document
+async function canAccess(user, doc) {
+  if (ISADMIN(user)) return true;
+  if (doc.userId && String(doc.userId) === String(user._id)) return true;
+  if (user.role === 'agent' && doc.userId) {
+    const User = require('../models/User');
+    const owner = await User.findById(doc.userId).select('registeredBy');
+    return !!(owner && owner.registeredBy && String(owner.registeredBy) === String(user._id));
+  }
+  return false;
+}
 
 // ── Upload directory ──────────────────────────────────────────────────────────
 const UPLOAD_DIR = path.join(__dirname, '../../uploads');
@@ -24,7 +43,7 @@ const storage = multer.diskStorage({
 const fileFilter = (req, file, cb) => {
   const allowed = ['.pdf', '.jpg', '.jpeg', '.png', '.webp'];
   const ext = path.extname(file.originalname).toLowerCase();
-  if (allowed.includes(ext)) cb(null, true);
+  if (allowed.includes(ext) && ALLOWED_MIME.includes(file.mimetype)) cb(null, true);
   else cb(new Error('Only PDF, JPG and PNG files are allowed'));
 };
 
@@ -46,9 +65,11 @@ async function resolveDocAuth(req) {
   const token = req.query.token || (req.headers.authorization || '').split(' ')[1];
   if (!token) return null;
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'pikishield_dev_secret');
+    const decoded = jwt.verify(token, getJwtSecret());
     const User = require('../models/User');
-    return await User.findById(decoded.id);
+    if (decoded.purpose) return null;
+    const u = await User.findById(decoded.id);
+    return u && !u.suspended ? u : null;
   } catch { return null; }
 }
 
@@ -68,7 +89,7 @@ router.get('/types', (req, res) => {
 // ── POST /api/documents/upload-kyc ────────────────────────────────────────────
 // Pre-auth KYC upload (RegisterPage, AgentDashboard, SubscribePage NOK)
 // No auth required — uses tempUploadId to associate docs before user exists
-router.post('/upload-kyc', upload.array('files', 5), async (req, res) => {
+router.post('/upload-kyc', uploadLimiter, upload.array('files', 5), async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) return res.status(400).json({ error: 'No files uploaded' });
     const { docType, tempUploadId } = req.body;
@@ -87,7 +108,7 @@ router.post('/upload-kyc', upload.array('files', 5), async (req, res) => {
     ));
 
     res.status(201).json({ documents });
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  } catch (e) { fail(res, e); }
 });
 
 // ── POST /api/documents/attach-kyc ───────────────────────────────────────────
@@ -102,7 +123,7 @@ router.post('/attach-kyc', auth, async (req, res) => {
       { $set: { userId: req.user._id } }
     );
     res.json({ attached: result.modifiedCount });
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  } catch (e) { fail(res, e); }
 });
 
 // ── POST /api/documents/upload ────────────────────────────────────────────────
@@ -126,7 +147,7 @@ router.post('/upload', auth, upload.array('files', 10), async (req, res) => {
     ));
 
     res.status(201).json({ documents });
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  } catch (e) { fail(res, e); }
 });
 
 // ── POST /api/documents/attach ───────────────────────────────────────────────
@@ -141,26 +162,28 @@ router.post('/attach', auth, async (req, res) => {
       { $set: { claimId } }
     );
     res.json({ attached: result.modifiedCount });
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  } catch (e) { fail(res, e); }
 });
 
 // ── GET /api/documents/claim/:claimId ────────────────────────────────────────
 router.get('/claim/:claimId', auth, async (req, res) => {
   try {
     const docs = await Document.find({ claimId: req.params.claimId });
-    res.json(docs);
-  } catch (e) { res.status(500).json({ error: e.message }); }
+    const allowed = [];
+    for (const doc of docs) if (await canAccess(req.user, doc)) allowed.push(doc);
+    res.json(allowed);
+  } catch (e) { fail(res, e); }
 });
 
 // ── GET /api/documents/user/:userId ──────────────────────────────────────────
 router.get('/user/:userId', auth, async (req, res) => {
   try {
     // Admin can view any user's docs; user can view own
-    if (!['admin','superadmin'].includes(req.user.role) && String(req.user._id) !== req.params.userId)
+    if (!ISADMIN(req.user) && String(req.user._id) !== req.params.userId)
       return res.status(403).json({ error: 'Access denied' });
     const docs = await Document.find({ userId: req.params.userId });
     res.json(docs);
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  } catch (e) { fail(res, e); }
 });
 
 // ── GET /api/documents/:id/preview ───────────────────────────────────────────
@@ -172,9 +195,11 @@ router.get('/:id/preview', async (req, res) => {
     const doc = await Document.findById(req.params.id);
     if (!doc) return res.status(404).json({ error: 'Document not found' });
 
-    const filePath = path.join(__dirname, '../../', doc.path);
-    serveDoc(res, filePath, `inline; filename="${doc.originalName}"`);
-  } catch (e) { res.status(500).json({ error: e.message }); }
+    const filePath = path.resolve(__dirname, '../../', doc.path);
+    if (!filePath.startsWith(UPLOAD_DIR)) return res.status(400).json({ error: 'Invalid file path' });
+    if (!(await canAccess(user, doc))) return res.status(403).json({ error: 'Access denied' });
+    serveDoc(res, filePath, `inline; filename="${safeName(doc.originalName)}"`);
+  } catch (e) { fail(res, e); }
 });
 
 // ── GET /api/documents/:id/download ──────────────────────────────────────────
@@ -186,9 +211,11 @@ router.get('/:id/download', async (req, res) => {
     const doc = await Document.findById(req.params.id);
     if (!doc) return res.status(404).json({ error: 'Document not found' });
 
-    const filePath = path.join(__dirname, '../../', doc.path);
-    serveDoc(res, filePath, `attachment; filename="${doc.originalName}"`);
-  } catch (e) { res.status(500).json({ error: e.message }); }
+    const filePath = path.resolve(__dirname, '../../', doc.path);
+    if (!filePath.startsWith(UPLOAD_DIR)) return res.status(400).json({ error: 'Invalid file path' });
+    if (!(await canAccess(user, doc))) return res.status(403).json({ error: 'Access denied' });
+    serveDoc(res, filePath, `attachment; filename="${safeName(doc.originalName)}"`);
+  } catch (e) { fail(res, e); }
 });
 
 // ── DELETE /api/documents/:id ─────────────────────────────────────────────────
@@ -198,7 +225,7 @@ router.delete('/:id', auth, async (req, res) => {
     if (!doc) return res.status(404).json({ error: 'Document not found' });
 
     // Only owner or admin can delete
-    if (!['admin','superadmin'].includes(req.user.role) && String(doc.userId) !== String(req.user._id))
+    if (!ISADMIN(req.user) && String(doc.userId) !== String(req.user._id))
       return res.status(403).json({ error: 'Access denied' });
 
     // Delete from disk
@@ -207,7 +234,7 @@ router.delete('/:id', auth, async (req, res) => {
     await doc.deleteOne();
 
     res.json({ message: 'Document deleted' });
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  } catch (e) { fail(res, e); }
 });
 
 // ── PATCH /api/documents/:id/verify ──────────────────────────────────────────
@@ -220,7 +247,7 @@ router.patch('/:id/verify', auth, roles('admin','superadmin'), async (req, res) 
     );
     if (!doc) return res.status(404).json({ error: 'Document not found' });
     res.json(doc);
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  } catch (e) { fail(res, e); }
 });
 
 module.exports = router;

@@ -119,7 +119,7 @@ export default function PaymentsPage() {
           if (s.data.status === 'completed') {
             clearInterval(interval);
             setPolling(null);
-            setSuccess(`✅ Payment of KES ${Number(form.amount).toLocaleString()} confirmed! M-Pesa ref: ${s.data.mpesaReceiptNumber}`);
+            setSuccess(` Payment of KES ${Number(form.amount).toLocaleString()} confirmed! M-Pesa ref: ${s.data.mpesaReceiptNumber}`);
             paymentsAPI.getHistory().then(r => setHistory(r.data)).catch(() => {});
             setLoading(false);
           } else if (s.data.status === 'failed') {
@@ -155,7 +155,7 @@ export default function PaymentsPage() {
         description: selectedPolicy ? `Card payment — ${selectedPolicy.name}` : 'Card payment',
       });
 
-      setSuccess(`✅ Card payment of KES ${Number(form.amount).toLocaleString()} processed! Ref: ${res.data.payment.reference}`);
+      setSuccess(` Card payment of KES ${Number(form.amount).toLocaleString()} processed! Ref: ${res.data.payment.reference}`);
       paymentsAPI.getHistory().then(r => setHistory(r.data)).catch(() => {});
       setForm(f => ({ ...f, cardNumber: '', cardExpiry: '', cardCvv: '' }));
     } catch (err) {
@@ -179,7 +179,7 @@ export default function PaymentsPage() {
         description: selectedPolicy ? `Bank transfer — ${selectedPolicy.name}` : 'Bank transfer',
       });
 
-      setSuccess(`✅ Bank transfer of KES ${Number(form.amount).toLocaleString()} recorded! Ref: ${res.data.payment.reference}`);
+      setSuccess(` Bank transfer of KES ${Number(form.amount).toLocaleString()} recorded! Ref: ${res.data.payment.reference}`);
       paymentsAPI.getHistory().then(r => setHistory(r.data)).catch(() => {});
     } catch (err) {
       setError(err.response?.data?.error || 'Bank transfer failed');
@@ -215,9 +215,9 @@ export default function PaymentsPage() {
 
       <div className="page-body">
         {success && <div className="alert alert-success">{success}</div>}
-        {error && <div className="alert alert-error">❌ {error}</div>}
+        {error && <div className="alert alert-error"> {error}</div>}
         {stkStatus?.status === 'pending' && (
-          <div className="alert alert-info">⏳ Waiting for M-Pesa PIN confirmation on {form.phone}...</div>
+          <div className="alert alert-info"> Waiting for M-Pesa PIN confirmation on {form.phone}...</div>
         )}
 
 
@@ -265,9 +265,9 @@ export default function PaymentsPage() {
 
             <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
               {[
-                { key: 'mpesa', label: '📱 M-Pesa' },
-                { key: 'card', label: '💳 Card' },
-                { key: 'bank', label: '🏦 Bank' },
+                { key: 'mpesa', label: ' M-Pesa' },
+                { key: 'card', label: ' Card' },
+                { key: 'bank', label: ' Bank' },
               ].map(m => (
                 <button
                   key={m.key}
@@ -294,10 +294,10 @@ export default function PaymentsPage() {
                   />
                 </div>
                 <div style={{ background: '#F0FDF9', border: '1px solid #A8EDD0', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#006B42' }}>
-                  📲 You will receive an STK push on your phone. Enter your M-Pesa PIN to complete.
+                   You will receive an STK push on your phone. Enter your M-Pesa PIN to complete.
                 </div>
                 <button className="btn btn-primary btn-lg" style={{ width: '100%', justifyContent: 'center' }} type="submit" disabled={loading || !form.amount || !kycApproved}>
-                  {loading ? '⏳ Sending STK Push...' : `📱 Pay ${form.amount ? fmt(form.amount) : ''} via M-Pesa`}
+                  {loading ? ' Sending STK Push...' : ` Pay ${form.amount ? fmt(form.amount) : ''} via M-Pesa`}
                 </button>
               </form>
             )}
@@ -325,17 +325,17 @@ export default function PaymentsPage() {
                   </div>
                 </div>
                 <div className="alert alert-info" style={{ fontSize: 12, marginBottom: 14 }}>
-                  🔒 Card details are encrypted. Powered by Flutterwave (demo mode).
+                   Card details are encrypted. Powered by Flutterwave (demo mode).
                 </div>
                 <button className="btn btn-primary btn-lg" style={{ width: '100%', justifyContent: 'center' }} type="submit" disabled={loading || !form.amount || !kycApproved}>
-                  {loading ? 'Processing...' : `💳 Pay ${form.amount ? fmt(form.amount) : ''}`}
+                  {loading ? 'Processing...' : ` Pay ${form.amount ? fmt(form.amount) : ''}`}
                 </button>
               </form>
             )}
 
             {method === 'bank' && (
               <form onSubmit={handleBank}>
-                <div style={{ background: 'var(--bg)', borderRadius: 10, padding: 16, marginBottom: 16 }}>
+                <div style={{ background: 'var(--bg)', borderRadius: 6, padding: 16, marginBottom: 16 }}>
                   <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10 }}>Bank Transfer Details</div>
                   {[
                     ['Bank', 'Equity Bank Kenya'],
@@ -354,7 +354,7 @@ export default function PaymentsPage() {
                   After transferring, click the button below to notify us. Processing takes 1–2 business days.
                 </div>
                 <button className="btn btn-primary btn-lg" style={{ width: '100%', justifyContent: 'center' }} type="submit" disabled={loading || !form.amount || !kycApproved}>
-                  {loading ? 'Recording...' : `🏦 Confirm Transfer of ${form.amount ? fmt(form.amount) : ''}`}
+                  {loading ? 'Recording...' : ` Confirm Transfer of ${form.amount ? fmt(form.amount) : ''}`}
                 </button>
               </form>
             )}
@@ -364,7 +364,7 @@ export default function PaymentsPage() {
             <h3 style={{ fontSize: 16, marginBottom: 16 }}>Payment History</h3>
             {history.length === 0 ? (
               <div className="empty-state">
-                <div className="emoji">💳</div>
+                <div className="emoji"></div>
                 <p>No payments yet</p>
               </div>
             ) : (
@@ -372,8 +372,8 @@ export default function PaymentsPage() {
                 {history.map(p => (
                   <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid var(--bg)' }}>
                     <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                      <div style={{ width: 36, height: 36, borderRadius: 10, background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>
-                        {p.type === 'mpesa_stk' ? '📱' : p.type === 'card' ? '💳' : '🏦'}
+                      <div style={{ width: 36, height: 36, borderRadius: 6, background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>
+                        {p.type === 'mpesa_stk' ? '' : p.type === 'card' ? '' : ''}
                       </div>
                       <div>
                         <div style={{ fontSize: 13, fontWeight: 600 }}>{p.description}</div>

@@ -1,0 +1,112 @@
+/* ==========================================================================
+   PikiShield - Classic theme (visual overrides only; no layout or logic change)
+   Loaded after index.css. Delete the import in App.js to go back to the old look.
+   ========================================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@500;600;700&display=swap');
+
+:root {
+  --emerald:       #0F7B5C;
+  --emerald-dark:  #0B6049;
+  --emerald-deep:  #084A38;
+  --emerald-glow:  rgba(15,123,92,.15);
+  --emerald-light: #E8F3EF;
+  --emerald-mid:   #B7D8CC;
+
+  --navy:   #0B1F3A;
+  --navy-2: #0B1F3A;
+  --navy-3: #0B1F3A;
+
+  --gold:   #B08A3E;
+
+  --text:   #14202E;
+  --text-2: #3A4757;
+  --muted:  #6B7683;
+  --border: #DDE3EA;
+  --border-2: #C4CCD6;
+  --bg:     #F5F6F8;
+  --surface:#FFFFFF;
+
+  --shadow-xs: 0 1px 1px rgba(11,31,58,.04);
+  --shadow:    0 1px 2px rgba(11,31,58,.06);
+  --shadow-md: 0 2px 8px rgba(11,31,58,.08);
+  --shadow-lg: 0 8px 24px rgba(11,31,58,.12);
+
+  --r-xs: 4px; --r-sm: 6px; --r: 8px; --r-lg: 10px; --r-xl: 12px;
+}
+
+body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+h1, h2, h3, h4,
+.page-title, .stat-value { font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif; letter-spacing: 0; }
+.page-title { font-size: 26px; font-weight: 700; }
+.page-header { border-bottom: 1px solid var(--border); padding-bottom: 14px; margin-bottom: 22px; }
+
+/* Sidebar: flat navy, thin gold rule */
+.sidebar { background: var(--navy); box-shadow: none; border-right: 1px solid #07162B; }
+.sidebar-logo { background: transparent; border-bottom: 1px solid rgba(176,138,62,.55); }
+.nav-section-label { color: rgba(255,255,255,.4); letter-spacing: 1.2px; }
+.nav-item { color: rgba(255,255,255,.72); border-radius: var(--r-sm); font-weight: 500; }
+.nav-item:hover { background: rgba(255,255,255,.07); color: #fff; }
+.nav-item.active { background: rgba(255,255,255,.1); color: #fff; border-left: 3px solid var(--gold); box-shadow: none; font-weight: 600; }
+.nav-item.active::after { display: none; }
+.sidebar-footer { background: transparent; border-top: 1px solid rgba(255,255,255,.1); }
+.user-card-mini { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.1); }
+.avatar-mini { background: var(--emerald); box-shadow: none; }
+
+/* Text-only chrome: hide decorative glyph icons (remove this block to bring them back) */
+.nav-icon, .stat-icon, .mn-icon, .empty-state .emoji { display: none !important; }
+
+/* Cards */
+.card { border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); }
+.card:hover { box-shadow: var(--shadow); border-color: var(--border); }
+.stat-card { border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow); }
+.stat-card::before { height: 3px; border-radius: 0; background: var(--navy) !important; }
+.stat-card.green::before { background: var(--emerald) !important; }
+.stat-card.yellow::before { background: var(--gold) !important; }
+.stat-card::after { display: none; }
+.stat-value { font-size: 26px; font-weight: 700; }
+.stat-label { text-transform: uppercase; letter-spacing: .6px; font-size: 10.5px; font-weight: 600; }
+
+/* Buttons: solid and flat */
+.btn { border-radius: var(--r-sm); font-weight: 600; letter-spacing: .1px; }
+.btn-primary { background: var(--emerald); box-shadow: none; color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--emerald-dark); box-shadow: none; }
+.btn-secondary { background: #fff; border: 1px solid var(--border-2); box-shadow: none; }
+.btn-secondary:hover:not(:disabled) { background: var(--bg); box-shadow: none; }
+.btn-danger { background: #fff; color: #A4262C; border: 1px solid #E3B5B8; }
+.btn-danger:hover:not(:disabled) { background: #FBEDEE; box-shadow: none; }
+
+/* Forms */
+.form-label { font-weight: 600; color: var(--text-2); }
+.form-input { border: 1px solid var(--border-2); border-radius: var(--r-sm); box-shadow: none; }
+.form-input:focus { border-color: var(--emerald); background: #fff; box-shadow: 0 0 0 3px rgba(15,123,92,.15); }
+input[type="checkbox"], input[type="radio"] { accent-color: var(--emerald); }
+a { color: var(--emerald-dark); }
+
+/* Tables */
+th { background: #F0F2F5; color: var(--text-2); border-bottom: 1px solid var(--border-2); letter-spacing: .6px; }
+td { border-bottom: 1px solid var(--border); }
+tr:hover td { background: #F7F9FA; }
+
+/* Badges and alerts: flat, no glow */
+.status-badge, .tier-badge { border-radius: 4px; letter-spacing: .4px; }
+.alert { border-radius: var(--r-sm); border-left-width: 4px; }
+.token-display { background: #FBF6EA; border: 1px solid var(--gold); color: #6B5320; box-shadow: none; }
+
+/* Auth screens */
+.auth-hero { background: var(--navy); }
+.auth-hero::before { background: linear-gradient(180deg, rgba(176,138,62,.10), transparent 60%); }
+.auth-form-panel { background: #fff; border-left: 1px solid var(--border); }
+.auth-form-inner h1 { font-size: 30px; }
+
+/* Mobile bars */
+.mobile-topbar, .mobile-nav { background: var(--navy); backdrop-filter: none; border-color: rgba(255,255,255,.12); }
+.mobile-topbar-notif { border-radius: var(--r-sm); font-size: 11px; font-weight: 600; padding: 6px 10px; }
+.mobile-nav-item { font-size: 10.5px; letter-spacing: .5px; color: rgba(255,255,255,.6); }
+.mobile-nav-item.active { color: #fff; box-shadow: inset 0 3px 0 var(--gold); }
+
+/* Focus visibility for keyboard users */
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+/* Login: let the panel show the plan table cleanly */
+.auth-hero h1 { font-family: 'Source Serif 4', Georgia, serif; }
+.auth-hero a { text-decoration: underline; }

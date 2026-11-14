@@ -5,7 +5,6 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { authAPI } from './utils/api';
 import Sidebar from './components/Sidebar';
 import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
 import SetupPage from './pages/SetupPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ChangePasswordPage from './pages/ChangePasswordPage';
@@ -22,7 +21,9 @@ import AdminUsersPage from './pages/AdminUsersPage';
 import AdminAgentsPage from './pages/AdminAgentsPage';
 import AgentDashboard from './pages/AgentDashboard';
 import MemberDashboardPage from './pages/MemberDashboardPage';
+import TermsPage from './pages/TermsPage';
 import './index.css';
+import './classic.css';
 
 
 class ErrorBoundary extends React.Component {
@@ -37,14 +38,18 @@ class ErrorBoundary extends React.Component {
       return (
         <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'#F8FAFC',padding:20,overflowY:'auto'}}>
           <div style={{maxWidth:600,width:'100%',background:'white',borderRadius:16,padding:32,boxShadow:'0 4px 24px rgba(0,0,0,.1)',border:'1px solid #FEE2E2'}}>
-            <div style={{fontSize:48,marginBottom:16,textAlign:'center'}}>⚠️</div>
             <h2 style={{fontSize:18,fontWeight:800,color:'#991B1B',marginBottom:8,textAlign:'center'}}>Something went wrong</h2>
+            <p style={{textAlign:'center',fontSize:13,color:'#475569',marginBottom:20}}>The app hit an unexpected problem. Reloading usually fixes it. If it keeps happening, contact support.</p>
+            {process.env.NODE_ENV !== 'production' && (
+              <>
             <div style={{background:'#FEF2F2',borderRadius:8,padding:'10px 14px',fontSize:11,color:'#991B1B',fontFamily:'monospace',marginBottom:12,wordBreak:'break-all'}}>
               {this.state.error?.message || 'Unknown error'}
             </div>
             <div style={{background:'#FEF2F2',borderRadius:8,padding:'10px 14px',fontSize:10,color:'#7F1D1D',fontFamily:'monospace',marginBottom:20,wordBreak:'break-all',whiteSpace:'pre-wrap',maxHeight:200,overflowY:'auto'}}>
               {this.state.stack || 'No stack trace'}
             </div>
+              </>
+            )}
             <button onClick={()=>window.location.reload()}
               style={{width:'100%',padding:'12px',background:'#00C896',color:'white',border:'none',borderRadius:8,fontWeight:700,fontSize:14,cursor:'pointer'}}>
                Reload App
@@ -68,11 +73,11 @@ function roleHome(role) {
 
 const MOBILE_NAV = {
   rider: [
-    { icon:'🏠', label:'Home',     path:'/dashboard' },
-    { icon:'🛡️', label:'Policies', path:'/policies' },
-    { icon:'📋', label:'Claims',   path:'/claims' },
-    { icon:'💳', label:'Pay',      path:'/payments' },
-    { icon:'🪙', label:'Tokens',   path:'/tokens' },
+    { icon:'', label:'Home',     path:'/dashboard' },
+    { icon:'', label:'Policies', path:'/policies' },
+    { icon:'', label:'Claims',   path:'/claims' },
+    { icon:'', label:'Pay',      path:'/payments' },
+    { icon:'', label:'Tokens',   path:'/tokens' },
   ],
   nok: [
     { icon:'', label:'Claims',    path:'/claims' },
@@ -101,12 +106,12 @@ function MobileTopBar() {
   if (!user) return null;
   return (
     <div className="mobile-topbar">
-      <div className="mobile-topbar-logo">️ PikiShield</div>
+      <div className="mobile-topbar-logo">PikiShield</div>
       <div style={{fontSize:11,color:'rgba(255,255,255,.5)',fontWeight:600}}>
         {user.fullName?.split(' ')[0]} · {user.role}
       </div>
-      <button className="mobile-topbar-notif" onClick={()=>navigate('/password')} title="Settings">⚙️</button>
-      <button className="mobile-topbar-notif" onClick={logout} title="Sign out"></button>
+      <button className="mobile-topbar-notif" onClick={()=>navigate('/password')} title="Settings">Settings</button>
+      <button className="mobile-topbar-notif" onClick={logout} title="Sign out">Sign out</button>
     </div>
   );
 }
@@ -127,7 +132,7 @@ function MobileBottomNav() {
           <button key={item.path}
             className={`mobile-nav-item${pathname === item.path ? ' active' : ''}`}
             onClick={() => navigate(item.path)}>
-            <span className="mn-icon">{item.icon}</span>
+            {item.icon ? <span className="mn-icon">{item.icon}</span> : null}
             {item.label}
           </button>
         ))}
@@ -138,7 +143,7 @@ function MobileBottomNav() {
 
 function ProtectedRoute({ children, roles }) {
   const { user, loading } = useAuth();
-  // ✅ FIXED: use 'token' (matches AuthContext.js)
+  //  FIXED: use 'token' (matches AuthContext.js)
   const hasToken = !!localStorage.getItem('token');
 
   if (!hasToken && !user) return <Navigate to="/login" replace />;
@@ -161,7 +166,7 @@ function ForcePasswordModal() {
   const submit = async (e) => {
     e.preventDefault();
     if (form.next !== form.confirm) return setError('Passwords do not match');
-    if (form.next.length < 8)       return setError('Minimum 8 characters');
+    if (form.next.length < 8 || !/[A-Za-z]/.test(form.next) || !/\d/.test(form.next)) return setError('At least 8 characters, with a letter and a number');
     setLoading(true); setError('');
     try {
       await authAPI.changePassword(form.current, form.next);
@@ -192,7 +197,6 @@ function ForcePasswordModal() {
           padding:'12px 16px 10px',
           display:'flex', alignItems:'center', gap:10,
         }}>
-          <span style={{fontSize:20}}></span>
           <div style={{flex:1}}>
             <div style={{fontWeight:800,fontSize:13,color:'white',lineHeight:1.2}}>Set Permanent Password</div>
             <div style={{fontSize:11,color:'rgba(255,255,255,.5)',marginTop:1}}>
@@ -204,13 +208,12 @@ function ForcePasswordModal() {
             onClick={() => setDismissed(true)}
             style={{background:'rgba(255,255,255,.1)',border:'none',borderRadius:6,color:'rgba(255,255,255,.6)',cursor:'pointer',fontSize:16,width:26,height:26,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}
             title="Dismiss for now"
-          >✕</button>
+          >Close</button>
         </div>
 
         <div style={{padding:'12px 16px'}}>
           {done ? (
             <div style={{textAlign:'center',padding:'12px 0'}}>
-              <div style={{fontSize:32,marginBottom:8}}>✅</div>
               <div style={{fontWeight:700,fontSize:14,marginBottom:4}}>Password set!</div>
               <button className="btn btn-primary btn-sm" style={{width:'100%',justifyContent:'center',marginTop:8}}
                 onClick={()=>{ refreshUser(); setDone(false); }}>
@@ -219,13 +222,13 @@ function ForcePasswordModal() {
             </div>
           ) : (
             <form onSubmit={submit}>
-              {error && <div style={{background:'#FEF2F2',border:'1px solid #FECACA',borderRadius:6,padding:'7px 10px',fontSize:11,color:'#991B1B',marginBottom:10}}>❌ {error}</div>}
+              {error && <div style={{background:'#FEF2F2',border:'1px solid #FECACA',borderRadius:6,padding:'7px 10px',fontSize:11,color:'#991B1B',marginBottom:10}}> {error}</div>}
               <div style={{background:'#FFFBEB',border:'1px solid #FDE68A',borderRadius:6,padding:'6px 10px',fontSize:10,color:'#92400E',marginBottom:10}}>
-                ⚠️ Enter the <strong>temp password</strong> your agent gave you (e.g. <code>Agent1234!</code>)
+                 Enter the <strong>temporary password</strong> your agent gave you
               </div>
               <div className="form-group" style={{marginBottom:10}}>
                 <label className="form-label" style={{fontSize:11}}>Temporary Password</label>
-                <input className="form-input" type="password" placeholder="e.g. Agent1234!"
+                <input className="form-input" type="password" placeholder="Temporary password"
                   style={{padding:'8px 10px',fontSize:13}}
                   value={form.current} onChange={e=>setForm(f=>({...f,current:e.target.value}))} required/>
               </div>
@@ -245,7 +248,7 @@ function ForcePasswordModal() {
               <button className="btn btn-primary" type="submit"
                 style={{width:'100%',justifyContent:'center',padding:'9px',fontSize:13}}
                 disabled={loading||(!!form.confirm&&form.next!==form.confirm)}>
-                {loading ? '⏳ Saving…' : ' Set Password'}
+                {loading ? 'Saving...' : 'Set Password'}
               </button>
             </form>
           )}
@@ -268,11 +271,10 @@ function KycBanner() {
       display: 'flex', alignItems: 'center', gap: 10,
       fontSize: 12,
     }}>
-      <span style={{fontSize:14}}>⏳</span>
       <div style={{flex:1}}>
         <strong>KYC pending</strong> — Subscriptions, claims and tokens unlock once your identity is verified.
       </div>
-      <button onClick={()=>setDismissed(true)} style={{background:'none',border:'none',cursor:'pointer',fontSize:16,color:'#92400E',padding:'0 4px',lineHeight:1}}>✕</button>
+      <button onClick={()=>setDismissed(true)} style={{background:'none',border:'none',cursor:'pointer',fontSize:16,color:'#92400E',padding:'0 4px',lineHeight:1}} aria-label="Dismiss">Close</button>
     </div>
   );
 }
@@ -294,7 +296,7 @@ function AppLayout({ children }) {
 function AppRoutes() {
   const { user, loading } = useAuth();
   const home = user ? roleHome(user.role) : '/login';
-  // ✅ FIXED: use 'token' (matches AuthContext.js)
+  //  FIXED: use 'token' (matches AuthContext.js)
   const hasToken = !!localStorage.getItem('token');
 
   if (!hasToken) {
@@ -302,8 +304,9 @@ function AppRoutes() {
       <Routes>
         <Route path="/setup"           element={<SetupPage />} />
         <Route path="/login"           element={<LoginPage />} />
-        <Route path="/register"        element={<RegisterPage />} />
+        <Route path="/register"        element={<LoginPage initialMode="register" />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/terms"           element={<TermsPage />} />
         <Route path="*"                element={<Navigate to="/login" replace />} />
       </Routes>
     );
@@ -315,8 +318,9 @@ function AppRoutes() {
     <Routes>
       <Route path="/setup"           element={<SetupPage />} />
       <Route path="/login"           element={user ? <Navigate to={home} replace/> : <LoginPage />} />
-      <Route path="/register"        element={user ? <Navigate to={home} replace/> : <RegisterPage />} />
+      <Route path="/register"        element={user ? <Navigate to={home} replace/> : <LoginPage initialMode="register" />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/terms"           element={<TermsPage />} />
 
       <Route path="/dashboard"    element={<ProtectedRoute roles={['rider']}><AppLayout><DashboardPage /></AppLayout></ProtectedRoute>} />
       <Route path="/policies"     element={<ProtectedRoute roles={['rider']}><AppLayout><PoliciesPage /></AppLayout></ProtectedRoute>} />
@@ -361,7 +365,7 @@ export default function App() {
 
 function AppShell({ splashDone, onSplashDone }) {
   const { loading } = useAuth();
-  // ✅ FIXED: use 'token' (matches AuthContext.js)
+  //  FIXED: use 'token' (matches AuthContext.js)
   const hasToken = !!localStorage.getItem('token');
 
   if (!splashDone) {

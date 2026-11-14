@@ -6,6 +6,8 @@ const helmet   = require('helmet');
 const morgan   = require('morgan');
 const path     = require('path');
 const cron     = require('node-cron');
+const { apiLimiter, sanitize } = require('./middleware/security');
+const { getJwtSecret } = require('./utils/jwtSecret');
 
 const authRoutes       = require('./routes/auth');
 const userRoutes       = require('./routes/users');
@@ -14,11 +16,16 @@ const claimRoutes      = require('./routes/claims');
 const paymentRoutes    = require('./routes/payments');
 const documentRoutes   = require('./routes/documents');
 
+getJwtSecret(); // fail fast in production if JWT_SECRET is missing
+
 const app  = express();
 const PORT = process.env.PORT || 5000;
+app.set('trust proxy', 1);          // Railway sits behind a proxy (correct client IPs for rate limits)
+app.disable('x-powered-by');
 
 // ── Security ──────────────────────────────────────────────────────────────────
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
+app.use('/api', apiLimiter);
 
 // ── CORS ──────────────────────────────────────────────────────────────────────
 const allowedOrigins = [
@@ -37,8 +44,9 @@ app.use(cors({
 }));
 
 // ── Body parsing ──────────────────────────────────────────────────────────────
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+app.use(sanitize);
 
 // ── Logging ───────────────────────────────────────────────────────────────────
 if (process.env.NODE_ENV !== 'test') {
@@ -46,7 +54,12 @@ if (process.env.NODE_ENV !== 'test') {
 }
 
 // ── Static uploads ────────────────────────────────────────────────────────────
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+// KYC documents are private. They are served only through the authenticated
+// /api/documents/:id/preview|download routes. Set SERVE_PUBLIC_UPLOADS=true only
+// if you must temporarily restore the old public behaviour.
+if (process.env.SERVE_PUBLIC_UPLOADS === 'true') {
+  app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+}
 
 // ── Routes ────────────────────────────────────────────────────────────────────
 app.use('/api/auth',      authRoutes);
@@ -59,23 +72,20 @@ app.use('/api/documents', documentRoutes);
 // ── Health check ──────────────────────────────────────────────────────────────
 const SERVER_BOOT_TIME = Date.now();
 app.get('/api/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    time: new Date().toISOString(),
-    env: process.env.NODE_ENV,
-    bootTime: SERVER_BOOT_TIME,
-  });
+  res.json({ status: 'ok', time: new Date().toISOString(), bootTime: SERVER_BOOT_TIME });
 });
 
 // ── 404 ───────────────────────────────────────────────────────────────────────
 app.use((req, res) => {
-  res.status(404).json({ error: `Route not found: ${req.method} ${req.url}` });
+  res.status(404).json({ error: 'Route not found' });
 });
 
 // ── Error handler ─────────────────────────────────────────────────────────────
 app.use((err, req, res, next) => {
   console.error('[Server Error]', err.message);
-  res.status(err.status || 500).json({ error: err.message || 'Internal server error' });
+  const status = err.status || 500;
+  const safe = status < 500 || process.env.NODE_ENV !== 'production';
+  res.status(status).json({ error: safe ? (err.message || 'Request failed') : 'Something went wrong. Please try again.' });
 });
 
 // ── Database ──────────────────────────────────────────────────────────────────

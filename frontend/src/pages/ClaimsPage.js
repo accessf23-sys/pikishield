@@ -9,7 +9,7 @@ const sd = (v) => s(v, '—');
 
 async function dlDoc(id, name) {
   try {
-    const token = localStorage.getItem('piki_token');
+    const token = localStorage.getItem('token');
     const res = await fetch(`/api/documents/${id}/download`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {}
     });
@@ -103,16 +103,16 @@ function NokDocUploader({ slot, onUploaded, uploaded, tempId }) {
             )}
             {done && (
               <span style={{ fontSize: 10, background: 'var(--green-light)', color: 'var(--green)', padding: '1px 6px', borderRadius: 4, fontWeight: 700 }}>
-                ✓ DONE
+                 DONE
               </span>
             )}
           </div>
           {done ? (
-            <div style={{ fontSize: 11, color: 'var(--green)' }}>📄 {uploaded.originalName}</div>
+            <div style={{ fontSize: 11, color: 'var(--green)' }}> {uploaded.originalName}</div>
           ) : (
             <div style={{ fontSize: 11, color: 'var(--muted)' }}>JPG, PNG or PDF · drag, browse or take photo</div>
           )}
-          {error && <div style={{ fontSize: 11, color: 'var(--red)', marginTop: 2 }}>⚠️ {error}</div>}
+          {error && <div style={{ fontSize: 11, color: 'var(--red)', marginTop: 2 }}> {error}</div>}
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 5, flexShrink: 0 }}>
           <input ref={ref} type="file" accept=".pdf,.jpg,.jpeg,.png,image/*" style={{ display: 'none' }} onChange={e => upload(e.target.files[0])} />
@@ -133,7 +133,7 @@ function NokDocUploader({ slot, onUploaded, uploaded, tempId }) {
                 disabled={uploading}
                 style={{ padding: '5px 10px', borderRadius: 6, border: '1.5px solid var(--border)', background: 'white', fontSize: 11, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}
               >
-                {uploading ? '⏳' : '📁 Browse'}
+                {uploading ? '' : ' Browse'}
               </button>
               <CameraCapture disabled={uploading} color="var(--green)" onCapture={f => upload(f)} />
             </>
@@ -184,7 +184,7 @@ function ClaimRow({ claim }) {
           {claim.fraudScore != null && claim.fraudScore !== '' && !isNaN(Number(claim.fraudScore)) ? (
             <span
               style={{
-                background: Number(claim.fraudScore) < 25 ? '#E6FAF3' : Number(claim.fraudScore) < 50 ? '#FFF8E1' : '#FFF0F0',
+                background: Number(claim.fraudScore) < 25 ? '#E8F3EF' : Number(claim.fraudScore) < 50 ? '#FFF8E1' : '#FFF0F0',
                 color: Number(claim.fraudScore) < 25 ? '#009A5E' : Number(claim.fraudScore) < 50 ? '#B45309' : '#CC0000',
                 padding: '2px 8px',
                 borderRadius: 8,
@@ -203,7 +203,7 @@ function ClaimRow({ claim }) {
         <td>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span className={`status-badge status-${claim.status || ''}`}>{claim.status || ''}</span>
-            <span style={{ fontSize: 11, color: 'var(--muted)' }}>📎{claim.documents?.length || 0}</span>
+            <span style={{ fontSize: 11, color: 'var(--muted)' }}>{claim.documents?.length || 0}</span>
           </div>
         </td>
         <td style={{ fontSize: 14, color: 'var(--muted)' }}>{open ? '▲' : '▼'}</td>
@@ -214,7 +214,7 @@ function ClaimRow({ claim }) {
           <td colSpan={8} style={{ background: '#F8FAFC', padding: '16px 20px', borderBottom: '2px solid var(--green)' }}>
             {claim.status === 'rejected' && (
               <div style={{ background: '#FEF2F2', border: '1.5px solid #FECACA', borderRadius: 8, padding: '12px 16px', marginBottom: 14, display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                <span style={{ fontSize: 20, flexShrink: 0 }}>❌</span>
+                <span style={{ fontSize: 20, flexShrink: 0 }}></span>
                 <div>
                   <div style={{ fontWeight: 700, fontSize: 13, color: '#991B1B', marginBottom: 3 }}>
                     Claim Rejected
@@ -230,7 +230,7 @@ function ClaimRow({ claim }) {
                     {claim.adminNote || 'No reason provided. Contact support@pikishield.co.ke for details.'}
                   </div>
                   <div style={{ fontSize: 11, color: '#B91C1C', marginTop: 6 }}>
-                    💡 You may re-submit a new claim with corrected documents if the issue has been resolved.
+                     You may re-submit a new claim with corrected documents if the issue has been resolved.
                   </div>
                 </div>
               </div>
@@ -238,24 +238,24 @@ function ClaimRow({ claim }) {
 
             {claim.status === 'approved' && claim.adminNote && (
               <div style={{ background: 'var(--green-light)', border: '1px solid var(--green-border)', borderRadius: 8, padding: '10px 14px', marginBottom: 14, fontSize: 12, color: '#15803D' }}>
-                ✅ <strong>Admin note:</strong> {claim.adminNote || ''}
+                 <strong>Admin note:</strong> {claim.adminNote || ''}
               </div>
             )}
 
             <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 10, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: .5 }}>
-              📎 Attached Documents
+               Attached Documents
             </div>
 
             {loadingDocs && <div style={{ fontSize: 12, color: 'var(--muted)' }}>Loading…</div>}
             {!loadingDocs && docs.length === 0 && (
               <div style={{ fontSize: 12, color: 'var(--muted)', background: '#FFFBEB', border: '1px solid #FFE0A0', borderRadius: 6, padding: '8px 12px' }}>
-                ⚠️ No documents attached
+                 No documents attached
               </div>
             )}
 
             {docs.map(d => (
               <div key={d.id || ''} style={{ display: 'flex', gap: 10, alignItems: 'center', padding: '7px 10px', background: 'white', border: '1px solid var(--border)', borderRadius: 7, marginBottom: 6 }}>
-                <span style={{ fontSize: 16 }}>{d.mimeType?.startsWith('image/') ? '🖼️' : '📄'}</span>
+                <span style={{ fontSize: 16 }}>{d.mimeType?.startsWith('image/') ? '' : ''}</span>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 12, fontWeight: 600 }}>{d.originalName || ''}</div>
                   <div style={{ fontSize: 11, color: 'var(--muted)' }}>{d.docLabel || ''}</div>
@@ -264,7 +264,7 @@ function ClaimRow({ claim }) {
                   onClick={() => dlDoc(d.id, d.originalName)}
                   style={{ fontSize: 12, background: 'var(--green-light)', border: 'none', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', color: 'var(--green)', fontWeight: 600 }}
                 >
-                  ⬇️
+                  
                 </button>
               </div>
             ))}
@@ -448,14 +448,14 @@ export default function ClaimsPage() {
               setNokDocs({});
             }}
           >
-            {showForm ? '✕' : 'Claim'}
+            {showForm ? '×' : 'Claim'}
           </button>
         </div>
       </div>
 
       <div className="page-body">
-        {success && <div className="alert alert-success">✅ {success}</div>}
-        {error && !showForm && <div className="alert alert-error">❌ {error}</div>}
+        {success && <div className="alert alert-success"> {success}</div>}
+        {error && !showForm && <div className="alert alert-error"> {error}</div>}
 
         {showForm && (
           <div className="card" style={{ marginBottom: 24 }}>
@@ -468,7 +468,7 @@ export default function ClaimsPage() {
                 : 'All claims are AI pre-screened. Fraudulent submissions result in permanent suspension.'}
             </p>
 
-            {error && <div className="alert alert-error">❌ {error}</div>}
+            {error && <div className="alert alert-error"> {error}</div>}
 
             <form onSubmit={handleSubmit}>
               {!isNok && (
@@ -476,9 +476,9 @@ export default function ClaimsPage() {
                   <label className="form-label" style={{ marginBottom: 8, display: 'block' }}>What are you claiming for?</label>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
                     {[
-                      { type: 'bail', icon: '⚖️', label: 'Bail', sub: 'Traffic arrest bail', max: 20000, color: '#0066FF' },
-                      { type: 'income', icon: '🩺', label: 'Stipend', sub: 'Income stipend (injury)', max: 15000, color: '#00C896' },
-                      { type: 'funeral', icon: '🕊️', label: 'Funeral', sub: 'Funeral cover', max: 200000, color: '#FF6B35' },
+                      { type: 'bail', icon: '', label: 'Bail', sub: 'Traffic arrest bail', max: 20000, color: '#2F5D8C' },
+                      { type: 'income', icon: '', label: 'Stipend', sub: 'Income stipend (injury)', max: 15000, color: '#1A9F73' },
+                      { type: 'funeral', icon: '', label: 'Funeral', sub: 'Funeral cover', max: 200000, color: '#B08A3E' },
                     ].filter(opt => {
                       if (isMember) return opt.type === 'funeral';
                       return policies.some(p => p.coverages && p.coverages[opt.type] !== undefined) || opt.type === 'funeral';
@@ -493,7 +493,7 @@ export default function ClaimsPage() {
                         }))}
                         style={{
                           border: `2px solid ${form.type === opt.type ? opt.color : 'var(--border)'}`,
-                          borderRadius: 10,
+                          borderRadius: 6,
                           padding: '12px 14px',
                           cursor: 'pointer',
                           background: form.type === opt.type ? `${opt.color}0D` : 'white',
@@ -508,7 +508,7 @@ export default function ClaimsPage() {
                     ))}
                   </div>
                   {!isNokOrMember && policies.length === 0 && (
-                    <div className="alert alert-warning" style={{ marginTop: 10 }}>⚠️ You need an active policy before submitting a claim.</div>
+                    <div className="alert alert-warning" style={{ marginTop: 10 }}> You need an active policy before submitting a claim.</div>
                   )}
                 </div>
               )}
@@ -567,8 +567,8 @@ export default function ClaimsPage() {
               </div>
 
               {form.type === 'income' && !isNok && (
-                <div style={{ background: '#F0FDF4', border: '1px solid var(--green-border)', borderRadius: 8, padding: '12px 14px', marginBottom: 14 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--green)', marginBottom: 10 }}>🏥 Medical Details (Required for Stipend)</div>
+                <div style={{ background: '#EEF6F2', border: '1px solid var(--green-border)', borderRadius: 8, padding: '12px 14px', marginBottom: 14 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--green)', marginBottom: 10 }}> Medical Details (Required for Stipend)</div>
                   <div className="two-col">
                     <div className="form-group" style={{ marginBottom: 0 }}>
                       <label className="form-label">Doctor's Full Name *</label>
@@ -587,9 +587,9 @@ export default function ClaimsPage() {
               )}
 
               {form.type === 'bail' && !isNok && (
-                <div style={{ background: '#EBF2FF', border: '1px solid #BFDBFE', borderRadius: 8, padding: '10px 12px', marginBottom: 14 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: '#1D4ED8', marginBottom: 4 }}>🚔 Required for Bail Claims</div>
-                  <div style={{ fontSize: 12, color: '#1E40AF', lineHeight: 1.5 }}>
+                <div style={{ background: '#EBF2FF', border: '1px solid #C9D6E6', borderRadius: 8, padding: '10px 12px', marginBottom: 14 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: '#1E3A5F', marginBottom: 4 }}> Required for Bail Claims</div>
+                  <div style={{ fontSize: 12, color: '#1E3A5F', lineHeight: 1.5 }}>
                     You must attach: <strong>Police Abstract</strong> or <strong>Court Charge Sheet</strong> + your <strong>National ID</strong>.
                     Without these documents your claim cannot be processed.
                   </div>
@@ -597,8 +597,8 @@ export default function ClaimsPage() {
               )}
 
               {form.type === 'funeral' && !isNok && !isMember && (
-                <div style={{ background: '#FDF4FF', border: '1px solid #E9D5FF', borderRadius: 10, padding: '14px 16px', marginBottom: 14 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: '#7C3AED', marginBottom: 10 }}>🕊️ Deceased Details (Required for Funeral Cover)</div>
+                <div style={{ background: '#FDF4FF', border: '1px solid #E9D5FF', borderRadius: 6, padding: '14px 16px', marginBottom: 14 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: '#3B4B6B', marginBottom: 10 }}> Deceased Details (Required for Funeral Cover)</div>
                   <div className="two-col">
                     <div className="form-group" style={{ marginBottom: 0 }}>
                       <label className="form-label">Full Name of Deceased *</label>
@@ -620,8 +620,8 @@ export default function ClaimsPage() {
               )}
 
               {isNok && (
-                <div style={{ background: '#FFF7ED', border: '1.5px solid #F97316', borderRadius: 10, padding: '14px 16px', marginBottom: 14 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: '#C2410C', marginBottom: 10 }}>🔐 Principal Rider Verification (Required)</div>
+                <div style={{ background: '#FFF7ED', border: '1.5px solid #F97316', borderRadius: 6, padding: '14px 16px', marginBottom: 14 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: '#C2410C', marginBottom: 10 }}> Principal Rider Verification (Required)</div>
                   <div className="form-group" style={{ marginBottom: 8 }}>
                     <label className="form-label">Principal Rider's Member Number *</label>
                     <input
@@ -637,7 +637,7 @@ export default function ClaimsPage() {
                     </p>
                   </div>
                   <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 8, padding: '8px 12px', fontSize: 11, color: '#991B1B', lineHeight: 1.6 }}>
-                    ⚠️ <strong>Important:</strong> By submitting this claim you confirm the principal rider is deceased.
+                     <strong>Important:</strong> By submitting this claim you confirm the principal rider is deceased.
                     Their account will be <strong>frozen immediately</strong> pending verification and payout.
                     Upon payment the account will be <strong>suspended and scheduled for removal</strong> to prevent fraud.
                     False claims carry legal consequences.
@@ -646,8 +646,8 @@ export default function ClaimsPage() {
               )}
 
               {isMember && form.type === 'funeral' && (
-                <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: 10, padding: '14px 16px', marginBottom: 14 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: '#1D4ED8', marginBottom: 10 }}>👨‍👩‍👧 Deceased Household Member Details</div>
+                <div style={{ background: '#EEF3F8', border: '1px solid #C9D6E6', borderRadius: 6, padding: '14px 16px', marginBottom: 14 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: '#1E3A5F', marginBottom: 10 }}> Deceased Household Member Details</div>
                   <div className="two-col" style={{ marginBottom: 10 }}>
                     <div className="form-group" style={{ marginBottom: 0 }}>
                       <label className="form-label">Full Name of Deceased *</label>
@@ -665,8 +665,8 @@ export default function ClaimsPage() {
                       </select>
                     </div>
                   </div>
-                  <p style={{ fontSize: 11, color: '#1E40AF', margin: 0, lineHeight: 1.5 }}>
-                    ℹ️ The deceased must be a named dependent on the principal rider&apos;s active policy.
+                  <p style={{ fontSize: 11, color: '#1E3A5F', margin: 0, lineHeight: 1.5 }}>
+                    ℹ The deceased must be a named dependent on the principal rider&apos;s active policy.
                     If the <strong>rider themselves</strong> has passed, the Next of Kin (NOK) account handles that claim.
                   </p>
                 </div>
@@ -674,7 +674,7 @@ export default function ClaimsPage() {
 
               {isNokOrMember ? (
                 <div style={{ border: '1.5px solid var(--border)', borderRadius: 'var(--r)', padding: '16px 18px', marginBottom: 18, background: '#FAFBFD' }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 12 }}>📋 Required Documents — all 4 mandatory</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 12 }}> Required Documents — all 4 mandatory</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {NOK_DOC_SLOTS.map(slot => (
                       <NokDocUploader
@@ -688,7 +688,7 @@ export default function ClaimsPage() {
                   </div>
                   {nokMissing.length > 0 && (
                     <div className="alert alert-warning" style={{ marginTop: 12, fontSize: 12 }}>
-                      ⚠️ Missing: {nokMissing.map(s => s.label).join(', ')}
+                       Missing: {nokMissing.map(s => s.label).join(', ')}
                     </div>
                   )}
                 </div>
@@ -698,7 +698,7 @@ export default function ClaimsPage() {
                     <DocumentUploader claimType={form.type} tempUploadId={tempUploadId} onChange={setUploadedDocs} />
                   ) : (
                     <div style={{ textAlign: 'center', padding: '20px 0', color: 'var(--muted)' }}>
-                      <div style={{ fontSize: 26, marginBottom: 6 }}>📎</div>
+                      <div style={{ fontSize: 26, marginBottom: 6 }}></div>
                       <div style={{ fontSize: 12, fontWeight: 600 }}>Select a claim type above to see required documents</div>
                     </div>
                   )}
@@ -708,7 +708,7 @@ export default function ClaimsPage() {
               <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap:'wrap' }}>
                 <button type="button" className="btn btn-secondary" onClick={() => setShowForm(false)}>Cancel</button>
                 <button type="submit" className="btn btn-primary btn-lg" style={{flex:1,justifyContent:'center',minWidth:120}} disabled={submitting || !canClaim}>
-                  {submitting ? '⏳ Submitting...' : '📋 Submit'}
+                  {submitting ? ' Submitting...' : ' Submit'}
                 </button>
               </div>
             </form>
@@ -725,7 +725,7 @@ export default function ClaimsPage() {
             <div style={{ padding: '32px', textAlign: 'center', color: '#94A3B8', fontSize: 13 }}>Loading claims…</div>
           ) : claims.length === 0 ? (
             <div className="empty-state">
-              <div className="emoji">📋</div>
+              <div className="emoji"></div>
               <p>No claims submitted yet</p>
               <button className="btn btn-primary btn-sm" style={{ marginTop: 12 }} onClick={() => setShowForm(true)}>Submit your first claim</button>
             </div>

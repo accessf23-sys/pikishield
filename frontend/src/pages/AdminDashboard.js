@@ -15,7 +15,7 @@ const sd = (v) => s(v, '—');
 
 async function dlDoc(id, name) {
   try {
-    const token = localStorage.getItem('piki_token');
+    const token = localStorage.getItem('token');
     const res = await fetch(`/api/documents/${id}/download`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
     if (!res.ok) throw new Error();
     const blob = await res.blob();
@@ -32,7 +32,7 @@ function SuspendModal({ user, onClose, onSuspend }) {
   if (!user) return null;
   return (
     <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.5)', zIndex:9999, display:'flex', alignItems:'center', justifyContent:'center' }} onClick={onClose}>
-      <div style={{ background:'white', borderRadius:14, padding:24, width:420, maxWidth:'95vw' }} onClick={e => e.stopPropagation()}>
+      <div style={{ background:'white', borderRadius:8, padding:24, width:420, maxWidth:'95vw' }} onClick={e => e.stopPropagation()}>
         <h3 style={{ fontSize:16, marginBottom:4 }}>{user.suspended ? 'Reinstate' : 'Suspend'} Account</h3>
         <p style={{ fontSize:13, color:'var(--muted)', marginBottom:16 }}>{user.fullName} · {user.memberNumber || user.phone}</p>
         {!user.suspended && (
@@ -61,10 +61,10 @@ function OnboardReviewModal({ person, onClose, onApprove, onReject, onSuspend })
   if (!person) return null;
   return (
     <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.55)', zIndex:9999, display:'flex', alignItems:'center', justifyContent:'center', padding:16 }} onClick={onClose}>
-      <div style={{ background:'white', borderRadius:14, width:'100%', maxWidth:640, maxHeight:'92vh', overflow:'hidden', display:'flex', flexDirection:'column' }} onClick={e => e.stopPropagation()}>
+      <div style={{ background:'white', borderRadius:8, width:'100%', maxWidth:640, maxHeight:'92vh', overflow:'hidden', display:'flex', flexDirection:'column' }} onClick={e => e.stopPropagation()}>
         <div style={{ padding:'16px 20px', borderBottom:'1px solid var(--border)', display:'flex', justifyContent:'space-between', alignItems:'center', flexShrink:0 }}>
           <div>
-            <div style={{ fontWeight:800, fontSize:16 }}>Review: {person.fullName}</div>
+            <div style={{ fontWeight:700, fontSize:16 }}>Review: {person.fullName}</div>
             <div style={{ fontSize:12, color:'var(--muted)' }}>{person.memberNumber || 'No member no.'} · {String(person.phone||'')} · KYC: <strong style={{ color:'var(--yellow)' }}>{String(person.kycStatus||'pending')}</strong></div>
           </div>
           <button onClick={onClose} style={{ background:'#F1F5F9', border:'none', borderRadius:8, padding:'6px 12px', cursor:'pointer', fontWeight:600 }}>x</button>
@@ -150,17 +150,17 @@ function QuickCreateAgent({ onClose, onDone }) {
     try {
       const res = await usersAPI.createAgent(form);
       const { agentCode, user } = res.data;
-      if (idDoc && user?.id) await fetch('/api/documents/attach-kyc', { method:'POST', headers:{'Content-Type':'application/json',Authorization:'Bearer '+localStorage.getItem('piki_token')}, body:JSON.stringify({tempUploadId:tempId,userId:user.id}) }).catch(()=>{});
+      if (idDoc && user?.id) await fetch('/api/documents/attach-kyc', { method:'POST', headers:{'Content-Type':'application/json',Authorization:'Bearer '+localStorage.getItem('token')}, body:JSON.stringify({tempUploadId:tempId,userId:user.id}) }).catch(()=>{});
       setOk('Agent created!\nCode: '+agentCode+'\nPhone: '+form.phone+'\nPass: '+form.password);
       if (onDone) onDone();
     } catch(e) { setErr(e.response?.data?.error||'Failed'); } finally { setCreating(false); }
   };
   return (
     <div style={{ position:'fixed', inset:0, zIndex:9999, background:'rgba(5,14,31,.75)', backdropFilter:'blur(5px)', display:'flex', alignItems:'center', justifyContent:'center', padding:20 }} onClick={onClose}>
-      <div style={{ width:'100%', maxWidth:460, background:'white', borderRadius:16, boxShadow:'0 32px 80px rgba(0,0,0,.4)', overflow:'hidden' }} onClick={e=>e.stopPropagation()}>
-        <div style={{ background:'linear-gradient(135deg,#059669,#047857)', padding:'13px 17px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+      <div style={{ width:'100%', maxWidth:460, background:'white', borderRadius:8, boxShadow:'var(--shadow-lg)', overflow:'hidden' }} onClick={e=>e.stopPropagation()}>
+        <div style={{ background:'#0F7B5C', padding:'13px 17px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
           <div>
-            <div style={{ fontWeight:800, fontSize:13, color:'white' }}>Create Field Agent</div>
+            <div style={{ fontWeight:700, fontSize:13, color:'white' }}>Create Field Agent</div>
             <div style={{ fontSize:10, color:'rgba(255,255,255,.5)' }}>New agent account with unique code</div>
           </div>
           <button onClick={onClose} style={{ background:'rgba(255,255,255,.1)', border:'none', borderRadius:7, width:28, height:28, color:'white', cursor:'pointer', fontSize:15 }}>x</button>
@@ -169,11 +169,11 @@ function QuickCreateAgent({ onClose, onDone }) {
           {err && <div style={{ background:'#FEF2F2', border:'1px solid #FECACA', borderRadius:7, padding:'8px 11px', fontSize:12, color:'#991B1B', marginBottom:9 }}>{err}</div>}
           {ok ? (
             <div>
-              <div style={{ background:'#F0FDF4', border:'2px solid #A7F3D0', borderRadius:10, padding:'12px', marginBottom:9 }}>
-                <div style={{ fontSize:12, color:'#047857', fontFamily:'monospace', background:'#ECFDF5', borderRadius:5, padding:'8px', whiteSpace:'pre', lineHeight:1.9 }}>{ok}</div>
+              <div style={{ background:'#EEF6F2', border:'2px solid #BFDCCF', borderRadius:6, padding:'12px', marginBottom:9 }}>
+                <div style={{ fontSize:12, color:'#047857', fontFamily:'monospace', background:'#EEF6F2', borderRadius:5, padding:'8px', whiteSpace:'pre', lineHeight:1.9 }}>{ok}</div>
               </div>
               <div style={{ display:'flex', gap:7 }}>
-                <button style={{ flex:1, padding:'9px', background:'#059669', color:'white', border:'none', borderRadius:7, fontWeight:700, fontSize:12, cursor:'pointer' }} onClick={()=>{setOk('');setForm({fullName:'',phone:'',email:'',nationalId:'',region:'',password:'',commission:''});setIdDoc(null);}}>Create Another</button>
+                <button style={{ flex:1, padding:'9px', background:'#0F7B5C', color:'white', border:'none', borderRadius:7, fontWeight:700, fontSize:12, cursor:'pointer' }} onClick={()=>{setOk('');setForm({fullName:'',phone:'',email:'',nationalId:'',region:'',password:'',commission:''});setIdDoc(null);}}>Create Another</button>
                 <button style={{ flex:1, padding:'9px', background:'#F3F4F6', color:'#374151', border:'none', borderRadius:7, fontWeight:700, fontSize:12, cursor:'pointer' }} onClick={onClose}>Done</button>
               </div>
             </div>
@@ -182,17 +182,17 @@ function QuickCreateAgent({ onClose, onDone }) {
               {[{key:'fullName',label:'Full Name',ph:'e.g. John Kamau',type:'text',req:true},{key:'phone',label:'Phone',ph:'+254700000000',type:'tel',req:true},{key:'nationalId',label:'National ID',ph:'e.g. 12345678',type:'text',req:true},{key:'email',label:'Email (optional)',ph:'agent@email.com',type:'email',req:false},{key:'password',label:'Password',ph:'Min 8 chars',type:'password',req:true},{key:'commission',label:'Commission %',ph:'Default 5%',type:'number',req:false}].map(f=>(
                 <div key={f.key}>
                   <label style={{ fontSize:11, fontWeight:700, color:'#374151', display:'block', marginBottom:2 }}>{f.label}{f.req&&<span style={{color:'#EF4444',marginLeft:2}}>*</span>}</label>
-                  <input type={f.type} placeholder={f.ph} style={{ width:'100%', border:'1.5px solid #E5E7EB', borderRadius:6, padding:'6px 9px', fontSize:12, outline:'none', boxSizing:'border-box', fontFamily:'inherit' }} value={form[f.key]||''} onChange={e=>setForm(p=>({...p,[f.key]:e.target.value}))} onFocus={e=>{e.target.style.borderColor='#059669';}} onBlur={e=>{e.target.style.borderColor='#E5E7EB';}}/>
+                  <input type={f.type} placeholder={f.ph} style={{ width:'100%', border:'1.5px solid #E5E7EB', borderRadius:6, padding:'6px 9px', fontSize:12, outline:'none', boxSizing:'border-box', fontFamily:'inherit' }} value={form[f.key]||''} onChange={e=>setForm(p=>({...p,[f.key]:e.target.value}))} onFocus={e=>{e.target.style.borderColor='#0F7B5C';}} onBlur={e=>{e.target.style.borderColor='#E5E7EB';}}/>
                 </div>
               ))}
               <div>
                 <label style={{ fontSize:11, fontWeight:700, color:'#374151', display:'block', marginBottom:2 }}>Region / County<span style={{color:'#EF4444',marginLeft:2}}>*</span></label>
-                <select style={{ width:'100%', border:'1.5px solid #E5E7EB', borderRadius:6, padding:'6px 9px', fontSize:12, outline:'none', boxSizing:'border-box', fontFamily:'inherit' }} value={form.region||''} onChange={e=>setForm(p=>({...p,region:e.target.value}))} onFocus={e=>{e.target.style.borderColor='#059669';}} onBlur={e=>{e.target.style.borderColor='#E5E7EB';}}>
+                <select style={{ width:'100%', border:'1.5px solid #E5E7EB', borderRadius:6, padding:'6px 9px', fontSize:12, outline:'none', boxSizing:'border-box', fontFamily:'inherit' }} value={form.region||''} onChange={e=>setForm(p=>({...p,region:e.target.value}))} onFocus={e=>{e.target.style.borderColor='#0F7B5C';}} onBlur={e=>{e.target.style.borderColor='#E5E7EB';}}>
                   <option value="">Select county...</option>
                   {COUNTIES.map(c=><option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
-              <button style={{ width:'100%', marginTop:4, padding:'10px', background:'linear-gradient(135deg,#059669,#00D68F)', color:'white', border:'none', borderRadius:8, fontWeight:800, fontSize:13, cursor:'pointer' }} onClick={submit} disabled={creating}>{creating?'Creating...':'Create Agent'}</button>
+              <button style={{ width:'100%', marginTop:4, padding:'10px', background:'#0F7B5C', color:'white', border:'none', borderRadius:8, fontWeight:700, fontSize:13, cursor:'pointer' }} onClick={submit} disabled={creating}>{creating?'Creating...':'Create Agent'}</button>
             </div>
           )}
         </div>
@@ -218,10 +218,10 @@ function QuickCreateAdmin({ onClose, onDone }) {
   };
   return (
     <div style={{ position:'fixed', inset:0, zIndex:9999, background:'rgba(5,14,31,.75)', backdropFilter:'blur(5px)', display:'flex', alignItems:'center', justifyContent:'center', padding:20 }} onClick={onClose}>
-      <div style={{ width:'100%', maxWidth:440, background:'white', borderRadius:16, boxShadow:'0 32px 80px rgba(0,0,0,.4)', overflow:'hidden' }} onClick={e=>e.stopPropagation()}>
-        <div style={{ background:'linear-gradient(135deg,#1E1B4B,#312E81)', padding:'13px 17px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+      <div style={{ width:'100%', maxWidth:440, background:'white', borderRadius:8, boxShadow:'var(--shadow-lg)', overflow:'hidden' }} onClick={e=>e.stopPropagation()}>
+        <div style={{ background:'#0B1F3A', padding:'13px 17px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
           <div>
-            <div style={{ fontWeight:800, fontSize:13, color:'white' }}>Create Admin Account</div>
+            <div style={{ fontWeight:700, fontSize:13, color:'white' }}>Create Admin Account</div>
             <div style={{ fontSize:10, color:'rgba(255,255,255,.4)' }}>Full system access — use carefully</div>
           </div>
           <button onClick={onClose} style={{ background:'rgba(255,255,255,.1)', border:'none', borderRadius:7, width:28, height:28, color:'white', cursor:'pointer', fontSize:15 }}>x</button>
@@ -230,11 +230,11 @@ function QuickCreateAdmin({ onClose, onDone }) {
           {err && <div style={{ background:'#FEF2F2', border:'1px solid #FECACA', borderRadius:7, padding:'8px 11px', fontSize:12, color:'#991B1B', marginBottom:9 }}>{err}</div>}
           {ok ? (
             <div>
-              <div style={{ background:'#F0FDF4', border:'2px solid #A7F3D0', borderRadius:10, padding:'12px', marginBottom:9 }}>
-                <div style={{ fontSize:12, color:'#047857', fontFamily:'monospace', background:'#ECFDF5', borderRadius:5, padding:'8px', whiteSpace:'pre', lineHeight:1.9 }}>{ok}</div>
+              <div style={{ background:'#EEF6F2', border:'2px solid #BFDCCF', borderRadius:6, padding:'12px', marginBottom:9 }}>
+                <div style={{ fontSize:12, color:'#047857', fontFamily:'monospace', background:'#EEF6F2', borderRadius:5, padding:'8px', whiteSpace:'pre', lineHeight:1.9 }}>{ok}</div>
               </div>
               <div style={{ display:'flex', gap:7 }}>
-                <button style={{ flex:1, padding:'9px', background:'linear-gradient(135deg,#4F46E5,#7C3AED)', color:'white', border:'none', borderRadius:7, fontWeight:700, fontSize:12, cursor:'pointer' }} onClick={()=>{setOk('');setForm({fullName:'',phone:'',email:'',password:''});}}>Create Another</button>
+                <button style={{ flex:1, padding:'9px', background:'#1E3A5F', color:'white', border:'none', borderRadius:7, fontWeight:700, fontSize:12, cursor:'pointer' }} onClick={()=>{setOk('');setForm({fullName:'',phone:'',email:'',password:''});}}>Create Another</button>
                 <button style={{ flex:1, padding:'9px', background:'#F3F4F6', color:'#374151', border:'none', borderRadius:7, fontWeight:700, fontSize:12, cursor:'pointer' }} onClick={onClose}>Done</button>
               </div>
             </div>
@@ -243,11 +243,11 @@ function QuickCreateAdmin({ onClose, onDone }) {
               {[{key:'fullName',label:'Full Name',ph:'e.g. Jane Wanjiku',type:'text',req:true},{key:'phone',label:'Phone',ph:'+254700000000',type:'tel',req:true},{key:'email',label:'Email (optional)',ph:'admin@email.com',type:'email',req:false},{key:'password',label:'Password',ph:'Min 8 chars',type:'password',req:true}].map(f=>(
                 <div key={f.key}>
                   <label style={{ fontSize:11, fontWeight:700, color:'#374151', display:'block', marginBottom:2 }}>{f.label}{f.req&&<span style={{color:'#EF4444',marginLeft:2}}>*</span>}</label>
-                  <input type={f.type} placeholder={f.ph} style={{ width:'100%', border:'1.5px solid #E5E7EB', borderRadius:6, padding:'6px 9px', fontSize:12, outline:'none', boxSizing:'border-box', fontFamily:'inherit' }} value={form[f.key]||''} onChange={e=>setForm(p=>({...p,[f.key]:e.target.value}))} onFocus={e=>{e.target.style.borderColor='#4F46E5';}} onBlur={e=>{e.target.style.borderColor='#E5E7EB';}}/>
+                  <input type={f.type} placeholder={f.ph} style={{ width:'100%', border:'1.5px solid #E5E7EB', borderRadius:6, padding:'6px 9px', fontSize:12, outline:'none', boxSizing:'border-box', fontFamily:'inherit' }} value={form[f.key]||''} onChange={e=>setForm(p=>({...p,[f.key]:e.target.value}))} onFocus={e=>{e.target.style.borderColor='#1E3A5F';}} onBlur={e=>{e.target.style.borderColor='#E5E7EB';}}/>
                 </div>
               ))}
               <div style={{ background:'#FEF3C7', border:'1px solid #FCD34D', borderRadius:6, padding:'8px 10px', fontSize:11, color:'#92400E', lineHeight:1.5 }}>Admin accounts have <strong>full system access</strong>. Only create for trusted team members.</div>
-              <button style={{ width:'100%', marginTop:4, padding:'10px', background:'linear-gradient(135deg,#4F46E5,#7C3AED)', color:'white', border:'none', borderRadius:8, fontWeight:800, fontSize:13, cursor:'pointer' }} onClick={submit} disabled={creating}>{creating?'Creating...':'Create Admin Account'}</button>
+              <button style={{ width:'100%', marginTop:4, padding:'10px', background:'#1E3A5F', color:'white', border:'none', borderRadius:8, fontWeight:700, fontSize:13, cursor:'pointer' }} onClick={submit} disabled={creating}>{creating?'Creating...':'Create Admin Account'}</button>
             </div>
           )}
         </div>
@@ -263,9 +263,9 @@ function PolicyBreakdownCard({ data }) {
   const funeralPolicies    = (data.policyBreakdown?.funeral)     || funeralFromMembers;
   const totalPolicies      = (data.activePolicies)               || (funeralPolicies + bailPolicies + bailIncomePolicies);
   const types = [
-    { label:'Funeral',        value: funeralPolicies,    color:'#8B5CF6', bg:'#F5F3FF' },
-    { label:'Bail',           value: bailPolicies,       color:'#3B82F6', bg:'#EFF6FF' },
-    { label:'Bail + Stipend', value: bailIncomePolicies, color:'#F59E0B', bg:'#FFFBEB' },
+    { label:'Funeral',        value: funeralPolicies,    color:'#3B4B6B', bg:'#EEF1F6' },
+    { label:'Bail',           value: bailPolicies,       color:'#2F5D8C', bg:'#EEF3F8' },
+    { label:'Bail + Stipend', value: bailIncomePolicies, color:'#B08A3E', bg:'#FFFBEB' },
   ];
   return (
     <div className="card" style={{ padding:'14px 16px', marginBottom:16 }}>
@@ -273,17 +273,17 @@ function PolicyBreakdownCard({ data }) {
         <span>Policy Breakdown</span>
         <span style={{ fontSize:11, color:'var(--muted)', fontWeight:500 }}>Active subscriptions</span>
       </div>
-      <div style={{ background:'linear-gradient(135deg,#050E1F,#0D1F40)', borderRadius:10, padding:'12px 14px', marginBottom:12, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+      <div style={{ background:'#0B1F3A', borderRadius:6, padding:'12px 14px', marginBottom:12, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
         <div>
           <div style={{ fontSize:10, color:'rgba(255,255,255,.4)', textTransform:'uppercase', letterSpacing:.8, marginBottom:2 }}>Total Active Policies</div>
-          <div style={{ fontSize:28, fontWeight:900, color:'white', lineHeight:1 }}>{totalPolicies}</div>
+          <div style={{ fontSize:28, fontWeight:700, color:'white', lineHeight:1 }}>{totalPolicies}</div>
         </div>
       </div>
       <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:8 }}>
         {types.map(t => (
-          <div key={t.label} style={{ background:t.bg, borderRadius:10, padding:'10px 12px', border:`1px solid ${t.color}22` }}>
+          <div key={t.label} style={{ background:t.bg, borderRadius:6, padding:'10px 12px', border:`1px solid ${t.color}22` }}>
             <div style={{ fontSize:11, color:t.color, fontWeight:600, marginBottom:4, lineHeight:1.3 }}>{t.label}</div>
-            <div style={{ fontSize:22, fontWeight:900, color:t.color, lineHeight:1 }}>{t.value}</div>
+            <div style={{ fontSize:22, fontWeight:700, color:t.color, lineHeight:1 }}>{t.value}</div>
           </div>
         ))}
       </div>
@@ -375,8 +375,8 @@ export default function AdminDashboard() {
   };
 
   const riskData = [
-    { name:'Green',  value: data?.riskDistribution?.green  || 0, color:'#00D68F' },
-    { name:'Yellow', value: data?.riskDistribution?.yellow || 0, color:'#F59E0B' },
+    { name:'Green',  value: data?.riskDistribution?.green  || 0, color:'#1A9F73' },
+    { name:'Yellow', value: data?.riskDistribution?.yellow || 0, color:'#B08A3E' },
     { name:'Red',    value: data?.riskDistribution?.red    || 0, color:'#F43F5E' },
   ];
 
@@ -390,46 +390,46 @@ export default function AdminDashboard() {
       <div className="page-body" style={{ paddingTop:28 }}>
 
         {/* Hero banner */}
-        <div style={{ background:'linear-gradient(135deg,#050E1F 0%,#0D1F40 40%,#071A2E 70%,#06201A 100%)', borderRadius:20, padding:'28px 32px', marginBottom:24, position:'relative', overflow:'hidden', border:'1px solid rgba(255,255,255,.06)' }}>
+        <div style={{ background:'#0B1F3A', borderRadius:8, padding:'28px 32px', marginBottom:24, position:'relative', overflow:'hidden', border:'1px solid rgba(255,255,255,.06)' }}>
           <svg style={{ position:'absolute', top:0, left:0, width:'100%', height:'100%', opacity:.04, pointerEvents:'none' }} xmlns="http://www.w3.org/2000/svg">
             <defs><pattern id="ag" width="36" height="36" patternUnits="userSpaceOnUse"><path d="M 36 0 L 0 0 0 36" fill="none" stroke="white" strokeWidth="1"/></pattern></defs>
             <rect width="100%" height="100%" fill="url(#ag)"/>
           </svg>
-          <div style={{ position:'absolute', top:-60, left:200, width:240, height:240, borderRadius:'50%', background:'radial-gradient(circle,rgba(0,214,143,.1) 0%,transparent 70%)', pointerEvents:'none' }}/>
-          <div style={{ position:'absolute', bottom:-80, right:100, width:300, height:300, borderRadius:'50%', background:'radial-gradient(circle,rgba(79,70,229,.1) 0%,transparent 70%)', pointerEvents:'none' }}/>
+          <div style={{ position:'absolute', top:-60, left:200, width:240, height:240, borderRadius:'50%', background:'transparent', pointerEvents:'none' }}/>
+          <div style={{ position:'absolute', bottom:-80, right:100, width:300, height:300, borderRadius:'50%', background:'transparent', pointerEvents:'none' }}/>
           <div style={{ position:'relative', zIndex:1 }}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', flexWrap:'wrap', gap:16 }}>
               <div>
                 <div style={{ fontSize:11, fontWeight:700, color:'rgba(255,255,255,.5)', letterSpacing:2, textTransform:'uppercase', marginBottom:6 }}>
                   {isSuperAdmin ? 'Super Admin' : 'Admin'} Dashboard
                 </div>
-                <h1 style={{ fontSize:26, fontWeight:800, color:'white', margin:0, lineHeight:1.2 }}>{authUser?.fullName || 'Admin'}</h1>
+                <h1 style={{ fontSize:26, fontWeight:700, color:'white', margin:0, lineHeight:1.2 }}>{authUser?.fullName || 'Admin'}</h1>
                 <div style={{ fontSize:13, color:'rgba(255,255,255,.6)', marginTop:6 }}>
                   {new Date().toLocaleDateString('en-KE', { weekday:'long', year:'numeric', month:'long', day:'numeric' })}
                 </div>
               </div>
               <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
                 <button className="btn" style={{ background:'rgba(255,255,255,.08)', color:'white', border:'1px solid rgba(255,255,255,.15)', backdropFilter:'blur(8px)', fontSize:12, padding:'8px 16px' }} onClick={() => navigate('/admin/claims')}>
-                  Claims {data.pendingClaims > 0 && <span style={{ background:'#EF4444', borderRadius:10, padding:'1px 6px', fontSize:10, marginLeft:4 }}>{data.pendingClaims}</span>}
+                  Claims {data.pendingClaims > 0 && <span style={{ background:'#EF4444', borderRadius:6, padding:'1px 6px', fontSize:10, marginLeft:4 }}>{data.pendingClaims}</span>}
                 </button>
                 {isSuperAdmin && (
                   <button className="btn" style={{ background:'rgba(79,70,229,.18)', color:'#C7D2FE', border:'1px solid rgba(99,102,241,.3)', fontSize:12, padding:'8px 16px' }} onClick={() => setShowNewAdmin(true)}>New Admin</button>
                 )}
-                <button className="btn" style={{ background:'rgba(0,214,143,.15)', color:'#00D68F', border:'1px solid rgba(0,214,143,.3)', fontSize:12, padding:'8px 16px' }} onClick={load}>Refresh</button>
+                <button className="btn" style={{ background:'rgba(0,214,143,.15)', color:'#1A9F73', border:'1px solid rgba(0,214,143,.3)', fontSize:12, padding:'8px 16px' }} onClick={load}>Refresh</button>
               </div>
             </div>
             <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(130px,1fr))', gap:10, marginTop:24 }}>
               {[
-                { label:'Agents',         value: data.totalAgents,  color:'#3B82F6' },
-                { label:'Total Policies', value: totalPolicies,     color:'#F59E0B' },
-                { label:'Funeral',        value: funeralCount,      color:'#8B5CF6' },
-                { label:'Bail',           value: bailCount,         color:'#3B82F6' },
-                { label:'Bail + Stipend', value: bailIncomeCount,   color:'#F59E0B' },
-                { label:'Claims',         value: data.totalClaims,  color:'#EC4899' },
-                ...(isSuperAdmin ? [{ label:'Net Position', value:'KES '+(data.netPosition||0).toLocaleString(), color:'#00D68F' }] : []),
+                { label:'Agents',         value: data.totalAgents,  color:'#2F5D8C' },
+                { label:'Total Policies', value: totalPolicies,     color:'#B08A3E' },
+                { label:'Funeral',        value: funeralCount,      color:'#3B4B6B' },
+                { label:'Bail',           value: bailCount,         color:'#2F5D8C' },
+                { label:'Bail + Stipend', value: bailIncomeCount,   color:'#B08A3E' },
+                { label:'Claims',         value: data.totalClaims,  color:'#9A4D6B' },
+                ...(isSuperAdmin ? [{ label:'Net Position', value:'KES '+(data.netPosition||0).toLocaleString(), color:'#1A9F73' }] : []),
               ].map(k => (
-                <div key={k.label} style={{ background:'rgba(255,255,255,.06)', borderRadius:12, padding:'12px 14px', border:'1px solid rgba(255,255,255,.08)' }}>
-                  <div style={{ fontSize:20, fontWeight:800, color:k.color, lineHeight:1, marginTop:4 }}>{k.value ?? 0}</div>
+                <div key={k.label} style={{ background:'rgba(255,255,255,.06)', borderRadius:6, padding:'12px 14px', border:'1px solid rgba(255,255,255,.08)' }}>
+                  <div style={{ fontSize:20, fontWeight:700, color:k.color, lineHeight:1, marginTop:4 }}>{k.value ?? 0}</div>
                   <div style={{ fontSize:10, color:'rgba(255,255,255,.5)', marginTop:2 }}>{k.label}</div>
                 </div>
               ))}
@@ -448,7 +448,7 @@ export default function AdminDashboard() {
             ] : []),
           ].map(t => (
             <button key={t.id} onClick={() => setTab(t.id)}
-              style={{ padding:'8px 16px', borderRadius:20, border:'none', cursor:'pointer', fontSize:12, fontWeight:600, background: tab===t.id ? 'var(--green)' : 'var(--surface)', color: tab===t.id ? 'white' : 'var(--text)', boxShadow: tab===t.id ? '0 2px 8px rgba(0,214,143,.3)' : 'none' }}>
+              style={{ padding:'8px 16px', borderRadius:8, border:'none', cursor:'pointer', fontSize:12, fontWeight:600, background: tab===t.id ? 'var(--green)' : 'var(--surface)', color: tab===t.id ? 'white' : 'var(--text)', boxShadow: tab===t.id ? '0 2px 8px rgba(0,214,143,.3)' : 'none' }}>
               {t.label}
             </button>
           ))}
@@ -462,10 +462,10 @@ export default function AdminDashboard() {
 
             <div className="stats-grid" style={{ marginBottom:16, gridTemplateColumns:'repeat(2, 1fr)' }}>
               {[
-                { label:'Agents',        value: data.totalAgents,  color:'#3B82F6', bg:'#EFF6FF' },
-                { label:'Total Claims',  value: data.totalClaims,  color:'#EC4899', bg:'#FDF2F8' },
+                { label:'Agents',        value: data.totalAgents,  color:'#2F5D8C', bg:'#EEF3F8' },
+                { label:'Total Claims',  value: data.totalClaims,  color:'#9A4D6B', bg:'#F6EEF1' },
                 ...(isSuperAdmin ? [
-                  { label:'Admin Accounts', value:(data.admins||[]).length, color:'#8B5CF6', bg:'#F5F3FF' },
+                  { label:'Admin Accounts', value:(data.admins||[]).length, color:'#3B4B6B', bg:'#EEF1F6' },
                   { label:'Net Position', value:'KES '+(data.netPosition||0).toLocaleString(), color:(data.netPosition||0)>=0?'var(--green)':'var(--red)', bg:(data.netPosition||0)>=0?'var(--green-light)':'var(--red-light)' },
                 ] : []),
                 { label:'Claims Pending', value: data.pendingClaims, color:'var(--red)', bg:'var(--red-light)' },
@@ -535,7 +535,7 @@ export default function AdminDashboard() {
                     <div style={{ fontSize:14, fontWeight:700 }}>Pending KYC Reviews</div>
                     <div style={{ fontSize:12, color:'var(--muted)' }}>Review documents before approving accounts</div>
                   </div>
-                  <span style={{ fontSize:12, background:'#FFF8E1', color:'#92400E', padding:'4px 12px', borderRadius:20, fontWeight:600 }}>{filteredPending.length} of {pending.length}</span>
+                  <span style={{ fontSize:12, background:'#FFF8E1', color:'#92400E', padding:'4px 12px', borderRadius:8, fontWeight:600 }}>{filteredPending.length} of {pending.length}</span>
                 </div>
 
                 {/* Search + filter bar */}
@@ -603,20 +603,20 @@ export default function AdminDashboard() {
           <>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16 }}>
               <div style={{ fontSize:14, fontWeight:700 }}>Field Agents</div>
-              <button className="btn btn-sm" onClick={() => setShowNewAgent(true)} style={{ background:'linear-gradient(135deg,#059669,#00D68F)', color:'white', border:'none' }}>New Agent</button>
+              <button className="btn btn-sm" onClick={() => setShowNewAgent(true)} style={{ background:'#0F7B5C', color:'white', border:'none' }}>New Agent</button>
             </div>
             {agents.length > 0 && (
               <div className="card" style={{ marginBottom:20 }}>
                 <div style={{ fontSize:13, fontWeight:700, marginBottom:12 }}>Agent Onboarding Performance</div>
                 <ResponsiveContainer width="100%" height={180}>
-                  <BarChart data={agents.map(a => ({ name:(a.name||a.fullName||'').split(' ')[0], riders:a.ridersCount, members:a.membersCount, kyc:a.approvedKYC }))} barSize={18}>
+                  <BarChart data={agents.map(a => ({ name:(a.name||a.fullName||'').split('')[0], riders:a.ridersCount, members:a.membersCount, kyc:a.approvedKYC }))} barSize={18}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9"/>
                     <XAxis dataKey="name" tick={{ fontSize:11 }} axisLine={false} tickLine={false}/>
                     <YAxis tick={{ fontSize:10 }} axisLine={false} tickLine={false}/>
                     <Tooltip/>
-                    <Bar dataKey="riders"  name="Riders"       fill="#22C55E" radius={[4,4,0,0]}/>
-                    <Bar dataKey="members" name="Members"      fill="#0EA5E9" radius={[4,4,0,0]}/>
-                    <Bar dataKey="kyc"     name="KYC Approved" fill="#6366F1" radius={[4,4,0,0]}/>
+                    <Bar dataKey="riders"  name="Riders"       fill="#1A9F73" radius={[4,4,0,0]}/>
+                    <Bar dataKey="members" name="Members"      fill="#2F5D8C" radius={[4,4,0,0]}/>
+                    <Bar dataKey="kyc"     name="KYC Approved" fill="#1E3A5F" radius={[4,4,0,0]}/>
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -663,17 +663,17 @@ export default function AdminDashboard() {
           <>
             <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))', gap:12, marginBottom:20 }}>
               {[
-                { label:'Total Revenue',   value:'KES '+(data.totalRevenue||0).toLocaleString(),  color:'#00D68F', bg:'#E6FBF3' },
+                { label:'Total Revenue',   value:'KES '+(data.totalRevenue||0).toLocaleString(),  color:'#1A9F73', bg:'#E8F3EF' },
                 { label:'Total Payouts',   value:'KES '+(data.totalPayouts||0).toLocaleString(),  color:'#EF4444', bg:'#FEF2F2' },
-                { label:'Net Position',    value:'KES '+(data.netPosition||0).toLocaleString(),   color:(data.netPosition||0)>=0?'#00D68F':'#EF4444', bg:(data.netPosition||0)>=0?'#E6FBF3':'#FEF2F2' },
-                { label:'Active Policies', value:(data.activePolicies||0).toLocaleString(),       color:'#4F46E5', bg:'#EEF2FF' },
-                { label:'Total Claims',    value:(data.totalClaims||0).toLocaleString(),           color:'#F59E0B', bg:'#FFFBEB' },
-                { label:'Paid Claims',     value:(data.claimBreakdown||[]).reduce((a,c)=>a+(c.paid||0),0).toLocaleString(), color:'#059669', bg:'#ECFDF5' },
+                { label:'Net Position',    value:'KES '+(data.netPosition||0).toLocaleString(),   color:(data.netPosition||0)>=0?'#1A9F73':'#EF4444', bg:(data.netPosition||0)>=0?'#E8F3EF':'#FEF2F2' },
+                { label:'Active Policies', value:(data.activePolicies||0).toLocaleString(),       color:'#1E3A5F', bg:'#EEF1F6' },
+                { label:'Total Claims',    value:(data.totalClaims||0).toLocaleString(),           color:'#B08A3E', bg:'#FFFBEB' },
+                { label:'Paid Claims',     value:(data.claimBreakdown||[]).reduce((a,c)=>a+(c.paid||0),0).toLocaleString(), color:'#0F7B5C', bg:'#EEF6F2' },
               ].map(k => (
-                <div key={k.label} style={{ background:'var(--surface)', borderRadius:12, padding:'14px 16px', border:'1px solid var(--border)', position:'relative', overflow:'hidden' }}>
-                  <div style={{ position:'absolute', top:0, left:0, right:0, height:3, background:k.color, borderRadius:'12px 12px 0 0' }}/>
+                <div key={k.label} style={{ background:'var(--surface)', borderRadius:6, padding:'14px 16px', border:'1px solid var(--border)', position:'relative', overflow:'hidden' }}>
+                  <div style={{ position:'absolute', top:0, left:0, right:0, height:3, background:k.color, borderRadius:'8px 8px 0 0' }}/>
                   <div style={{ width:34, height:34, borderRadius:8, background:k.bg, marginBottom:8 }}/>
-                  <div style={{ fontWeight:800, fontSize:17, color:k.color, lineHeight:1, marginBottom:3 }}>{k.value}</div>
+                  <div style={{ fontWeight:700, fontSize:17, color:k.color, lineHeight:1, marginBottom:3 }}>{k.value}</div>
                   <div style={{ fontSize:10, color:'var(--muted)', fontWeight:500 }}>{k.label}</div>
                 </div>
               ))}
@@ -689,7 +689,7 @@ export default function AdminDashboard() {
                     <XAxis dataKey="month" tick={{ fontSize:10 }} axisLine={false} tickLine={false}/>
                     <YAxis tick={{ fontSize:10 }} axisLine={false} tickLine={false} tickFormatter={v=>(v/1000).toFixed(0)+'k'}/>
                     <Tooltip formatter={v=>'KES '+v.toLocaleString()}/><Legend/>
-                    <Bar dataKey="revenue" name="Revenue" fill="#00D68F" radius={[3,3,0,0]}/>
+                    <Bar dataKey="revenue" name="Revenue" fill="#1A9F73" radius={[3,3,0,0]}/>
                     <Bar dataKey="payouts" name="Payouts" fill="#EF4444" radius={[3,3,0,0]}/>
                   </BarChart>
                 </ResponsiveContainer>
@@ -706,7 +706,7 @@ export default function AdminDashboard() {
                     <XAxis dataKey="month" tick={{ fontSize:10 }} axisLine={false} tickLine={false}/>
                     <YAxis tick={{ fontSize:10 }} axisLine={false} tickLine={false} tickFormatter={v=>(v/1000).toFixed(0)+'k'}/>
                     <Tooltip formatter={v=>'KES '+v.toLocaleString()}/>
-                    <Line type="monotone" dataKey="net" name="Net Position" stroke="#4F46E5" strokeWidth={2.5} dot={{ r:3 }} activeDot={{ r:5 }}/>
+                    <Line type="monotone" dataKey="net" name="Net Position" stroke="#1E3A5F" strokeWidth={2.5} dot={{ r:3 }} activeDot={{ r:5 }}/>
                   </LineChart>
                 </ResponsiveContainer>
               )}
@@ -724,8 +724,8 @@ export default function AdminDashboard() {
                         <span style={{ fontSize:11, color:'var(--muted)' }}>KES {(c.amount||0).toLocaleString()} paid</span>
                       </div>
                       <div style={{ display:'flex', gap:3, height:6, borderRadius:3, overflow:'hidden', background:'#F1F5F9' }}>
-                        <div style={{ width:(c.total?((c.paid/c.total)*100):0)+'%', background:'#00D68F' }}/>
-                        <div style={{ width:(c.total?((c.pending/c.total)*100):0)+'%', background:'#F59E0B' }}/>
+                        <div style={{ width:(c.total?((c.paid/c.total)*100):0)+'%', background:'#1A9F73' }}/>
+                        <div style={{ width:(c.total?((c.pending/c.total)*100):0)+'%', background:'#B08A3E' }}/>
                         <div style={{ width:(c.total?((c.rejected/c.total)*100):0)+'%', background:'#EF4444' }}/>
                       </div>
                       <div style={{ display:'flex', gap:12, marginTop:4, fontSize:10, color:'var(--muted)' }}>
@@ -746,8 +746,8 @@ export default function AdminDashboard() {
                       <XAxis dataKey="month" tick={{ fontSize:10 }} axisLine={false} tickLine={false}/>
                       <YAxis tick={{ fontSize:10 }} axisLine={false} tickLine={false}/>
                       <Tooltip/>
-                      <Bar dataKey="riders"  name="Riders"  fill="#22C55E" radius={[3,3,0,0]}/>
-                      <Bar dataKey="members" name="Members" fill="#8B5CF6" radius={[3,3,0,0]}/>
+                      <Bar dataKey="riders"  name="Riders"  fill="#1A9F73" radius={[3,3,0,0]}/>
+                      <Bar dataKey="members" name="Members" fill="#3B4B6B" radius={[3,3,0,0]}/>
                     </BarChart>
                   </ResponsiveContainer>
                 )}
@@ -760,7 +760,7 @@ export default function AdminDashboard() {
           <div className="card">
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16 }}>
               <div style={{ fontWeight:700, fontSize:14 }}>Admin Accounts ({(data.admins||[]).length})</div>
-              <button className="btn btn-sm" onClick={() => setShowNewAdmin(true)} style={{ background:'linear-gradient(135deg,#4F46E5,#7C3AED)', color:'white', border:'none' }}>New Admin</button>
+              <button className="btn btn-sm" onClick={() => setShowNewAdmin(true)} style={{ background:'#1E3A5F', color:'white', border:'none' }}>New Admin</button>
             </div>
             <div className="table-wrap">
               <table>
@@ -778,7 +778,7 @@ export default function AdminDashboard() {
                       <td style={{ padding:'10px 12px', fontWeight:700 }}>{a.fullName}</td>
                       <td style={{ padding:'10px 12px', color:'var(--muted)' }}>{a.phone}</td>
                       <td style={{ padding:'10px 12px' }}>
-                        <span style={{ background:a.role==='superadmin'?'linear-gradient(135deg,#4F46E5,#7C3AED)':'var(--green-light)', color:a.role==='superadmin'?'white':'var(--green)', borderRadius:20, padding:'2px 10px', fontSize:11, fontWeight:700 }}>
+                        <span style={{ background:a.role==='superadmin'?'#1E3A5F':'var(--green-light)', color:a.role==='superadmin'?'white':'var(--green)', borderRadius:8, padding:'2px 10px', fontSize:11, fontWeight:700 }}>
                           {a.role==='superadmin'?'Super Admin':'Admin'}
                         </span>
                       </td>

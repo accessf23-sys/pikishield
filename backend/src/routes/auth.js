@@ -5,6 +5,17 @@ const router = express.Router();
 
 const User = require('../models/User');
 const { auth } = require('../middleware/auth');
+const crypto = require('crypto');
+const { getJwtSecret } = require('../utils/jwtSecret');
+const { loginLimiter, otpLimiter, registerLimiter } = require('../middleware/security');
+
+const TERMS_VERSION = process.env.TERMS_VERSION || '1.0';
+const MAX_FAILED_LOGINS = 5;
+const LOCK_MINUTES = 15;
+const hashOtp = (otp) => crypto.createHash('sha256').update(String(otp)).digest('hex');
+const strongEnough = (p='') => p.length >= 8 && /[A-Za-z]/.test(p) && /\d/.test(p);
+const PASSWORD_RULE = 'Password must be at least 8 characters and include a letter and a number';
+const serverError = (res, e, where) => { console.error('[auth:' + where + ']', e && e.message); return res.status(500).json({ error: 'Something went wrong. Please try again.' }); };
 
 // -- Auto-create NOK when member registers ------------------------------------
 async function autoCreateNok(member, nokName, nokPhone, password) {
@@ -64,7 +75,7 @@ const normalizePhone = (value = '') => {
 const signToken = (id) =>
   jwt.sign(
     { id },
-    process.env.JWT_SECRET || 'pikishield_local_dev_secret_change_in_production_min_32_chars',
+    getJwtSecret(),
     { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
   );
 
@@ -78,7 +89,7 @@ router.get('/setup-status', async (req, res) => {
       adminExists
     });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    serverError(res, e, 'route');
   }
 });
 
@@ -116,11 +127,11 @@ router.post('/setup-admin', async (req, res) => {
     if (e.code === 11000) {
       return res.status(400).json({ error: 'Phone number already registered' });
     }
-    res.status(500).json({ error: e.message });
+    serverError(res, e, 'route');
   }
 });
 
-router.post('/login', async (req, res) => {
+router.post('/login', loginLimiter, async (req, res) => {
   try {
     const rawPhone = String(req.body.phone || '').trim();
     const rawEmail = String(req.body.email || '').trim().toLowerCase();
@@ -156,10 +167,26 @@ router.post('/login', async (req, res) => {
       return res.status(403).json({ error: 'Account suspended. Contact support.' });
     }
 
+    if (user.lockUntil && user.lockUntil > new Date()) {
+      return res.status(429).json({ error: 'Account temporarily locked after too many failed attempts. Try again in a few minutes.' });
+    }
+
     const ok = await user.comparePassword(password);
 
     if (!ok) {
+      user.failedLogins = (user.failedLogins || 0) + 1;
+      if (user.failedLogins >= MAX_FAILED_LOGINS) {
+        user.lockUntil = new Date(Date.now() + LOCK_MINUTES * 60 * 1000);
+        user.failedLogins = 0;
+      }
+      await user.save();
       return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    if (user.failedLogins || user.lockUntil) {
+      user.failedLogins = 0;
+      user.lockUntil = undefined;
+      await user.save();
     }
 
     const token = signToken(user._id);
@@ -169,11 +196,11 @@ router.post('/login', async (req, res) => {
       user
     });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    serverError(res, e, 'route');
   }
 });
 
-router.post('/register', async (req, res) => {
+router.post('/register', registerLimiter, async (req, res) => {
   try {
     const {
       fullName,
@@ -200,21 +227,17 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: 'Name, phone and password required' });
     }
 
-    if (password.length < 8) {
-      return res.status(400).json({ error: 'Password must be at least 8 characters' });
+    if (!strongEnough(password)) {
+      return res.status(400).json({ error: PASSWORD_RULE });
+    }
+
+    if (req.body.acceptedTerms !== true) {
+      return res.status(400).json({ error: 'You must accept the Terms and Conditions and Privacy Policy to register' });
     }
 
     const existing = await User.findOne({ phone });
 
     if (existing) {
-      // If it's already a NOK, return it instead of error
-      if (existing.role === 'nok') {
-        return res.status(200).json({
-          nokNumber: existing.nokNumber,
-          user: existing
-        });
-      }
-
       return res.status(400).json({ error: 'Phone number already registered' });
     }
 
@@ -230,6 +253,7 @@ router.post('/register', async (req, res) => {
       role,
       kycStatus: 'pending',
       tempUploadId,
+      consent: { termsVersion: TERMS_VERSION, acceptedAt: new Date(), ip: req.ip },
       profile: {
         county,
         ...(isFuneralMember
@@ -274,7 +298,7 @@ router.post('/register', async (req, res) => {
     if (e.code === 11000) {
       return res.status(400).json({ error: 'Phone number already registered' });
     }
-    res.status(500).json({ error: e.message });
+    serverError(res, e, 'route');
   }
 });
 
@@ -283,7 +307,7 @@ router.post('/register', async (req, res) => {
 // backend and creates the NOK account. Then on Step 4 the frontend calls
 // register-nok for the same phone. Instead of erroring, we update the
 // existing NOK's password (since the user just chose it) and return success.
-router.post('/register-nok', async (req, res) => {
+router.post('/register-nok', registerLimiter, async (req, res) => {
   try {
     const { fullName, nationalId, password, tempUploadId } = req.body;
     const phone = normalizePhone(req.body.phone || '');
@@ -297,7 +321,15 @@ router.post('/register-nok', async (req, res) => {
     if (existing) {
       // NOK was auto-created by autoCreateNok() during member registration.
       // Update their password with the one the user just chose and return success.
-      if (existing.role === 'nok') {
+      // Security: this route is public, so only a NOK that was auto-created in the
+      // last hour and has never been claimed (still on its temp password) may be
+      // completed here. Otherwise anyone could overwrite a NOK's password by phone.
+      const freshAutoNok =
+        existing.role === 'nok' &&
+        existing.mustChangePassword === true &&
+        Date.now() - new Date(existing.createdAt).getTime() < 60 * 60 * 1000;
+
+      if (freshAutoNok) {
         existing.password = password;
         if (nationalId) existing.nationalId = nationalId;
         existing.mustChangePassword = false;
@@ -347,7 +379,7 @@ router.post('/register-nok', async (req, res) => {
     if (e.code === 11000) {
       return res.status(400).json({ error: 'Phone number already registered' });
     }
-    res.status(500).json({ error: e.message });
+    serverError(res, e, 'route');
   }
 });
 
@@ -407,7 +439,7 @@ router.post('/register-member', auth, async (req, res) => {
     if (e.code === 11000) {
       return res.status(400).json({ error: 'Phone number already registered' });
     }
-    res.status(500).json({ error: e.message });
+    serverError(res, e, 'route');
   }
 });
 
@@ -415,7 +447,7 @@ router.get('/me', auth, (req, res) => {
   res.json(req.user);
 });
 
-router.post('/forgot-password', async (req, res) => {
+router.post('/forgot-password', otpLimiter, async (req, res) => {
   try {
     const rawPhone = req.body.phone || '';
     const rawEmail = String(req.body.email || '').trim().toLowerCase();
@@ -434,26 +466,27 @@ router.post('/forgot-password', async (req, res) => {
       });
     }
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp = String(crypto.randomInt(100000, 1000000));
 
-    user.resetOtp = otp;
+    user.resetOtp = hashOtp(otp);
     user.resetOtpExpiry = new Date(Date.now() + 15 * 60 * 1000);
+    user.resetOtpAttempts = 0;
     await user.save();
     await sendSMS(user.phone, `Your PikiShield reset code: ${otp}. Valid 15 mins.`);
-    return res.json({ message: 'OTP sent to your phone', otp });
 
-    const isDev = process.env.NODE_ENV !== 'production';
-
-    res.json({
-      message: 'OTP sent',
-      ...(isDev ? { demoOtp: otp } : {})
+    // Until SMS is live you can set ALLOW_DEMO_OTP=true to see the code in the response.
+    // Leave it unset in production.
+    const demo = process.env.ALLOW_DEMO_OTP === 'true';
+    return res.json({
+      message: 'If that number is registered, an OTP has been sent.',
+      ...(demo ? { otp } : {})
     });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    return serverError(res, e, 'forgot-password');
   }
 });
 
-router.post('/verify-otp', async (req, res) => {
+router.post('/verify-otp', otpLimiter, async (req, res) => {
   try {
     const { otp } = req.body;
     const rawPhone = req.body.phone || '';
@@ -467,28 +500,29 @@ router.post('/verify-otp', async (req, res) => {
       ]
     });
 
-    if (
-      !user ||
-      user.resetOtp !== otp ||
-      !user.resetOtpExpiry ||
-      user.resetOtpExpiry < new Date()
-    ) {
+    if (!user || !user.resetOtp || !user.resetOtpExpiry || user.resetOtpExpiry < new Date() || (user.resetOtpAttempts || 0) >= 5) {
+      return res.status(400).json({ error: 'Invalid or expired OTP' });
+    }
+
+    if (user.resetOtp !== hashOtp(otp)) {
+      user.resetOtpAttempts = (user.resetOtpAttempts || 0) + 1;
+      await user.save();
       return res.status(400).json({ error: 'Invalid or expired OTP' });
     }
 
     const resetToken = jwt.sign(
       { id: user._id, purpose: 'reset' },
-      process.env.JWT_SECRET || 'pikishield_local_dev_secret_change_in_production_min_32_chars',
+      getJwtSecret(),
       { expiresIn: '15m' }
     );
 
     res.json({ resetToken });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    serverError(res, e, 'route');
   }
 });
 
-router.post('/reset-password', async (req, res) => {
+router.post('/reset-password', otpLimiter, async (req, res) => {
   try {
     const { token, password } = req.body;
 
@@ -496,14 +530,14 @@ router.post('/reset-password', async (req, res) => {
       return res.status(400).json({ error: 'Token and password required' });
     }
 
-    if (password.length < 8) {
-      return res.status(400).json({ error: 'Password must be at least 8 characters' });
+    if (!strongEnough(password)) {
+      return res.status(400).json({ error: PASSWORD_RULE });
     }
 
     let decoded;
 
     try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET || 'pikishield_local_dev_secret_change_in_production_min_32_chars');
+      decoded = jwt.verify(token, getJwtSecret());
     } catch {
       return res.status(400).json({ error: 'Reset link expired — request a new OTP' });
     }
@@ -521,11 +555,14 @@ router.post('/reset-password', async (req, res) => {
     user.password = password;
     user.resetOtp = undefined;
     user.resetOtpExpiry = undefined;
+    user.resetOtpAttempts = 0;
+    user.failedLogins = 0;
+    user.lockUntil = undefined;
     await user.save();
 
     res.json({ message: 'Password reset successful' });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    serverError(res, e, 'route');
   }
 });
 
@@ -534,7 +571,7 @@ router.post('/change-password', auth, async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
     if (!currentPassword || !newPassword) return res.status(400).json({ error: 'Current and new password required' });
-    if (newPassword.trim().length < 8) return res.status(400).json({ error: 'New password must be at least 8 characters' });
+    if (!strongEnough(newPassword)) return res.status(400).json({ error: PASSWORD_RULE });
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ error: 'User not found' });
     const ok = await user.comparePassword(currentPassword);
@@ -543,7 +580,7 @@ router.post('/change-password', auth, async (req, res) => {
     user.mustChangePassword = false;
     await user.save();
     res.json({ message: 'Password changed successfully' });
-  } catch (e) { res.status(500).json({ error: e.message }); }
+  } catch (e) { serverError(res, e, 'route'); }
 });
 
 
@@ -551,7 +588,7 @@ router.get('/notifications', auth, async (req, res) => {
   try {
     const user = await User.findById(req.user._id).select('notifications');
     res.json(user?.notifications || []);
-  } catch(e) { res.status(500).json({ error: e.message }); }
+  } catch(e) { serverError(res, e, 'route'); }
 });
 
 router.patch('/notifications/:id/read', auth, async (req, res) => {
@@ -561,7 +598,7 @@ router.patch('/notifications/:id/read', auth, async (req, res) => {
     if (n) n.read = true;
     await user.save();
     res.json({ ok: true });
-  } catch(e) { res.status(500).json({ error: e.message }); }
+  } catch(e) { serverError(res, e, 'route'); }
 });
 
 router.patch('/notifications/read-all', auth, async (req, res) => {
@@ -570,7 +607,7 @@ router.patch('/notifications/read-all', auth, async (req, res) => {
     user.notifications.forEach(n => n.read = true);
     await user.save();
     res.json({ ok: true });
-  } catch(e) { res.status(500).json({ error: e.message }); }
+  } catch(e) { serverError(res, e, 'route'); }
 });
 
 
@@ -586,7 +623,7 @@ router.post("/admin-reset-password", auth, async (req, res) => {
     user.mustChangePassword = false;
     await user.save();
     res.json({ message: "Password reset for " + user.fullName });
-  } catch(e) { res.status(500).json({ error: e.message }); }
+  } catch(e) { serverError(res, e, 'route'); }
 });
 
 

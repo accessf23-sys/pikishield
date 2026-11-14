@@ -7,7 +7,7 @@ const s=(v,fb='')=>v==null?fb:typeof v==='object'?fb:String(v)||fb; const sd=(v)
 // Authenticated download — avoids React Router interception
 async function dlDoc(id, name) {
   try {
-    const token = localStorage.getItem('piki_token');
+    const token = localStorage.getItem('token');
     const res = await fetch(`/api/documents/${id}/download`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {}
     });
@@ -27,7 +27,7 @@ async function dlDoc(id, name) {
 
 async function pvDoc(id) {
   try {
-    const token = localStorage.getItem('piki_token');
+    const token = localStorage.getItem('token');
     const res = await fetch(`/api/documents/${id}/preview`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {}
     });
@@ -38,9 +38,9 @@ async function pvDoc(id) {
 }
 
 const TYPE_META = {
-  bail:    { label:'Bail',     icon:'', color:'#6366F1', maxAmount:20000 },
-  funeral: { label:'Funeral',  icon:'', color:'#0EA5E9', maxAmount:200000 },
-  income:  { label:'Stipend',  icon:'', color:'#10B981', maxAmount:15000 },
+  bail:    { label:'Bail',     icon:'', color:'#1E3A5F', maxAmount:20000 },
+  funeral: { label:'Funeral',  icon:'', color:'#2F5D8C', maxAmount:200000 },
+  income:  { label:'Stipend',  icon:'', color:'#0F7B5C', maxAmount:15000 },
 };
 
 function FraudBadge({ score }) {
@@ -48,7 +48,7 @@ function FraudBadge({ score }) {
   if (n === null || isNaN(n)) return (
     <span style={{ background:'#F1F5F9', color:'#94A3B8', padding:'2px 8px', borderRadius:8, fontSize:11, fontWeight:700 }}>N/A</span>
   );
-  const col = n < 25 ? { bg:'#E6FAF3', text:'#009A5E', label:'Low' }
+  const col = n < 25 ? { bg:'#E8F3EF', text:'#009A5E', label:'Low' }
              : n < 55 ? { bg:'#FFF8E1', text:'#B45309', label:'Med' }
              : { bg:'#FFF0F0', text:'#CC0000', label:'High' };
   return (
@@ -83,7 +83,7 @@ function ClaimDetailModal({ claim, onClose, onAction }) {
   return (
     <div className="admin-modal-backdrop"
       onClick={onClose}>
-      <div style={{ background:'white',borderRadius:14,width:'100%',maxWidth:680,maxHeight:'92vh',overflow:'hidden',display:'flex',flexDirection:'column' }}
+      <div style={{ background:'white',borderRadius:8,width:'100%',maxWidth:680,maxHeight:'92vh',overflow:'hidden',display:'flex',flexDirection:'column' }}
         onClick={e=>e.stopPropagation()}>
 
         {/* Header */}
@@ -91,7 +91,7 @@ function ClaimDetailModal({ claim, onClose, onAction }) {
           <div style={{ display:'flex',alignItems:'center',gap:10 }}>
             <span style={{ fontSize:24 }}>{meta.icon}</span>
             <div>
-              <div style={{ fontWeight:800,fontSize:16 }}>{meta.label} Claim Review</div>
+              <div style={{ fontWeight:700,fontSize:16 }}>{meta.label} Claim Review</div>
               <div style={{ fontSize:12,color:'var(--muted)' }}>{claim.userName} · {claim.userPhone} {claim.memberNumber && `· ${claim.memberNumber}`}</div>
             </div>
           </div>
@@ -223,7 +223,7 @@ export default function AdminClaimsPage() {
   const statusData = ['pending','approved','rejected'].map(s=>({
     name:s.charAt(0).toUpperCase()+s.slice(1),
     value: activeClaims.filter(c=>c.status===s).length,
-    color: s==='approved'?'#22C55E':s==='pending'?'#EAB308':'#EF4444'
+    color: s==='approved'?'#1A9F73':s==='pending'?'#EAB308':'#EF4444'
   })).filter(d=>d.value>0);
 
   const amtData = ['bail','funeral','income'].map(t=>({
@@ -289,7 +289,7 @@ export default function AdminClaimsPage() {
                   className={`btn btn-sm ${tab===k?'btn-primary':'btn-secondary'}`}
                   style={{flex:1,justifyContent:'center',padding:'8px 4px'}}>
                   {l}
-                  {cnt>0&&<span style={{background:'var(--red)',color:'white',borderRadius:10,padding:'0 4px',fontSize:10,fontWeight:700,marginLeft:3}}>{cnt}</span>}
+                  {cnt>0&&<span style={{background:'var(--red)',color:'white',borderRadius:6,padding:'0 4px',fontSize:10,fontWeight:700,marginLeft:3}}>{cnt}</span>}
                 </button>
               );
             })}

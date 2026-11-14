@@ -21,7 +21,7 @@ export default function ChangePasswordPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (form.newPassword !== form.confirmPassword) return setError('New passwords do not match');
-    if (form.newPassword.trim().length < 8) return setError('Password must be at least 8 characters (no spaces only)');
+    if (form.newPassword.trim().length < 8 || !/[A-Za-z]/.test(form.newPassword) || !/\d/.test(form.newPassword)) return setError('Password must be 8+ characters with a letter and a number');
     setLoading(true); setError(''); setSuccess('');
     try {
       await authAPI.changePassword(form.currentPassword, form.newPassword);
@@ -37,17 +37,17 @@ export default function ChangePasswordPage() {
   return (
     <div>
       <div className="page-header">
-        <h1 className="page-title">{isForced ? '🔐 Set Your Password' : 'Change Password'}</h1>
+        <h1 className="page-title">{isForced ? ' Set Your Password' : 'Change Password'}</h1>
         <p className="page-subtitle">
           {isForced ? 'You are using a temporary password — please set a permanent one to continue.' : 'Update your account password'}
         </p>
       </div>
       <div className="page-body">
         {isForced && (
-          <div style={{background:'linear-gradient(135deg,#FEF3C7,#FFFBEB)',border:'2px solid #F59E0B',borderRadius:10,padding:'14px 18px',marginBottom:20,display:'flex',alignItems:'center',gap:12}}>
-            <span style={{fontSize:26}}>⚠️</span>
+          <div style={{background:'#FBF6EA',border:'2px solid #B08A3E',borderRadius:6,padding:'14px 18px',marginBottom:20,display:'flex',alignItems:'center',gap:12}}>
+            <span style={{fontSize:26}}></span>
             <div>
-              <div style={{fontWeight:800,fontSize:14,color:'#92400E',marginBottom:3}}>Temporary password active</div>
+              <div style={{fontWeight:700,fontSize:14,color:'#92400E',marginBottom:3}}>Temporary password active</div>
               <div style={{fontSize:12,color:'#78350F',lineHeight:1.5}}>
                 Your account was created with a temporary password by an agent. Enter it in <strong>Current Password</strong> below, then choose a permanent one.
               </div>
@@ -55,18 +55,18 @@ export default function ChangePasswordPage() {
           </div>
         )}
         <div className="card" style={{maxWidth:480}}>
-          {success && <div className="alert alert-success">✅ {success}</div>}
-          {error   && <div className="alert alert-error">❌ {error}</div>}
+          {success && <div className="alert alert-success"> {success}</div>}
+          {error   && <div className="alert alert-error"> {error}</div>}
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label className="form-label">{isForced ? 'Temporary Password (from your agent)' : 'Current Password'}</label>
               <input className="form-input" type="password" autoComplete="current-password"
-                placeholder={isForced ? 'e.g. Piki1234!' : 'Your current password'}
+                placeholder={isForced ? 'Temporary password' : 'Your current password'}
                 value={form.currentPassword} onChange={e=>setForm(f=>({...f,currentPassword:e.target.value}))} required/>
             </div>
             <div className="form-group">
               <label className="form-label">New Password</label>
-              <input className="form-input" type="password" autoComplete="new-password" placeholder="Min 8 characters"
+              <input className="form-input" type="password" autoComplete="new-password" placeholder="8+ characters, letter and number"
                 value={form.newPassword} onChange={e=>setForm(f=>({...f,newPassword:e.target.value}))} required minLength={8}/>
             </div>
             <div className="form-group">
@@ -80,7 +80,7 @@ export default function ChangePasswordPage() {
             <button className="btn btn-primary btn-lg" type="submit"
               style={{width:'100%',justifyContent:'center'}}
               disabled={loading||(!!form.confirmPassword&&form.newPassword!==form.confirmPassword)}>
-              {loading ? '⏳ Updating…' : isForced ? '🔐 Set Permanent Password' : '🔐 Update Password'}
+              {loading ? ' Updating…' : isForced ? ' Set Permanent Password' : ' Update Password'}
             </button>
           </form>
         </div>

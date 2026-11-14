@@ -14,6 +14,8 @@ const COUNTIES = [
   'Uasin Gishu','Vihiga','Wajir','West Pokot',
 ];
 
+const genPass = () => { const a='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789'; const r=new Uint32Array(8); crypto.getRandomValues(r); return Array.from(r,x=>a[x%a.length]).join('')+'7'; };
+
 function KycDoc({ label, docType, required, onUploaded, tempId, uploaded }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError]     = useState('');
@@ -35,7 +37,7 @@ function KycDoc({ label, docType, required, onUploaded, tempId, uploaded }) {
   return (
     <div style={{
       border:`1.5px ${uploaded?'solid':'dashed'} ${uploaded?'var(--green)':drag?'var(--green)':'var(--border)'}`,
-      borderRadius:8, padding:'9px 12px', background:uploaded?'var(--green-light)':drag?'#F0FDF4':'#FAFAFA', transition:'all .2s'
+      borderRadius:8, padding:'9px 12px', background:uploaded?'var(--green-light)':drag?'#EEF6F2':'#FAFAFA', transition:'all .2s'
     }}
       onDragOver={e=>{e.preventDefault();setDrag(true);}} onDragLeave={()=>setDrag(false)}
       onDrop={e=>{e.preventDefault();setDrag(false);upload(e.dataTransfer.files[0]);}}>
@@ -44,16 +46,16 @@ function KycDoc({ label, docType, required, onUploaded, tempId, uploaded }) {
           <div style={{ display:'flex', gap:6, alignItems:'center', marginBottom:2 }}>
             <span style={{ fontSize:12, fontWeight:600 }}>{label}</span>
             {required && !uploaded && <span style={{ fontSize:9, background:'#FEF2F2', color:'var(--red)', padding:'1px 5px', borderRadius:3, fontWeight:700 }}>REQ</span>}
-            {uploaded && <span style={{ fontSize:9, background:'var(--green-light)', color:'var(--green)', padding:'1px 5px', borderRadius:3, fontWeight:700 }}>✓ DONE</span>}
+            {uploaded && <span style={{ fontSize:9, background:'var(--green-light)', color:'var(--green)', padding:'1px 5px', borderRadius:3, fontWeight:700 }}> DONE</span>}
           </div>
-          {uploaded ? <div style={{ fontSize:11, color:'var(--green)' }}>📄 {uploaded.originalName || uploaded.name || 'File uploaded'}</div>
+          {uploaded ? <div style={{ fontSize:11, color:'var(--green)' }}> {uploaded.originalName || uploaded.name || 'File uploaded'}</div>
                     : <div style={{ fontSize:11, color:'var(--muted)' }}>PDF, JPG, PNG · drag or browse</div>}
-          {error && <div style={{ fontSize:11, color:'var(--red)' }}>⚠️ {error}</div>}
+          {error && <div style={{ fontSize:11, color:'var(--red)' }}> {error}</div>}
         </div>
         <input ref={ref} type="file" accept=".pdf,.jpg,.jpeg,.png" style={{ display:'none' }} onChange={e=>upload(e.target.files[0])}/>
         <button type="button" onClick={()=>ref.current?.click()} disabled={uploading}
           style={{ padding:'5px 10px', borderRadius:6, border:'1.5px solid var(--border)', background:'white', fontSize:11, fontWeight:600, cursor:'pointer', flexShrink:0 }}>
-          {uploading?'⏳':uploaded?'↺':'📎'}
+          {uploading?'':uploaded?'↺':''}
         </button>
       </div>
     </div>
@@ -77,7 +79,7 @@ export default function AgentDashboard() {
   const [tempId, setTempId] = useState(`agent-${Date.now()}`);
 
   const [form, setForm] = useState({
-    fullName:'', phone:'', email:'', password:'Rider@1234',
+    fullName:'', phone:'', email:'', password:genPass(),
     nationalId:'', county:'Nairobi', licenseNumber:'', bikeReg:'', bikeType:'Petrol',
     isBikeOwner:true, ownerName:'', ownerPhone:'',
     // funeral member fields
@@ -93,7 +95,7 @@ export default function AgentDashboard() {
   const resetForm = () => {
     setTempId(`agent-${user?.id||'x'}-${Date.now()}`);
     setStep(1); setKycDocs({});
-    setForm({ fullName:'', phone:'', email:'', password:'Rider@1234',
+    setForm({ fullName:'', phone:'', email:'', password:genPass(),
       nationalId:'', county:'Nairobi', licenseNumber:'', bikeReg:'', bikeType:'Petrol',
       isBikeOwner:true, ownerName:'', ownerPhone:'',
       relationship:'', nokName:'', nokPhone:'',
@@ -129,7 +131,7 @@ export default function AgentDashboard() {
         await authAPI.register({ ...form, isBikeOwner: form.isBikeOwner, agentId: user.id, tempUploadId: tempId });
         // attach docs
         try { await documentsAPI.attachKyc(tempId); } catch {}
-        setSuccess(`✅ ${form.fullName} registered as rider! KYC pending admin review.`);
+        setSuccess(` ${form.fullName} registered as rider! KYC pending admin review.`);
         setTab('overview'); resetForm(); load();
       } catch (err) { setError(err.response?.data?.error||'Registration failed'); }
       finally { setSubmitting(false); }
@@ -156,9 +158,9 @@ export default function AgentDashboard() {
         try { await documentsAPI.attachKyc(tempId); } catch {}
         const tp = res.data.tempPassword || 'See SMS';
         const nokInfo = res.data.nok
-          ? `\n\n👤 NOK Account Auto-Created:\n  Name: ${form.nokName}\n  Phone: ${form.nokPhone}\n  NOK No: ${res.data.nokNumber || res.data.nok?.nokNumber || '—'}\n  Temp Password: ${res.data.nokTempPassword || '(same as above)'}\n  Login: phone number + temp password`
+          ? `\n\n NOK Account Auto-Created:\n  Name: ${form.nokName}\n  Phone: ${form.nokPhone}\n  NOK No: ${res.data.nokNumber || res.data.nok?.nokNumber || '—'}\n  Temp Password: ${res.data.nokTempPassword || '(same as above)'}\n  Login: phone number + temp password`
           : '';
-        setSuccess(`✅ ${form.fullName} registered! Member No: ${res.data.memberNumber}\nTemp login: ${form.phone} / ${tp} — member must change on first login.${nokInfo}`);
+        setSuccess(` ${form.fullName} registered! Member No: ${res.data.memberNumber}\nTemp login: ${form.phone} / ${tp} — member must change on first login.${nokInfo}`);
         setTab('overview'); resetForm(); load();
       } catch (err) { setError(err.response?.data?.error||'Registration failed'); }
       finally { setSubmitting(false); }
@@ -181,7 +183,7 @@ export default function AgentDashboard() {
             </p>
           </div>
           <button className="btn btn-primary" onClick={()=>{ setTab(tab==='onboard'?'overview':'onboard'); resetForm(); setError(''); setSuccess(''); }}>
-            {tab==='onboard' ? '✕ Cancel' : '➕ Register New'}
+            {tab==='onboard' ? '× Cancel' : ' Register New'}
           </button>
         </div>
       </div>
@@ -191,7 +193,7 @@ export default function AgentDashboard() {
 
         {/* Tabs */}
         <div style={{ display:'flex', gap:6, marginBottom:20 }}>
-          {[['overview','📊 Overview'],['riders',`🏍️ Riders (${data?.riders?.length||0})`],['members',`👥 Members (${data?.members?.length||0})`]].map(([k,l])=>(
+          {[['overview',' Overview'],['riders',` Riders (${data?.riders?.length||0})`],['members',` Members (${data?.members?.length||0})`]].map(([k,l])=>(
             <button key={k} onClick={()=>setTab(k)} className={`btn btn-sm ${tab===k?'btn-primary':'btn-secondary'}`}>{l}</button>
           ))}
         </div>
@@ -201,20 +203,20 @@ export default function AgentDashboard() {
           <>
             <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12,marginBottom:16}}>
               {[
-                {icon:'🏍️',label:'Riders Enrolled',  value:data?.riders?.length||0,  color:'#00D68F',bg:'#E6FBF3'},
-                {icon:'👥',label:'Funeral Members',   value:data?.members?.length||0, color:'#4F46E5',bg:'#EEF2FF'},
-                {icon:'⏳',label:'Pending KYC',       value:data?.pendingKYC||0,       color:'#F59E0B',bg:'#FFFBEB'},
+                {icon:'',label:'Riders Enrolled',  value:data?.riders?.length||0,  color:'#1A9F73',bg:'#E8F3EF'},
+                {icon:'',label:'Funeral Members',   value:data?.members?.length||0, color:'#1E3A5F',bg:'#EEF1F6'},
+                {icon:'',label:'Pending KYC',       value:data?.pendingKYC||0,       color:'#B08A3E',bg:'#FFFBEB'},
               ].map(s=>(
                 <div key={s.label} style={{
-                  background:'var(--surface)',borderRadius:12,padding:'14px 16px',
+                  background:'var(--surface)',borderRadius:6,padding:'14px 16px',
                   border:'1px solid var(--border)',position:'relative',overflow:'hidden',
                   boxShadow:'0 1px 4px rgba(0,0,0,.05)',
                 }}>
-                  <div style={{position:'absolute',top:0,left:0,right:0,height:3,background:s.color,borderRadius:'12px 12px 0 0'}}/>
+                  <div style={{position:'absolute',top:0,left:0,right:0,height:3,background:s.color,borderRadius:'8px 8px 0 0'}}/>
                   <div style={{display:'flex',alignItems:'center',gap:10}}>
-                    <div style={{width:34,height:34,borderRadius:9,background:s.bg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:16,flexShrink:0}}>{s.icon}</div>
+                    <div style={{width:34,height:34,borderRadius:6,background:s.bg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:16,flexShrink:0}}>{s.icon}</div>
                     <div>
-                      <div style={{fontFamily:"'Plus Jakarta Sans',sans-serif",fontWeight:800,fontSize:20,color:s.color,lineHeight:1}}>{s.value}</div>
+                      <div style={{fontFamily:"'Source Serif 4',Georgia,serif",fontWeight:700,fontSize:20,color:s.color,lineHeight:1}}>{s.value}</div>
                       <div style={{fontSize:11,color:'var(--muted)',marginTop:2}}>{s.label}</div>
                     </div>
                   </div>
@@ -224,7 +226,7 @@ export default function AgentDashboard() {
             <div className="card">
               <h3 style={{ fontSize:15, marginBottom:14 }}>Recent Registrations</h3>
               {!data?.riders?.length && !data?.members?.length ? (
-                <div className="empty-state"><div className="emoji">👥</div><p>No registrations yet.</p></div>
+                <div className="empty-state"><div className="emoji"></div><p>No registrations yet.</p></div>
               ) : (
                 <div className="table-wrap">
                   <table>
@@ -251,7 +253,7 @@ export default function AgentDashboard() {
         {tab === 'riders' && (
           <div className="card">
             <h3 style={{ fontSize:15, marginBottom:14 }}>My Riders</h3>
-            {!data?.riders?.length ? <div className="empty-state"><div className="emoji">🏍️</div><p>No riders yet</p></div> : (
+            {!data?.riders?.length ? <div className="empty-state"><div className="emoji"></div><p>No riders yet</p></div> : (
               <div className="table-wrap">
                 <table>
                   <thead><tr><th>Name</th><th>Member No.</th><th>County</th><th>Bike</th><th>KYC</th><th>Joined</th></tr></thead>
@@ -277,7 +279,7 @@ export default function AgentDashboard() {
         {tab === 'members' && (
           <div className="card">
             <h3 style={{ fontSize:15, marginBottom:14 }}>Funeral Members</h3>
-            {!data?.members?.length ? <div className="empty-state"><div className="emoji">👥</div><p>No funeral members yet</p></div> : (
+            {!data?.members?.length ? <div className="empty-state"><div className="emoji"></div><p>No funeral members yet</p></div> : (
               <div className="table-wrap">
                 <table>
                   <thead><tr><th>Name</th><th>Member No.</th><th>County</th><th>Relationship</th><th>KYC</th><th>Joined</th></tr></thead>
@@ -304,7 +306,7 @@ export default function AgentDashboard() {
           <div className="card" style={{ maxWidth:640 }}>
             {/* Registration type toggle */}
             <div style={{ display:'flex', gap:8, marginBottom:20 }}>
-              {[['rider','🏍️ Rider'],['member','👥 Funeral Member']].map(([k,l])=>(
+              {[['rider',' Rider'],['member',' Funeral Member']].map(([k,l])=>(
                 <button key={k} type="button"
                   onClick={()=>{ setRegType(k); resetForm(); setError(''); }}
                   style={{ flex:1, padding:'10px 0', borderRadius:8,
@@ -396,7 +398,7 @@ export default function AgentDashboard() {
               {regType === 'rider' && step === 3 && (
                 <>
                   <div style={{ background:'#FFF8E1', border:'1px solid #FDE68A', borderRadius:8, padding:'8px 12px', marginBottom:12, fontSize:12 }}>
-                    ⚠️ All 3 documents are <strong>required</strong> to activate this rider's account.
+                     All 3 documents are <strong>required</strong> to activate this rider's account.
                   </div>
                   <div style={{ display:'flex', flexDirection:'column', gap:8, marginBottom:14 }}>
                     <KycDoc label="National ID (Front & Back)" docType="national_id" required onUploaded={(t,d)=>setKycDocs(p=>({...p,[t]:d}))} tempId={tempId} uploaded={kycDocs.national_id}/>
@@ -406,7 +408,7 @@ export default function AgentDashboard() {
                   <div style={{ display:'flex', gap:10 }}>
                     <button className="btn btn-secondary" type="button" onClick={()=>setStep(2)}>← Back</button>
                     <button className="btn btn-primary btn-lg" style={{ flex:1, justifyContent:'center' }} type="submit" disabled={submitting}>
-                      {submitting ? '⏳ Registering…' : '✅ Complete Registration'}
+                      {submitting ? ' Registering…' : ' Complete Registration'}
                     </button>
                   </div>
                 </>
@@ -442,8 +444,8 @@ export default function AgentDashboard() {
                     <div className="form-group"><label className="form-label">Temporary Password</label><input className="form-input" value={form.password} onChange={e=>up('password',e.target.value)} required /></div>
                   </div>
                   {/* NOK Details */}
-                  <div style={{background:'#F0FDF4',border:'1px solid #A7F3D0',borderRadius:10,padding:'12px 14px',marginTop:4}}>
-                    <div style={{fontSize:12,fontWeight:700,color:'#065F46',marginBottom:10}}>👤 Next of Kin (NOK) Details</div>
+                  <div style={{background:'#EEF6F2',border:'1px solid #BFDCCF',borderRadius:6,padding:'12px 14px',marginTop:4}}>
+                    <div style={{fontSize:12,fontWeight:700,color:'#065F46',marginBottom:10}}> Next of Kin (NOK) Details</div>
                     <div className="two-col">
                       <div className="form-group" style={{marginBottom:8}}>
                         <label className="form-label">NOK Full Name *</label>
@@ -466,7 +468,7 @@ export default function AgentDashboard() {
                       </select>
                     </div>
                     <div style={{fontSize:11,color:'#047857',marginTop:8,lineHeight:1.5}}>
-                      ℹ️ A NOK account will be auto-created. They will receive login credentials to submit funeral claims.
+                      ℹ A NOK account will be auto-created. They will receive login credentials to submit funeral claims.
                     </div>
                   </div>
                   <div style={{ display:'flex', gap:10, marginTop:12 }}>
@@ -478,7 +480,7 @@ export default function AgentDashboard() {
               {regType === 'member' && step === 3 && (
                 <>
                   <div style={{ background:'#FFF8E1', border:'1px solid #FDE68A', borderRadius:8, padding:'8px 12px', marginBottom:12, fontSize:12 }}>
-                    ⚠️ Member's National ID is required.
+                     Member's National ID is required.
                   </div>
                   <div style={{ display:'flex', flexDirection:'column', gap:8, marginBottom:14 }}>
                     <KycDoc label="Member's National ID" docType="national_id" required onUploaded={(t,d)=>setKycDocs(p=>({...p,[t]:d}))} tempId={tempId} uploaded={kycDocs.national_id}/>
@@ -486,7 +488,7 @@ export default function AgentDashboard() {
                   <div style={{ display:'flex', gap:10 }}>
                     <button className="btn btn-secondary" type="button" onClick={()=>setStep(2)}>← Back</button>
                     <button className="btn btn-primary btn-lg" style={{ flex:1, justifyContent:'center' }} type="submit" disabled={submitting}>
-                      {submitting ? '⏳ Registering…' : '✅ Register Member'}
+                      {submitting ? ' Registering…' : ' Register Member'}
                     </button>
                   </div>
                 </>
