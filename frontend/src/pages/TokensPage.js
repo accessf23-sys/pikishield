@@ -423,6 +423,9 @@ export default function TokensPage() {
               <div style={{fontSize:14,fontWeight:700}}>Redeem Tokens</div>
               <div style={{fontSize:11,color:'var(--muted)',marginTop:2}}>Button activates when you reach the required amount</div>
             </div>
+            <div style={{fontSize:11,color:'#7A5A12',background:'#FFF8E1',border:'1px solid #F3E2A8',borderRadius:8,padding:'7px 10px',marginBottom:10}}>
+              Tokens can be redeemed after 3 months of active cover.
+            </div>
             <div style={{display:'flex',flexDirection:'column',gap:8}}>
               {REDEEM.map(opt => {
                 const ok = bal >= opt.tokens;

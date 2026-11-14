@@ -7,7 +7,7 @@ import Icon from '../components/Icons';
 
 import { getCache, setCache } from '../utils/pageCache';
 /* ── Animated SVG Hero ────────────────────────────────────────── */
-function HeroBanner({ user, totalDailyContrib, policies }) {
+function HeroBanner({ user, totalDailyContrib, policies, loading }) {
   const navigate = useNavigate();
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
@@ -15,13 +15,14 @@ function HeroBanner({ user, totalDailyContrib, policies }) {
 
   return (
     <div style={{
-      background: '#0B1F3A',
-      borderRadius: 8,
-      padding: 'clamp(20px,4vw,32px) clamp(16px,4vw,36px)',
-      marginBottom: 24,
+      background: 'linear-gradient(135deg,#0B1F3A 0%,#0E4D63 55%,#0F7B5C 100%)',
+      borderRadius: 18,
+      padding: 'clamp(14px,3vw,24px) clamp(14px,3vw,28px)',
+      marginBottom: 14,
+      boxShadow:'0 10px 28px rgba(11,31,58,.18)',
       position: 'relative',
       overflow: 'hidden',
-      minHeight: 'clamp(160px,22vw,200px)',
+      minHeight: 'clamp(130px,18vw,170px)',
     }}>
       {/* Background grid pattern */}
       <svg style={{position:'absolute',inset:0,opacity:.04,pointerEvents:'none'}} width="100%" height="100%">
@@ -145,35 +146,38 @@ function HeroBanner({ user, totalDailyContrib, policies }) {
       {/* Content */}
       <div style={{position:'relative',zIndex:2,maxWidth:'calc(100% - 300px)',minWidth:180}}>
         {/* Avatar + Greeting */}
-        <div style={{display:'flex',alignItems:'center',gap:14,marginBottom:16}}>
+        <div style={{display:'flex',alignItems:'center',gap:14,marginBottom:10}}>
           <div style={{
-            width:50,height:50,borderRadius:'50%',
-            background:'#0F7B5C',
+            width:44,height:44,borderRadius:'50%',
+            background:'#FDC703',
             display:'flex',alignItems:'center',justifyContent:'center',
-            fontWeight:700,fontSize:16,color:'white',flexShrink:0,
+            fontWeight:800,fontSize:15,color:'#0B1F3A',flexShrink:0,
             boxShadow:'none',
-            border:'2px solid rgba(0,214,143,.4)',
+            border:'2px solid rgba(255,255,255,.5)',
           }}>{initials}</div>
           <div>
             <div style={{fontSize:11,color:'rgba(255,255,255,.45)',fontWeight:600,letterSpacing:.5,textTransform:'uppercase',marginBottom:2}}>
               {new Date().toLocaleDateString('en-KE',{weekday:'long',month:'short',day:'numeric'})}
             </div>
-            <h2 style={{fontSize:22,fontWeight:700,color:'white',letterSpacing:0,lineHeight:1.1}}>
+            <h2 style={{fontSize:'clamp(16px,4.4vw,20px)',fontWeight:700,color:'white',letterSpacing:0,lineHeight:1.1}}>
               {greeting}, {user?.fullName?.split('')[0] || 'Member'}! 
             </h2>
           </div>
         </div>
 
         {/* Member tag */}
-        <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:18,flexWrap:'wrap'}}>
-          <div style={{background:'rgba(0,214,143,.15)',border:'1px solid rgba(0,214,143,.3)',borderRadius:8,padding:'4px 12px',fontSize:11,fontWeight:700,color:'#1A9F73',letterSpacing:.3}}>
+        <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10,flexWrap:'wrap'}}>
+          <div style={{background:'rgba(253,199,3,.18)',border:'1px solid rgba(253,199,3,.45)',borderRadius:8,padding:'3px 10px',fontSize:11,fontWeight:700,color:'#FDC703',letterSpacing:.3}}>
              {user.memberNumber || 'PENDING'}
           </div>
-          <div style={{background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.12)',borderRadius:8,padding:'4px 12px',fontSize:11,fontWeight:600,color:'rgba(255,255,255,.6)'}}>
+          <div style={{background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.12)',borderRadius:8,padding:'3px 10px',fontSize:11,fontWeight:600,color:'rgba(255,255,255,.75)'}}>
              {typeof user.profile?.county==='object'?'Nairobi':(user.profile?.county||'Nairobi')}
           </div>
+          {user.profile?.sacco && (
+            <div style={{background:'rgba(255,255,255,.08)',border:'1px solid rgba(255,255,255,.2)',borderRadius:8,padding:'3px 10px',fontSize:11,fontWeight:600,color:'rgba(255,255,255,.75)'}}>{user.profile.sacco}</div>
+          )}
           {policies.length > 0 && (
-            <div style={{background:'rgba(79,70,229,.2)',border:'1px solid rgba(79,70,229,.4)',borderRadius:8,padding:'4px 12px',fontSize:11,fontWeight:700,color:'#A5B4FC'}}>
+            <div style={{background:'rgba(255,255,255,.14)',border:'1px solid rgba(255,255,255,.3)',borderRadius:8,padding:'3px 10px',fontSize:11,fontWeight:700,color:'#fff'}}>
                {policies.length} Active {policies.length===1?'Policy':'Policies'}
             </div>
           )}
@@ -181,13 +185,13 @@ function HeroBanner({ user, totalDailyContrib, policies }) {
 
         {/* Daily contribution pill */}
         {totalDailyContrib > 0 && (
-          <div style={{display:'inline-flex',alignItems:'center',gap:8,background:'rgba(0,214,143,.12)',border:'1px solid rgba(0,214,143,.3)',borderRadius:6,padding:'10px 16px'}}>
-            <div style={{width:8,height:8,borderRadius:'50%',background:'#1A9F73',boxShadow:'none',animation:'pulse 2s ease-in-out infinite'}}/>
-            <span style={{fontSize:13,color:'rgba(255,255,255,.7)'}}>Daily contribution</span>
-            <span style={{fontSize:16,fontWeight:700,color:'#1A9F73',fontFamily:"'Source Serif 4',Georgia,serif"}}>KES {totalDailyContrib}</span>
+          <div style={{display:'inline-flex',alignItems:'center',gap:6,whiteSpace:'nowrap',background:'rgba(255,255,255,.12)',border:'1px solid rgba(255,255,255,.25)',borderRadius:999,padding:'5px 12px'}}>
+            <div style={{width:6,height:6,borderRadius:'50%',background:'#FDC703',flexShrink:0}}/>
+            <span style={{fontSize:11,color:'rgba(255,255,255,.8)'}}>Daily</span>
+            <span style={{fontSize:13,fontWeight:700,color:'#FDC703'}}>KES {totalDailyContrib}</span>
           </div>
         )}
-        {policies.length === 0 && (
+        {!loading && policies.length === 0 && (
           <div onClick={()=>navigate('/subscribe')} style={{display:'inline-flex',alignItems:'center',gap:8,background:'rgba(0,214,143,.12)',border:'1px solid rgba(0,214,143,.3)',borderRadius:6,padding:'10px 16px',cursor:'pointer'}}>
             <span style={{fontSize:13,color:'rgba(255,255,255,.75)',whiteSpace:'nowrap'}}>No active cover yet</span>
             <span style={{fontSize:13,fontWeight:700,color:'#FDC703',whiteSpace:'nowrap'}}>Get protected →</span>
@@ -230,15 +234,15 @@ function RiskMeter({ score, tier }) {
 function QuickAction({ icon, label, sub, color, onClick }) {
   return (
     <div onClick={onClick} style={{
-      cursor:'pointer', padding:'16px 10px', textAlign:'center',
+      cursor:'pointer', padding:'10px 6px', textAlign:'center',
       background:'#fff', borderRadius:16, border:'1px solid #E8ECF2',
       boxShadow:'0 1px 2px rgba(11,31,58,.04), 0 8px 22px rgba(11,31,58,.06)',
       transition:'transform .15s, box-shadow .15s',
     }}
     onMouseEnter={e=>{e.currentTarget.style.transform='translateY(-2px)';}}
     onMouseLeave={e=>{e.currentTarget.style.transform='';}}>
-      <div style={{width:44,height:44,borderRadius:14,background:`${color}14`,display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 10px'}}>
-        <Icon name={icon} color={color} size={22}/>
+      <div style={{width:34,height:34,borderRadius:11,background:`${color}14`,display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 6px'}}>
+        <Icon name={icon} color={color} size={18}/>
       </div>
       <div style={{fontSize:13,fontWeight:700,color:'var(--text)',lineHeight:1.25}}>{label}</div>
       {sub ? <div style={{fontSize:11,color:'var(--muted)',marginTop:3}}>{sub}</div> : null}
@@ -251,7 +255,7 @@ export default function DashboardPage() {
   const { user, refreshUser } = useAuth();
   const navigate      = useNavigate();
   const [data, setData]       = useState(getCache('dash') || {policies:[],totalPayouts:0,pendingClaims:0,approvedClaims:0,monthlyData:[],allPolicies:[]});
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!getCache('dash'));
 
   useEffect(() => {
     usersAPI.getDashboard()
@@ -288,22 +292,22 @@ export default function DashboardPage() {
 
       <div className="page-body" style={{paddingTop:0}}>
         {/* ── Hero Banner ── */}
-        <HeroBanner user={user} totalDailyContrib={totalDailyContrib} policies={policies}/>
+        <HeroBanner user={user} totalDailyContrib={totalDailyContrib} policies={policies} loading={loading}/>
 
         {/* ── 3 compact stat cards — Active Policies already shown in hero ── */}
-        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginBottom:20}}>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginBottom:14}}>
           {[
             {icon:'wallet',label:'Payouts',value:`KES ${totalPayouts.toLocaleString()}`,color:'#1A9F73',bg:'#E8F3EF',path:'/claims'},
             {icon:'clock',label:'Pending',value:pendingClaims,color:'#B08A3E',bg:'#FFFBEB',path:'/claims'},
             {icon:'check',label:'Approved',value:approvedClaims,color:'#3B4B6B',bg:'#EEF1F6',path:'/claims'},
           ].map(s=>(
             <div key={s.label} onClick={()=>navigate(s.path)} style={{
-              background:'#fff',borderRadius:16,padding:'14px 8px',cursor:'pointer',textAlign:'center',
+              background:'#fff',borderRadius:16,padding:'10px 6px',cursor:'pointer',textAlign:'center',
               border:'1px solid #E8ECF2',boxShadow:'0 1px 2px rgba(11,31,58,.04), 0 8px 22px rgba(11,31,58,.06)',
               transition:'transform .15s, box-shadow .15s',
             }}>
-              <div style={{width:40,height:40,borderRadius:12,background:s.bg,display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 8px'}}>
-                <Icon name={s.icon} color={s.color} size={20}/>
+              <div style={{width:32,height:32,borderRadius:10,background:s.bg,display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 6px'}}>
+                <Icon name={s.icon} color={s.color} size={17}/>
               </div>
               <div style={{fontFamily:"'Source Serif 4',Georgia,serif",fontWeight:700,fontSize:15,color:'var(--text)',lineHeight:1.1,wordBreak:'break-word'}}>{s.value}</div>
               <div style={{fontSize:11,color:'var(--muted)',marginTop:3}}>{s.label}</div>
@@ -318,7 +322,9 @@ export default function DashboardPage() {
               <h3 style={{fontSize:15,fontWeight:750}}>Your Cover</h3>
               <button className="btn btn-primary btn-sm" onClick={()=>navigate('/subscribe')}>+ Add Policy</button>
             </div>
-            {policies.length === 0 ? (
+            {loading ? (
+              <div style={{height:70}}/>
+            ) : policies.length === 0 ? (
               <div style={{textAlign:'center',padding:'20px 0'}}>
                 <div style={{width:52,height:52,borderRadius:16,background:'#E8F3EF',display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 10px'}}><Icon name="shield" color="#0F7B5C" size={26}/></div>
                 <p style={{fontWeight:600,marginBottom:4,fontSize:13}}>No active cover yet</p>

@@ -128,7 +128,7 @@ function RiderRegister({ onBack }) {
   const tempId = useRef(`reg-${Date.now()}`).current;
   const [form, setForm] = useState({
     fullName:'', phone:'', email:'', password:'', confirmPassword:'',
-    nationalId:'', county:'Nairobi', licenseNumber:'', bikeReg:'', bikeType:'Petrol',
+    nationalId:'', county:'Nairobi', licenseNumber:'', saccoName:'', bikeReg:'', bikeType:'Petrol',
     isBikeOwner:true, ownerName:'', ownerPhone:'',
   });
   const up = (k,v) => setForm(f=>({...f,[k]:v}));
@@ -138,7 +138,7 @@ function RiderRegister({ onBack }) {
   const STEPS = ['Account','Rider Info','Documents'];
   const isStepComplete = (i) => {
     if (i===0) return !!(form.fullName && form.phone && form.password && form.password===form.confirmPassword);
-    if (i===1) return !!(form.nationalId && form.bikeReg && form.licenseNumber);
+    if (i===1) return !!(form.nationalId && form.bikeReg && form.licenseNumber && form.saccoName.trim());
     return [kycDocs.national_id,kycDocs.riders_license,kycDocs.insurance_cert].filter(Boolean).length===3;
   };
 
@@ -156,6 +156,7 @@ function RiderRegister({ onBack }) {
       if (!form.nationalId) return setError('National ID is required');
       if (!form.licenseNumber) return setError("Rider's license number is required");
       if (!form.bikeReg) return setError('Bike registration is required');
+      if (!form.saccoName.trim()) return setError('SACCO name is required');
       if (!form.isBikeOwner && !form.ownerName.trim()) return setError("Enter bike owner's name");
       if (!form.isBikeOwner && !form.ownerPhone.trim()) return setError("Enter bike owner's phone number");
       setError(''); setStep(3);
@@ -243,6 +244,8 @@ function RiderRegister({ onBack }) {
               <input className="form-input" placeholder="DL-NBI-2021-..." value={form.licenseNumber} onChange={e=>up('licenseNumber',e.target.value)} required/></div>
             <div className="form-group"><label className="form-label">Bike Registration No. *</label>
               <input className="form-input" placeholder="KCZ 123A" value={form.bikeReg} onChange={e=>up('bikeReg',e.target.value)} required/></div>
+            <div className="form-group"><label className="form-label">SACCO Name *</label>
+              <input className="form-input" placeholder="e.g. Kibera Boda Boda SACCO" value={form.saccoName} onChange={e=>up('saccoName',e.target.value)} required/></div>
           </div>
           <div className="form-group"><label className="form-label">Bike Type</label>
             <div style={{display:'flex',gap:8}}>

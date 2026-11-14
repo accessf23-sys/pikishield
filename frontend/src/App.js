@@ -141,13 +141,17 @@ function MobileBottomNav() {
   );
 }
 
+// Only the very first auth check may blank the screen; later refreshes stay silent.
+let authReady = false;
+
 function ProtectedRoute({ children, roles }) {
   const { user, loading } = useAuth();
   //  FIXED: use 'token' (matches AuthContext.js)
   const hasToken = !!localStorage.getItem('token');
 
   if (!hasToken && !user) return <Navigate to="/login" replace />;
-  if (loading && hasToken) return null;
+  if (!loading) authReady = true;
+  if (loading && hasToken && !authReady) return null;
   if (!user) return <Navigate to="/login" replace />;
   if (roles && !roles.includes(user.role)) return <Navigate to={roleHome(user.role)} replace />;
   return children;
@@ -312,7 +316,8 @@ function AppRoutes() {
     );
   }
 
-  if (loading) return null;
+  if (!loading) authReady = true;
+  if (loading && !authReady) return null;
 
   return (
     <Routes>
@@ -372,13 +377,14 @@ function AppShell({ splashDone, onSplashDone }) {
     return <SplashScreen onDone={onSplashDone} />;
   }
 
-  if (hasToken && loading) {
+  if (!loading) authReady = true;
+  if (hasToken && loading && !authReady) {
     return (
       <div style={{
         position: 'fixed',
         inset: 0,
         zIndex: 99998,
-        background: '#0A1628',
+        background: '#F4F6FA',
       }}/>
     );
   }
