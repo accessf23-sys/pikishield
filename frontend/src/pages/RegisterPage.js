@@ -186,6 +186,12 @@ function RiderRegister({ onBack }) {
 
   return (
     <>
+      {step<=3 && (
+        <button type="button" onClick={()=> step>1 ? setStep(step-1) : onBack()}
+          style={{background:'none',border:'none',color:'var(--green)',fontWeight:600,fontSize:13,cursor:'pointer',padding:'0 0 12px',display:'inline-flex',alignItems:'center',gap:6}}>
+          &larr; Back
+        </button>
+      )}
       {/* Step bar */}
       <div style={{display:'flex',gap:6,marginBottom:24}}>
         {STEPS.map((s,i)=>(
@@ -219,7 +225,7 @@ function RiderRegister({ onBack }) {
           </div>
           <ConsentBox checked={acceptedTerms} onChange={setAcceptedTerms} />
           <div style={{display:'flex',gap:10}}>
-            <button className="btn btn-secondary" type="button" onClick={onBack}> Change</button>
+            <button className="btn btn-secondary" type="button" onClick={onBack}>Change type</button>
             <button className="btn btn-primary btn-lg" style={{flex:1,justifyContent:'center'}} type="submit">Continue </button>
           </div>
         </form>
@@ -393,6 +399,12 @@ function MemberRegister({ onBack }) {
 
   return (
     <>
+      {step<=3 && (
+        <button type="button" onClick={()=> step>1 ? setStep(step-1) : onBack()}
+          style={{background:'none',border:'none',color:'var(--green)',fontWeight:600,fontSize:13,cursor:'pointer',padding:'0 0 12px',display:'inline-flex',alignItems:'center',gap:6}}>
+          &larr; Back
+        </button>
+      )}
       <div style={{background:'#0B1F3A',borderRadius:6,padding:'14px 16px',marginBottom:20,border:'1px solid rgba(139,92,246,.3)'}}>
         <div style={{display:'flex',alignItems:'center',gap:10}}>
           <span style={{fontSize:24}}></span>
