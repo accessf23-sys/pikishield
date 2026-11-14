@@ -53,14 +53,14 @@ export default function LoginPage({ initialMode = 'login' }) {
         .float-wrap{position:relative;z-index:1;width:100%;max-width:1120px;display:flex;align-items:center;justify-content:space-between;gap:48px}
         .float-info{flex:1;min-width:0;color:#fff}
         .float-card{width:100%;max-width:430px;box-sizing:border-box;height:540px;max-height:92vh;display:flex;flex-direction:column;background:#fff;border-radius:12px;padding:22px 26px 18px;box-shadow:0 30px 80px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.06);border-top:3px solid #FFC907}
-        .float-scroll{flex:1;min-height:0;overflow-y:auto;padding-right:2px}
+        .float-scroll{flex:1;min-height:0;overflow-y:auto;padding:2px 8px 2px 2px;scrollbar-width:thin}
         .float-card .form-input{padding:9px 12px;font-size:13px}
         .float-card .form-label{font-size:12px}
         .float-card .form-group{margin-bottom:11px}
         .float-card .btn-lg{padding:11px 16px;font-size:14px}
         .mobile-only-logo{display:none}
         .float-card .auth-form-inner{max-width:none;padding:0;display:flex;flex-direction:column;flex:1;min-height:0}
-        @media (max-width:900px){.float-info{display:none}.mobile-only-logo{display:block!important}.float-wrap{justify-content:center}.float-card{padding:24px 20px}}
+        @media (max-width:900px){.float-card{height:auto!important;max-height:none!important}.float-scroll{overflow:visible!important;padding:2px!important}.float-auth{align-items:flex-start;padding-top:36px}.float-info{display:none}.mobile-only-logo{display:block!important}.float-wrap{justify-content:center}.float-card{padding:24px 20px}}
       `}</style>
 
       <div className="float-wrap">

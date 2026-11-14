@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { useAuth } from '../context/AuthContext';
 import { usersAPI } from '../utils/api';
+import Icon from '../components/Icons';
 
 /* ── Animated SVG Hero ────────────────────────────────────────── */
 function HeroBanner({ user, totalDailyContrib, policies }) {
@@ -187,8 +188,8 @@ function HeroBanner({ user, totalDailyContrib, policies }) {
         )}
         {policies.length === 0 && (
           <div onClick={()=>navigate('/subscribe')} style={{display:'inline-flex',alignItems:'center',gap:8,background:'rgba(0,214,143,.12)',border:'1px solid rgba(0,214,143,.3)',borderRadius:6,padding:'10px 16px',cursor:'pointer'}}>
-            <span style={{fontSize:13,color:'rgba(255,255,255,.7)'}}>No active cover yet</span>
-            <span style={{fontSize:13,fontWeight:700,color:'#1A9F73'}}>Get protected →</span>
+            <span style={{fontSize:13,color:'rgba(255,255,255,.75)',whiteSpace:'nowrap'}}>No active cover yet</span>
+            <span style={{fontSize:13,fontWeight:700,color:'#FDC703',whiteSpace:'nowrap'}}>Get protected →</span>
           </div>
         )}
       </div>
@@ -228,27 +229,18 @@ function RiskMeter({ score, tier }) {
 function QuickAction({ icon, label, sub, color, onClick }) {
   return (
     <div onClick={onClick} style={{
-      cursor:'pointer', padding:'18px',
-      background:'var(--surface)',
-      borderRadius:8,
-      border:'1.5px solid var(--border)',
-      transition:'all 0.2s cubic-bezier(.4,0,.2,1)',
-      position:'relative', overflow:'hidden',
+      cursor:'pointer', padding:'16px 10px', textAlign:'center',
+      background:'#fff', borderRadius:16, border:'1px solid #E8ECF2',
+      boxShadow:'0 1px 2px rgba(11,31,58,.04), 0 8px 22px rgba(11,31,58,.06)',
+      transition:'transform .15s, box-shadow .15s',
     }}
-    onMouseEnter={e=>{
-      e.currentTarget.style.borderColor=color;
-
-      e.currentTarget.style.boxShadow=`0 8px 24px ${color}22`;
-    }}
-    onMouseLeave={e=>{
-      e.currentTarget.style.borderColor='var(--border)';
-
-      e.currentTarget.style.boxShadow='';
-    }}>
-      <div style={{fontSize:28,marginBottom:10}}>{icon}</div>
-      <div style={{fontSize:13,fontWeight:750,marginBottom:3,color:'var(--text)'}}>{label}</div>
-      <div style={{fontSize:11,color:'var(--muted)'}}>{sub}</div>
-      <div style={{position:'absolute',bottom:0,left:0,right:0,height:3,background:`#FFFFFF`,opacity:.6,borderRadius:'0 0 14px 14px'}}/>
+    onMouseEnter={e=>{e.currentTarget.style.transform='translateY(-2px)';}}
+    onMouseLeave={e=>{e.currentTarget.style.transform='';}}>
+      <div style={{width:44,height:44,borderRadius:14,background:`${color}14`,display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 10px'}}>
+        <Icon name={icon} color={color} size={22}/>
+      </div>
+      <div style={{fontSize:13,fontWeight:700,color:'var(--text)',lineHeight:1.25}}>{label}</div>
+      {sub ? <div style={{fontSize:11,color:'var(--muted)',marginTop:3}}>{sub}</div> : null}
     </div>
   );
 }
@@ -300,26 +292,20 @@ export default function DashboardPage() {
         {/* ── 3 compact stat cards — Active Policies already shown in hero ── */}
         <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:8,marginBottom:20}}>
           {[
-            {icon:'',label:'Payouts',value:`KES ${totalPayouts.toLocaleString()}`,color:'#1A9F73',bg:'#E8F3EF',path:'/claims'},
-            {icon:'',label:'Pending',value:pendingClaims,color:'#B08A3E',bg:'#FFFBEB',path:'/claims'},
-            {icon:'',label:'Approved',value:approvedClaims,color:'#3B4B6B',bg:'#EEF1F6',path:'/claims'},
+            {icon:'wallet',label:'Payouts',value:`KES ${totalPayouts.toLocaleString()}`,color:'#1A9F73',bg:'#E8F3EF',path:'/claims'},
+            {icon:'clock',label:'Pending',value:pendingClaims,color:'#B08A3E',bg:'#FFFBEB',path:'/claims'},
+            {icon:'check',label:'Approved',value:approvedClaims,color:'#3B4B6B',bg:'#EEF1F6',path:'/claims'},
           ].map(s=>(
             <div key={s.label} onClick={()=>navigate(s.path)} style={{
-              background:'var(--surface)',borderRadius:6,padding:'12px 8px',
-              border:'1px solid var(--border)',cursor:'pointer',
-              position:'relative',overflow:'hidden',
-              transition:'transform .18s,box-shadow .18s',
-            }}
-            onMouseEnter={e=>{e.currentTarget.style.boxShadow='0 6px 18px rgba(0,0,0,.09)';}}
-            onMouseLeave={e=>{e.currentTarget.style.boxShadow='';}}>
-              <div style={{position:'absolute',top:0,left:0,right:0,height:3,background:s.color,opacity:.7,borderRadius:'8px 8px 0 0'}}/>
-              <div style={{display:'flex',flexDirection:'column',alignItems:'center',textAlign:'center',gap:5}}>
-                <div style={{width:34,height:34,borderRadius:6,background:s.bg,display:'flex',alignItems:'center',justifyContent:'center',fontSize:16,flexShrink:0}}>{s.icon}</div>
-                <div>
-                  <div style={{fontFamily:"'Source Serif 4',Georgia,serif",fontWeight:700,fontSize:14,color:s.color,lineHeight:1,wordBreak:'break-all'}}>{s.value}</div>
-                  <div style={{fontSize:10,color:'var(--muted)',lineHeight:1.2}}>{s.label}</div>
-                </div>
+              background:'#fff',borderRadius:16,padding:'14px 8px',cursor:'pointer',textAlign:'center',
+              border:'1px solid #E8ECF2',boxShadow:'0 1px 2px rgba(11,31,58,.04), 0 8px 22px rgba(11,31,58,.06)',
+              transition:'transform .15s, box-shadow .15s',
+            }}>
+              <div style={{width:40,height:40,borderRadius:12,background:s.bg,display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 8px'}}>
+                <Icon name={s.icon} color={s.color} size={20}/>
               </div>
+              <div style={{fontFamily:"'Source Serif 4',Georgia,serif",fontWeight:700,fontSize:15,color:'var(--text)',lineHeight:1.1,wordBreak:'break-word'}}>{s.value}</div>
+              <div style={{fontSize:11,color:'var(--muted)',marginTop:3}}>{s.label}</div>
             </div>
           ))}
         </div>
@@ -333,7 +319,7 @@ export default function DashboardPage() {
             </div>
             {policies.length === 0 ? (
               <div style={{textAlign:'center',padding:'20px 0'}}>
-                <div style={{fontSize:32,marginBottom:8}}></div>
+                <div style={{width:52,height:52,borderRadius:16,background:'#E8F3EF',display:'flex',alignItems:'center',justifyContent:'center',margin:'0 auto 10px'}}><Icon name="shield" color="#0F7B5C" size={26}/></div>
                 <p style={{fontWeight:600,marginBottom:4,fontSize:13}}>No active cover yet</p>
                 <p style={{fontSize:12,color:'var(--muted)',marginBottom:14}}>From KES 20/day — bail, stipend & funeral cover</p>
                 <button className="btn btn-primary btn-sm" onClick={()=>navigate('/subscribe')}>Get Protected →</button>
@@ -439,10 +425,10 @@ export default function DashboardPage() {
         {/* ── Quick Actions ── */}
         <div style={{marginBottom:8}}>
           <h3 style={{fontSize:15,fontWeight:750,marginBottom:14,color:'var(--text)'}}>Quick Actions</h3>
-          <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:14}}>
-            <QuickAction icon="" label="Submit Claim" sub="" color="#1A9F73" onClick={()=>navigate('/claims')}/>
-            <QuickAction icon="" label="My Policies" sub="" color="#1E3A5F" onClick={()=>navigate('/policies')}/>
-            <QuickAction icon="" label="Make Payment" sub="" color="#B08A3E" onClick={()=>navigate('/payments')}/>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10}}>
+            <QuickAction icon="claim" label="Submit Claim" sub="" color="#1A9F73" onClick={()=>navigate('/claims')}/>
+            <QuickAction icon="shield" label="My Policies" sub="" color="#1E3A5F" onClick={()=>navigate('/policies')}/>
+            <QuickAction icon="card" label="Make Payment" sub="" color="#B08A3E" onClick={()=>navigate('/payments')}/>
           </div>
         </div>
       </div>
