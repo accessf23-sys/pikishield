@@ -17,6 +17,12 @@ const P = {
   bike:    <><circle cx="6" cy="16" r="3.2"/><circle cx="18" cy="16" r="3.2"/><path d="M6 16l3.5-6H15l3 6"/><path d="M9.5 10l2.5 6H6"/><path d="M15 10l1.5-3.5H19"/></>,
   alert:   <><path d="M12 4l9 16H3L12 4Z"/><path d="M12 10v4M12 17v.5"/></>,
   list:    <><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></>,
+  upload:  <><path d="M12 16V5M7.5 9.5L12 5l4.5 4.5"/><path d="M4 17v1.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V17"/></>,
+  eye:     <><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="2.8"/></>,
+  download:<><path d="M12 4v11M7.5 10.5L12 15l4.5-4.5"/><path d="M4 17v1.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V17"/></>,
+  trash:   <><path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 12.5h9l1-12.5"/><path d="M10 11v5M14 11v5"/></>,
+  idcard:  <><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><circle cx="8.5" cy="11" r="2"/><path d="M5.5 16c.4-1.6 1.6-2.4 3-2.4s2.6.8 3 2.4M14 10h4M14 13.5h3"/></>,
+  image:   <><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><circle cx="9" cy="10" r="1.6"/><path d="M4 17l5-4.5 3.5 3 3-2.5 4.5 4"/></>,
   chart:   <><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></>,
 };
 

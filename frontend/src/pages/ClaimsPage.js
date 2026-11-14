@@ -369,7 +369,7 @@ export default function ClaimsPage() {
     }
 
     if (form.type === 'income' && !isNokOrMember) {
-      const hasMedical = Object.values(uploadedDocs).flat().some(d => /medical|doctor/i.test((d && d.docType) || ''));
+      const hasMedical = Object.entries(uploadedDocs).some(([k, v]) => /medical|doctor/i.test(k) && Array.isArray(v) && v.length > 0);
       if (!hasMedical) return setError("Please attach the doctor's medical report for a stipend claim");
     }
 
