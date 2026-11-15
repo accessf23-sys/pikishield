@@ -68,7 +68,7 @@ export default function SubscribePage() {
   const [nokResult, setNokResult] = useState(null);
   const [nokIdDoc, setNokIdDoc]   = useState(null);       // front
   const [nokIdBack, setNokIdBack] = useState(null);
-  const [nokTempId, setNokTempId] = useState(`nok-${Date.now()}`);
+  const [nokTempId, setNokTempId] = useState(`nok-${Date.now()}-${Math.random().toString(36).slice(2)}${Math.random().toString(36).slice(2)}`);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
@@ -106,7 +106,7 @@ export default function SubscribePage() {
       // Attach the uploaded ID doc to the new NOK user
       try { await documentsAPI.attachKyc(nokTempId); } catch {}
       setNokResult(res.data);
-      setNokTempId(`nok-${Date.now()}`);
+      setNokTempId(`nok-${Date.now()}-${Math.random().toString(36).slice(2)}${Math.random().toString(36).slice(2)}`);
       setStep(4);
     } catch (err) { setError(err.response?.data?.error || 'NOK registration failed'); }
     finally { setLoading(false); }

@@ -76,7 +76,7 @@ export default function AgentDashboard() {
   const [success, setSuccess]     = useState('');
   const [error, setError]         = useState('');
   const [kycDocs, setKycDocs]     = useState({});
-  const [tempId, setTempId] = useState(`agent-${Date.now()}`);
+  const [tempId, setTempId] = useState(`agent-${Date.now()}-${Math.random().toString(36).slice(2)}${Math.random().toString(36).slice(2)}`);
 
   const [form, setForm] = useState({
     fullName:'', phone:'', email:'', password:genPass(),
@@ -93,7 +93,7 @@ export default function AgentDashboard() {
   useEffect(()=>{ load(); }, []);
 
   const resetForm = () => {
-    setTempId(`agent-${user?.id||'x'}-${Date.now()}`);
+    setTempId(`agent-${user?.id||'x'}-${Date.now()}-${Math.random().toString(36).slice(2)}${Math.random().toString(36).slice(2)}`);
     setStep(1); setKycDocs({});
     setForm({ fullName:'', phone:'', email:'', password:genPass(),
       nationalId:'', county:'Nairobi', licenseNumber:'', bikeReg:'', bikeType:'Petrol',

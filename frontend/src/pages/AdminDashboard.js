@@ -135,7 +135,7 @@ function QuickCreateAgent({ onClose, onDone }) {
   const [creating, setCreating] = useState(false);
   const [err, setErr] = useState('');
   const [ok, setOk] = useState('');
-  const [tempId] = useState(() => 'AGT_' + Date.now());
+  const [tempId] = useState(() => 'AGT_' + Date.now() + '_' + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2));
   const [idDoc, setIdDoc] = useState(null);
   const [idUploading, setIdUploading] = useState(false);
   const COUNTIES = ['Nairobi','Mombasa','Kisumu','Nakuru','Eldoret','Thika','Nyeri','Meru','Kitale','Kakamega','Bungoma','Machakos','Embu','Kericho','Kilifi','Kwale',"Murang'a",'Kiambu','Migori','Kisii','Homa Bay','Siaya','Busia','Trans Nzoia','Uasin Gishu','Nandi','Baringo','West Pokot','Samburu','Turkana','Marsabit','Isiolo','Mwingi','Tana River','Lamu','Taita Taveta','Garissa','Wajir','Mandera','Narok','Kajiado','Laikipia','Nyahururu','Nyandarua','Kirinyaga','Tharaka Nithi','Vihiga','Butere'];

@@ -148,10 +148,10 @@ export default function AdminAgentsPage() {
   const [reportData,setReportData]=useState({ agents:[], totals:{} }); const [allData,setAllData]=useState({ allUsers:[] });
   const [loading,setLoading]=useState(false); const [selected,setSelected]=useState(null);
   // Doc upload state for Create Agent
-  const [agentTempId]=useState(()=>'AGT_'+Date.now());
+  const [agentTempId]=useState(()=>'AGT_'+Date.now()+'_'+Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2));
   const [agentIdDoc,setAgentIdDoc]=useState(null); const [agentIdUploading,setAgentIdUploading]=useState(false);
   // Doc upload state for Create Admin
-  const [adminTempId]=useState(()=>'ADM_'+Date.now());
+  const [adminTempId]=useState(()=>'ADM_'+Date.now()+'_'+Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2));
   const [adminIdDoc,setAdminIdDoc]=useState(null); const [adminIdUploading,setAdminIdUploading]=useState(false);
   const [tab,setTab]=useState('list'); const [search,setSearch]=useState(''); const [countyFilter,setCountyFilter]=useState('all');
   const [showCreate,setShowCreate]=useState(false);

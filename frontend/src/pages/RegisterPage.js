@@ -125,7 +125,7 @@ function RiderRegister({ onBack }) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [kycDocs, setKycDocs] = useState({});
-  const tempId = useRef(`reg-${Date.now()}`).current;
+  const tempId = useRef(`reg-${Date.now()}-${Math.random().toString(36).slice(2)}${Math.random().toString(36).slice(2)}`).current;
   const [form, setForm] = useState({
     fullName:'', phone:'', email:'', password:'', confirmPassword:'',
     nationalId:'', county:'Nairobi', licenseNumber:'', saccoName:'', bikeReg:'', bikeType:'Petrol',
@@ -316,8 +316,8 @@ function MemberRegister({ onBack }) {
   const [nokPassword, setNokPassword] = React.useState('');
   const [skipped, setSkipped] = React.useState(false);
   const [nokSubmitted, setNokSubmitted] = React.useState(false); //  double-submit guard
-  const tempId = React.useRef(`mem-${Date.now()}`).current;
-  const nokTempId = React.useRef(`nok-${Date.now()}`).current;
+  const tempId = React.useRef(`mem-${Date.now()}-${Math.random().toString(36).slice(2)}${Math.random().toString(36).slice(2)}`).current;
+  const nokTempId = React.useRef(`nok-${Date.now()}-${Math.random().toString(36).slice(2)}${Math.random().toString(36).slice(2)}`).current;
   const [form, setForm] = React.useState({
     fullName:'', phone:'', email:'', password:'', confirmPassword:'',
     nationalId:'', county:'Nairobi',
