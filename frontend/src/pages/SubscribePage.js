@@ -15,7 +15,7 @@ const normalizeKEPhone = (phone) => {
   return cleaned;
 };
 
-function NokIdUploader({ onUploaded, uploaded, tempId }) {
+function NokIdUploader({ onUploaded, uploaded, tempId, label = 'NOK National ID Copy', docType = 'national_id' }) {
   const [uploading, setUploading] = useState(false);
   const [err, setErr] = useState('');
   const ref = useRef();
@@ -25,7 +25,7 @@ function NokIdUploader({ onUploaded, uploaded, tempId }) {
     setUploading(true); setErr('');
     try {
       const fd = new FormData();
-      fd.append('files', f); fd.append('docType', 'national_id'); fd.append('tempUploadId', tempId);
+      fd.append('files', f); fd.append('docType', docType); fd.append('tempUploadId', tempId);
       const res = await documentsAPI.uploadKyc(fd);
       onUploaded(res.data.documents[0]);
     } catch(e) { setErr(e.response?.data?.error||'Upload failed'); }
@@ -34,13 +34,13 @@ function NokIdUploader({ onUploaded, uploaded, tempId }) {
   return (
     <div style={{
       border:`1.5px ${uploaded?'solid':'dashed'} ${uploaded?'var(--green)':'var(--border)'}`,
-      borderRadius:8, padding:'10px 14px',
+      borderRadius:10, padding:'8px 12px',
       background:uploaded?'var(--green-light)':'#FAFAFA',
     }}>
-      <div style={{display:'flex',alignItems:'center',gap:10}}>
-        <div style={{flex:1}}>
+      <div style={{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
+        <div style={{flex:1,minWidth:150}}>
           <div style={{display:'flex',gap:6,alignItems:'center',marginBottom:3}}>
-            <span style={{fontSize:12,fontWeight:600}}>NOK National ID Copy</span>
+            <span style={{fontSize:12,fontWeight:600}}>{label}</span>
             {!uploaded && <span style={{fontSize:9,background:'#FEF2F2',color:'var(--red)',padding:'1px 5px',borderRadius:3,fontWeight:700}}>REQUIRED</span>}
             {uploaded && <span style={{fontSize:9,background:'var(--green-light)',color:'var(--green)',padding:'1px 5px',borderRadius:3,fontWeight:700}}> UPLOADED</span>}
           </div>
@@ -66,7 +66,8 @@ export default function SubscribePage() {
   const [nokForm, setNokForm] = useState({ fullName: '', phone: '', nationalId: '', password: '' });
   const [newPolicyId, setNewPolicyId] = useState(null);
   const [nokResult, setNokResult] = useState(null);
-  const [nokIdDoc, setNokIdDoc]   = useState(null);
+  const [nokIdDoc, setNokIdDoc]   = useState(null);       // front
+  const [nokIdBack, setNokIdBack] = useState(null);
   const [nokTempId, setNokTempId] = useState(`nok-${Date.now()}`);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
@@ -97,7 +98,8 @@ export default function SubscribePage() {
     if (!nokForm.fullName || !nokForm.phone || !nokForm.nationalId || !nokForm.password) {
       return setError('All NOK fields are required');
     }
-    if (!nokIdDoc) return setError('NOK must upload their National ID copy before registering');
+    if (!nokIdDoc) return setError('Upload the FRONT of the NOK National ID');
+    if (!nokIdBack) return setError('Upload the BACK of the NOK National ID');
     setLoading(true); setError('');
     try {
       const res = await authAPI.registerNok({ ...nokForm, phone: normalizeKEPhone(nokForm.phone), policyId: newPolicyId, tempUploadId: nokTempId });
@@ -228,7 +230,7 @@ export default function SubscribePage() {
 
         {/* Step 3 — NOK registration */}
         {step === 3 && (
-          <div className="card" style={{ maxWidth: 560 }}>
+          <div className="card" style={{ maxWidth: 560, padding: 16 }}>
             <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 6 }}>
               <span style={{ fontSize: 32 }}></span>
               <div>
@@ -245,7 +247,7 @@ export default function SubscribePage() {
               <label className="form-label">NOK Full Name</label>
               <input className="form-input" placeholder="Mary Kamau" value={nokForm.fullName} onChange={e => setNokForm(f => ({ ...f, fullName: e.target.value }))} />
             </div>
-            <div className="two-col">
+            <div>
               <div className="form-group">
                 <label className="form-label">NOK Phone Number</label>
                 <input className="form-input" placeholder="+254712345678" value={nokForm.phone} onChange={e => setNokForm(f => ({ ...f, phone: e.target.value }))} />
@@ -260,13 +262,14 @@ export default function SubscribePage() {
               <input className="form-input" type="password" placeholder="Min 8 characters" value={nokForm.password} onChange={e => setNokForm(f => ({ ...f, password: e.target.value }))} minLength={8} />
             </div>
             {/* ID Upload — required */}
-            <div style={{ marginBottom: 16 }}>
-              <NokIdUploader onUploaded={setNokIdDoc} uploaded={nokIdDoc} tempId={nokTempId}/>
+            <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <NokIdUploader onUploaded={setNokIdDoc} uploaded={nokIdDoc} tempId={nokTempId} label="1. National ID - FRONT" docType="national_id"/>
+              <NokIdUploader onUploaded={setNokIdBack} uploaded={nokIdBack} tempId={nokTempId} label="2. National ID - BACK" docType="national_id_back"/>
             </div>
             <div style={{ display: 'flex', gap: 10 }}>
-              <button className="btn btn-secondary" onClick={() => navigate('/policies')}>Skip (do later)</button>
-              <button className="btn btn-primary btn-lg" onClick={handleNokRegister} disabled={loading}>
-                {loading ? 'Registering NOK...' : ' Register NOK Account'}
+              <button className="btn btn-secondary" style={{ flexShrink: 0 }} onClick={() => navigate('/policies')}>Skip</button>
+              <button className="btn btn-primary btn-lg" style={{ flex: 1, justifyContent: 'center', minWidth: 0 }} onClick={handleNokRegister} disabled={loading}>
+                {loading ? 'Registering...' : 'Register NOK'}
               </button>
             </div>
           </div>
@@ -283,7 +286,7 @@ export default function SubscribePage() {
             <div style={{ background: '#0B1F3A', borderRadius: 8, padding: 24, marginBottom: 20, textAlign: 'center' }}>
               <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8 }}>NOK Login Number</div>
               <div style={{ fontFamily: "'Source Serif 4',Georgia,serif", fontWeight:700, fontSize: 32, color: 'var(--green)', letterSpacing: 2 }}>{nokResult.nokNumber}</div>
-              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 8 }}>Share this with {nokForm.fullName} — they use it to log in at pikishield.co.ke</div>
+              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 8 }}>{nokForm.fullName} is also sent a text message with this number and your member number. They need both to lodge a claim.</div>
             </div>
             <div style={{ background: 'var(--bg)', borderRadius: 6, padding: 14, marginBottom: 20 }}>
               <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 8 }}>NOK Account Summary</div>
