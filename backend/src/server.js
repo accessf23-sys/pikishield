@@ -50,7 +50,13 @@ app.use(sanitize);
 
 // ── Logging ───────────────────────────────────────────────────────────────────
 if (process.env.NODE_ENV !== 'test') {
-  app.use(morgan('[:method] :url :status :response-time ms'));
+  // Log the path only. The query string can carry a login token (document links).
+  app.use(morgan((tokens, req, res) => [
+    '[' + tokens.method(req, res) + ']',
+    String(req.originalUrl || req.url).split('?')[0],
+    tokens.status(req, res),
+    tokens['response-time'](req, res) + ' ms'
+  ].join(' ')));
 }
 
 // ── Static uploads ────────────────────────────────────────────────────────────

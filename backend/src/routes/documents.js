@@ -53,6 +53,28 @@ const upload = multer({
   limits: { fileSize: (parseInt(process.env.MAX_FILE_SIZE_MB) || 10) * 1024 * 1024 },
 });
 
+
+// A file's first bytes must match what its extension claims (stops renamed scripts or other files)
+function looksLikeAllowedFile(file) {
+  try {
+    const fd = fs.openSync(file.path, 'r');
+    const buf = Buffer.alloc(12);
+    fs.readSync(fd, buf, 0, 12, 0);
+    fs.closeSync(fd);
+    const hex = buf.toString('hex');
+    const isPdf  = buf.slice(0, 5).toString('latin1') === '%PDF-';
+    const isJpg  = hex.startsWith('ffd8ff');
+    const isPng  = hex.startsWith('89504e470d0a1a0a');
+    const isWebp = buf.slice(0, 4).toString('latin1') === 'RIFF' && buf.slice(8, 12).toString('latin1') === 'WEBP';
+    return isPdf || isJpg || isPng || isWebp;
+  } catch (e) { return false; }
+}
+function rejectBadFiles(files) {
+  const bad = (files || []).filter(f => !looksLikeAllowedFile(f));
+  bad.forEach(f => { try { fs.unlinkSync(f.path); } catch (e) {} });
+  return bad.length > 0;
+}
+
 // ── Serve document with token check (for preview & download) ──────────────────
 function serveDoc(res, filePath, disposition) {
   if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'File not found on disk' });
@@ -92,6 +114,7 @@ router.get('/types', (req, res) => {
 router.post('/upload-kyc', uploadLimiter, upload.array('files', 5), async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) return res.status(400).json({ error: 'No files uploaded' });
+    if (rejectBadFiles(req.files)) return res.status(400).json({ error: 'Only real PDF, JPG, PNG or WEBP files are allowed' });
     const { docType, tempUploadId } = req.body;
 
     const documents = await Promise.all(req.files.map(f =>
@@ -131,6 +154,7 @@ router.post('/attach-kyc', auth, async (req, res) => {
 router.post('/upload', auth, upload.array('files', 10), async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) return res.status(400).json({ error: 'No files uploaded' });
+    if (rejectBadFiles(req.files)) return res.status(400).json({ error: 'Only real PDF, JPG, PNG or WEBP files are allowed' });
     const { docType, tempUploadId } = req.body;
 
     const documents = await Promise.all(req.files.map(f =>

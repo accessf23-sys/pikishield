@@ -48,6 +48,31 @@ async function autoCreateNok(member, nokName, nokPhone, password) {
 }
 
 
+// -- Optional: who is registering this NOK? (route is public, token is optional) --
+async function principalFromRequest(req) {
+  try {
+    const header = req.headers.authorization || '';
+    if (!header.startsWith('Bearer ')) return null;
+    const decoded = jwt.verify(header.split(' ')[1], getJwtSecret());
+    if (decoded.purpose) return null;
+    const u = await User.findById(decoded.id).select('fullName memberNumber role');
+    return u && (u.role === 'rider' || u.role === 'member') ? u : null;
+  } catch (e) { return null; }
+}
+
+// -- Text the NOK their number and the principal's number (needed to lodge a claim) --
+async function notifyNok(nok, principal) {
+  try {
+    if (!nok || !nok.phone) return;
+    const site = process.env.FRONTEND_URL || 'https://pikishield-eta.vercel.app';
+    const msg = `PikiShield: Hello ${nok.fullName}, ${principal ? principal.fullName : 'a PikiShield member'} has registered you as Next of Kin. ` +
+      `Your NOK number: ${nok.nokNumber}. ` +
+      (principal && principal.memberNumber ? `Principal member number: ${principal.memberNumber}. ` : '') +
+      `Keep both numbers safe: you need them to lodge a claim. Log in at ${site}`;
+    await sendSMS(nok.phone, msg);
+  } catch (e) { console.error('NOK SMS failed:', e && e.message); }
+}
+
 const normalizePhone = (value = '') => {
   let s = String(value || '').trim();
 
@@ -210,6 +235,7 @@ router.post('/register', registerLimiter, async (req, res) => {
       county,
       licenseNumber,
       bikeReg,
+      saccoName,
       bikeType,
       isBikeOwner,
       ownerName,
@@ -244,6 +270,10 @@ router.post('/register', registerLimiter, async (req, res) => {
     const isFuneralMember = registrationType === 'funeral_member';
     const role = isFuneralMember ? 'member' : 'rider';
 
+    if (!isFuneralMember && !String(saccoName || '').trim()) {
+      return res.status(400).json({ error: 'SACCO name is required for riders' });
+    }
+
     const user = await User.create({
       fullName,
       phone,
@@ -265,6 +295,7 @@ router.post('/register', registerLimiter, async (req, res) => {
           : {
               licenseNumber,
               bikeReg,
+              sacco: String(saccoName || '').trim(),
               bikeType: bikeType || 'Petrol',
               isBikeOwner,
               ownerName,
@@ -316,6 +347,7 @@ router.post('/register-nok', registerLimiter, async (req, res) => {
       return res.status(400).json({ error: 'All NOK fields required' });
     }
 
+    const principal = await principalFromRequest(req);
     const existing = await User.findOne({ phone });
 
     if (existing) {
@@ -333,7 +365,9 @@ router.post('/register-nok', registerLimiter, async (req, res) => {
         existing.password = password;
         if (nationalId) existing.nationalId = nationalId;
         existing.mustChangePassword = false;
+        if (principal && !existing.nokFor) existing.nokFor = principal._id;
         await existing.save();
+        await notifyNok(existing, principal);
 
         if (tempUploadId) {
           const Document = require('../models/Document');
@@ -360,8 +394,10 @@ router.post('/register-nok', registerLimiter, async (req, res) => {
       password,
       role: 'nok',
       kycStatus: 'pending',
+      ...(principal ? { nokFor: principal._id } : {}),
       tempUploadId
     });
+    await notifyNok(nok, principal);
 
     if (tempUploadId) {
       const Document = require('../models/Document');
@@ -466,6 +502,11 @@ router.post('/forgot-password', otpLimiter, async (req, res) => {
       });
     }
 
+    // At most one code a minute per account (stops someone flooding a person's phone with texts)
+    if (user.resetOtpExpiry && user.resetOtpExpiry.getTime() - Date.now() > 14 * 60 * 1000) {
+      return res.json({ message: 'If that number is registered, an OTP has been sent.' });
+    }
+
     const otp = String(crypto.randomInt(100000, 1000000));
 
     user.resetOtp = hashOtp(otp);
@@ -552,6 +593,11 @@ router.post('/reset-password', otpLimiter, async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
+    // A reset link works once: the code is cleared when the password is changed
+    if (!user.resetOtp) {
+      return res.status(400).json({ error: 'Reset link expired — request a new OTP' });
+    }
+
     user.password = password;
     user.resetOtp = undefined;
     user.resetOtpExpiry = undefined;
@@ -619,8 +665,13 @@ router.post("/admin-reset-password", auth, async (req, res) => {
     const normalizePhone = (p="") => { let s=String(p).replace(/[^0-9]/g,""); if(s.startsWith("0"))s="254"+s.slice(1); else if(!s.startsWith("254"))s="254"+s; return s; };
     const user = await User.findOne({ phone: normalizePhone(phone) });
     if (!user) return res.status(404).json({ error: "User not found" });
+    if (!strongEnough(newPassword)) return res.status(400).json({ error: PASSWORD_RULE });
+    // Admins can reset customers and agents. Only a super admin can reset an admin, and
+    // nobody can reset a super admin this way.
+    if (user.role === 'superadmin') return res.status(403).json({ error: "Forbidden" });
+    if (user.role === 'admin' && req.user.role !== 'superadmin') return res.status(403).json({ error: "Forbidden" });
     user.password = newPassword;
-    user.mustChangePassword = false;
+    user.mustChangePassword = true;
     await user.save();
     res.json({ message: "Password reset for " + user.fullName });
   } catch(e) { serverError(res, e, 'route'); }

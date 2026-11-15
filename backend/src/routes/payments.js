@@ -5,6 +5,10 @@ const Policy = require('../models/Policy');
 const Transaction = require('../models/Transaction');
 const { auth, roles } = require('../middleware/auth');
 
+// Pretend (test-only) payments. OFF unless ALLOW_SIMULATED_PAYMENTS=true on the server.
+// Set it to false (or remove it) before real customers use the app.
+const SIM_ALLOWED = () => process.env.ALLOW_SIMULATED_PAYMENTS === 'true';
+
 // ── M-Pesa helpers ────────────────────────────────────────────────────────────
 async function getMpesaToken() {
   const key = process.env.MPESA_CONSUMER_KEY;
@@ -101,6 +105,12 @@ router.post('/mpesa/initiate', auth, roles('rider'), async (req, res) => {
       }
     }
 
+    if (!SIM_ALLOWED()) {
+      payment.status = 'failed';
+      await payment.save();
+      return res.status(503).json({ error: 'Payments are not available right now. Please try again later.' });
+    }
+
     payment.checkoutRequestId = `ws_CO_SIM_${Date.now()}`;
     await payment.save();
 
@@ -132,7 +142,7 @@ router.post('/mpesa/initiate', auth, roles('rider'), async (req, res) => {
 
     res.json({
       paymentId: payment._id,
-      message: '📱 STK push sent (sandbox) — check your phone'
+      message: 'STK push sent (test mode) — check your phone'
     });
   } catch (e) {
     res.status(500).json({ error: e.message });
@@ -143,7 +153,7 @@ router.post('/mpesa/initiate', auth, roles('rider'), async (req, res) => {
 // Frontend polls this every 2s (PaymentsPage)
 router.get('/mpesa/status/:id', auth, async (req, res) => {
   try {
-    const payment = await Payment.findById(req.params.id);
+    const payment = await Payment.findById(req.params.id).select('-checkoutRequestId -merchantRequestId');
     if (!payment) return res.status(404).json({ error: 'Payment not found' });
 
     if (String(payment.userId) !== String(req.user._id)) {
@@ -160,6 +170,13 @@ router.get('/mpesa/status/:id', auth, async (req, res) => {
 // Safaricom calls this URL after STK push completes
 router.post('/mpesa/callback', async (req, res) => {
   try {
+    // The callback URL must carry a secret that only Safaricom and we know, e.g.
+    // MPESA_CALLBACK_URL=https://<server>/api/payments/mpesa/callback?secret=<MPESA_CALLBACK_SECRET>
+    const expected = process.env.MPESA_CALLBACK_SECRET;
+    if (!expected || req.query.secret !== expected) {
+      console.warn('[payments] callback rejected: bad or missing secret');
+      return res.status(403).json({ error: 'Forbidden' });
+    }
     const { Body } = req.body;
     const callback = Body?.stkCallback;
     if (!callback) return res.json({ ResultCode: 0, ResultDesc: 'Accepted' });
@@ -167,10 +184,21 @@ router.post('/mpesa/callback', async (req, res) => {
     const { CheckoutRequestID, ResultCode } = callback;
     const payment = await Payment.findOne({ checkoutRequestId: CheckoutRequestID });
     if (!payment) return res.json({ ResultCode: 0, ResultDesc: 'Accepted' });
+    // Each payment can be completed once only
+    if (payment.status !== 'pending') return res.json({ ResultCode: 0, ResultDesc: 'Accepted' });
 
     if (ResultCode === 0) {
       const items = callback.CallbackMetadata?.Item || [];
       const get = (name) => items.find(i => i.Name === name)?.Value;
+
+      // The amount actually paid must match what we asked for
+      const paid = Number(get('Amount'));
+      if (!paid || paid < Math.ceil(payment.amount)) {
+        payment.status = 'failed';
+        await payment.save();
+        console.warn('[payments] amount mismatch on callback', payment._id);
+        return res.json({ ResultCode: 0, ResultDesc: 'Accepted' });
+      }
 
       payment.status = 'completed';
       payment.mpesaReceiptNumber = get('MpesaReceiptNumber') || '';
@@ -205,6 +233,11 @@ router.post('/mpesa/callback', async (req, res) => {
 router.post('/manual', auth, roles('rider', 'admin', 'superadmin'), async (req, res) => {
   try {
     const { userId, policyId, amount, description, reference, method, cardLast4 } = req.body;
+
+    // A rider must never be able to mark their own payment as paid unless test mode is on
+    if (req.user.role === 'rider' && !SIM_ALLOWED()) {
+      return res.status(403).json({ error: 'Manual payments can only be recorded by an administrator' });
+    }
 
     if (!amount) {
       return res.status(400).json({ error: 'amount required' });

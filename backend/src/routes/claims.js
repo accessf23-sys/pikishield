@@ -5,10 +5,32 @@ const Policy      = require('../models/Policy');
 const Document    = require('../models/Document');
 const Transaction = require('../models/Transaction');
 const User        = require('../models/User');
+const Payment     = require('../models/Payment');
 const { auth, roles } = require('../middleware/auth');
 
 // ── Waiting period: 90 days from policy start ──────────────────────────────────
 const WAITING_PERIOD_MS = 150 * 24 * 60 * 60 * 1000;
+
+// ── Active-payer rule ─────────────────────────────────────────────────────────
+// Cover only counts if the user paid in every 30-day period since the policy
+// started (no skipped month). The current period gets a 7-day grace.
+const PERIOD_MS = 30 * 24 * 60 * 60 * 1000;
+const GRACE_MS  = 7 * 24 * 60 * 60 * 1000;
+async function missedPayment(userId, startDate) {
+  const start = new Date(startDate).getTime();
+  const now = Date.now();
+  const payments = await Payment.find({ userId, status: 'completed' }).select('completedAt createdAt');
+  const times = payments.map(p => new Date(p.completedAt || p.createdAt).getTime());
+  const fullPeriods = Math.floor((now - start) / PERIOD_MS);
+  for (let k = 0; k <= fullPeriods; k++) {
+    const from = start + k * PERIOD_MS;
+    const to = from + PERIOD_MS;
+    const isCurrent = k === fullPeriods;
+    if (isCurrent && now - from < GRACE_MS) continue;
+    if (!times.some(t => t >= from && t < to)) return k + 1;
+  }
+  return 0;
+}
 
 // ── GET /api/claims ───────────────────────────────────────────────────────────
 // ?all=1 → admin gets every claim; otherwise rider/nok gets own claims
@@ -81,6 +103,10 @@ router.post('/', auth, async (req, res) => {
       const elapsed = Date.now() - new Date(policy.startDate).getTime();
       if (elapsed < WAITING_PERIOD_MS)
         return res.status(400).json({ error: 'Claims open after 5 months of cover' });
+
+      const missed = await missedPayment(req.user._id, policy.startDate);
+      if (missed)
+        return res.status(400).json({ error: `Your cover is not active: no payment was recorded in month ${missed}. Claims need payments every month with no skipped month.` });
     }
 
     // ── NOK fraud prevention: verify principal member number ──────────────────
@@ -157,6 +183,9 @@ router.patch('/:id/status', auth, roles('admin'), async (req, res) => {
 
     const claim = await Claim.findById(req.params.id);
     if (!claim) return res.status(404).json({ error: 'Claim not found' });
+
+    // A paid claim is final: stops a second payout record and a second set of notifications
+    if (claim.status === 'paid') return res.status(400).json({ error: 'This claim has already been paid' });
 
     claim.status       = status;
     claim.processedBy  = req.user._id;

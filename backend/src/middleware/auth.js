@@ -17,6 +17,9 @@ const auth = async (req, res, next) => {
 
     const user = await User.findById(decoded.id).select('-password -resetOtp -resetOtpExpiry');
     if (!user) return res.status(401).json({ error: 'User not found' });
+    // A password change or reset ends every older login
+    if (user.passwordChangedAt && decoded.iat && decoded.iat * 1000 < user.passwordChangedAt.getTime() - 1000)
+      return res.status(401).json({ error: 'Invalid or expired token' });
     if (user.suspended) return res.status(403).json({ error: 'Account suspended. Contact support.' });
 
     req.user = user;

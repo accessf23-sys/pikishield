@@ -59,6 +59,7 @@ const userSchema = new mongoose.Schema(
     resetOtp: { type: String, default: undefined },
     resetOtpExpiry: { type: Date, default: undefined },
     resetOtpAttempts: { type: Number, default: 0 },
+    passwordChangedAt: { type: Date, default: undefined },
 
     // Login lockout
     failedLogins: { type: Number, default: 0 },
@@ -118,6 +119,7 @@ userSchema.pre('save', async function(next) {
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
   this.password = await bcrypt.hash(this.password, 10);
+  this.passwordChangedAt = new Date(); // login tokens issued before this stop working
   next();
 });
 
