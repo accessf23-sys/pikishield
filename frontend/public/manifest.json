@@ -8,9 +8,34 @@
   "background_color": "#FDC703",
   "theme_color": "#FDC703",
   "icons": [
-    { "src": "/logo192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "/logo512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+    {
+      "src": "/splash-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/splash-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ],
-  "categories": ["finance", "insurance"],
+  "categories": [
+    "finance",
+    "insurance"
+  ],
   "lang": "en-KE"
 }
