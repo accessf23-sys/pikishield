@@ -36,10 +36,6 @@ export default function PoliciesPage() {
     setTimeout(() => { load(); setCancelling(null); }, 1500);
   };
 
-  const typeIcons = { bail: '', bail_income: '', funeral: '' };
-
-  
-
   return (
     <div>
       <div className="page-header">
@@ -53,11 +49,10 @@ export default function PoliciesPage() {
       </div>
       <div className="page-body">
         {loading ? (
-          <div style={{textAlign:'center',padding:'40px',color:'var(--muted)',fontSize:14}}> Loading your protection…</div>
+          <div style={{textAlign:'center',padding:'40px',color:'var(--muted)',fontSize:14}}>Loading your protection...</div>
         ) : policies.length === 0 ? (
           <div className="card">
             <div className="empty-state">
-              <div className="emoji"></div>
               <h3>No policies yet</h3>
               <p>Start protecting yourself from just KES 20/day</p>
               <button className="btn btn-primary" style={{ marginTop: 16 }} onClick={() => navigate('/subscribe')}>Get Protected Now</button>
@@ -110,7 +105,7 @@ export default function PoliciesPage() {
                     <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>Covered Members</div>
                     {p.members.map(m => (
                       <div key={m.id} style={{ fontSize: 12, color: 'var(--text)', marginBottom: 2 }}>
-                         {m.name} — {m.relation}, {m.age}y
+                        {m.name} - {m.relation}, {m.age}y
                       </div>
                     ))}
                   </div>
