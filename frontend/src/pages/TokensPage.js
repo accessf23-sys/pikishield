@@ -26,6 +26,27 @@ const QUIZ_QUESTIONS = [
   { q:'What should you do before changing lanes?', options:['Just move quickly','Check mirrors, signal, check blind spot','Sound horn twice','Flash headlights'], answer:1 },
 ];
 
+// Shrinks a phone photo (often several MB) to a small JPEG before upload
+function shrinkImage(file) {
+  return new Promise((resolve) => {
+    try {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        const max = 1024;
+        const r = Math.min(1, max / Math.max(img.width, img.height));
+        const c = document.createElement('canvas');
+        c.width = Math.round(img.width * r); c.height = Math.round(img.height * r);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url);
+        c.toBlob((b) => resolve(b || file), 'image/jpeg', 0.8);
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+      img.src = url;
+    } catch (e) { resolve(file); }
+  });
+}
+
 function SafetyQuiz({ onComplete, onClose }) {
   const [idx, setIdx]       = useState(0);
   const [selected, setSel]  = useState(null);
@@ -140,6 +161,8 @@ export default function TokensPage() {
   };
 
   const earn = async (action) => {
+    if (action !== 'safety_quiz' && isLocked(action)) return;
+    if (action === 'safety_quiz' && (isLocked('safety_quiz') || isLocked('safety_quiz_attempt'))) return;
     if (action === 'safety_quiz') { setShowQuiz(true); return; }
     if (action === 'helmet_check') { setShowHelmet(true); return; }
     setLoading(action);
@@ -287,11 +310,14 @@ export default function TokensPage() {
                   setLoading('helmet_check');
                   try {
                     const fd = new FormData();
-                    fd.append('photo', helmetFile);
+                    const small = await shrinkImage(helmetFile);
+                    fd.append('photo', small, 'helmet.jpg');
                     const token = localStorage.getItem('token');
                     const res = await fetch('/api/users/helmet-checkin', { method:'POST', headers:{ Authorization:`Bearer ${token}` }, body:fd });
-                    const data = await res.json();
-                    if (!res.ok) throw new Error(data.error);
+                    const raw = await res.text();
+                    let data = {};
+                    try { data = raw ? JSON.parse(raw) : {}; } catch (e) { data = {}; }
+                    if (!res.ok || !raw) throw new Error(data.error || 'Photo could not be uploaded. Check your connection and try again.');
                     flash(true, data.message);
                     refreshUser();
                     setShowHelmet(false); setHelmetFile(null); setHelmetPreview(null);
@@ -455,16 +481,15 @@ export default function TokensPage() {
         </div>
 
         {/* Info */}
-        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,marginTop:16}}>
+        <div style={{display:'flex',flexDirection:'column',gap:8,marginTop:16}}>
           {[
-            ['','Not Crypto','Closed-loop loyalty credits — no trading or speculation.'],
-            ['','Earn Daily','Helmet +3 · Quiz +5 · No-claim +15 · Referral +30'],
-            ['','Real Rewards','Data bundles, airtime, discounts and vouchers.'],
-          ].map(([icon,title,desc]) => (
-            <div key={title} style={{background:'var(--bg)',borderRadius:6,padding:'12px 14px',border:'1px solid var(--border)'}}>
-              <div style={{fontSize:20,marginBottom:6}}>{icon}</div>
-              <div style={{fontSize:12,fontWeight:700,marginBottom:3}}>{title}</div>
-              <div style={{fontSize:11,color:'var(--muted)',lineHeight:1.5}}>{desc}</div>
+            ['Not crypto','Closed-loop loyalty credits. No trading or speculation.'],
+            ['Earn daily','Helmet check +3, safety quiz +5, no-claim month +15, referral +30.'],
+            ['Real rewards','Data bundles, airtime, contribution discounts and vouchers.'],
+          ].map(([title,desc]) => (
+            <div key={title} style={{background:'white',borderRadius:10,padding:'12px 14px',border:'1px solid var(--border)',borderLeft:'4px solid var(--emerald)'}}>
+              <div style={{fontSize:13,fontWeight:700,marginBottom:2}}>{title}</div>
+              <div style={{fontSize:12,color:'var(--muted)',lineHeight:1.5}}>{desc}</div>
             </div>
           ))}
         </div>
