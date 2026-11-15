@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { policiesAPI, usersAPI } from '../utils/api';
 
@@ -45,6 +45,62 @@ function shrinkImage(file) {
       img.src = url;
     } catch (e) { resolve(file); }
   });
+}
+
+// Live front-camera capture only: no gallery or file picker, so it has to be a fresh selfie
+function HelmetCamera({ preview, onCapture, onRetake }) {
+  const videoRef = useRef(null);
+  const streamRef = useRef(null);
+  const [err, setErr] = useState('');
+
+  const stop = () => {
+    if (streamRef.current) { streamRef.current.getTracks().forEach(t => t.stop()); streamRef.current = null; }
+  };
+  const start = async () => {
+    setErr('');
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error('nocam');
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+      streamRef.current = stream;
+      if (videoRef.current) { videoRef.current.srcObject = stream; videoRef.current.play().catch(() => {}); }
+    } catch (e) {
+      setErr('Camera could not open. Allow camera access for this app in your phone settings, then try again.');
+    }
+  };
+  useEffect(() => { if (!preview) start(); return stop; }, [preview]); // eslint-disable-line
+
+  const snap = () => {
+    const v = videoRef.current;
+    if (!v || !v.videoWidth) return;
+    const r = Math.min(1, 1024 / Math.max(v.videoWidth, v.videoHeight));
+    const c = document.createElement('canvas');
+    c.width = Math.round(v.videoWidth * r); c.height = Math.round(v.videoHeight * r);
+    c.getContext('2d').drawImage(v, 0, 0, c.width, c.height);
+    c.toBlob((b) => {
+      if (!b) return;
+      stop();
+      onCapture(new File([b], 'helmet.jpg', { type: 'image/jpeg' }), URL.createObjectURL(b));
+    }, 'image/jpeg', 0.8);
+  };
+
+  if (preview) {
+    return (
+      <div style={{marginBottom:12,textAlign:'center'}}>
+        <img src={preview} alt="helmet" style={{width:'100%',maxHeight:260,objectFit:'cover',borderRadius:8,border:'2px solid var(--green)'}}/>
+        <button className="btn btn-ghost" style={{width:'100%',justifyContent:'center',marginTop:8}} onClick={onRetake}>Retake</button>
+      </div>
+    );
+  }
+  return (
+    <div style={{marginBottom:12}}>
+      {err
+        ? <div className="alert alert-error" style={{marginBottom:8}}>{err}</div>
+        : <video ref={videoRef} playsInline muted style={{width:'100%',maxHeight:300,objectFit:'cover',borderRadius:8,background:'#000',transform:'scaleX(-1)'}}/>}
+      {err
+        ? <button className="btn btn-ghost" style={{width:'100%',justifyContent:'center'}} onClick={start}>Try again</button>
+        : <button className="btn btn-ghost" style={{width:'100%',justifyContent:'center',marginTop:8}} onClick={snap}>Take photo</button>}
+    </div>
+  );
 }
 
 function SafetyQuiz({ onComplete, onClose }) {
@@ -283,26 +339,13 @@ export default function TokensPage() {
                 <button onClick={() => { setShowHelmet(false); setHelmetFile(null); setHelmetPreview(null); }} style={{background:'#F1F5F9',border:'none',borderRadius:8,padding:'4px 10px',cursor:'pointer',fontSize:13}}>×</button>
               </div>
               <p style={{fontSize:13,color:'var(--muted)',marginBottom:16,lineHeight:1.5}}>
-                Take a selfie wearing your helmet to earn 3 tokens. Photo is saved for compliance records.
+                Take a selfie wearing your helmet to earn 3 tokens. Photos from your gallery are not accepted. The photo is saved for compliance records.
               </p>
-              {helmetPreview && (
-                <div style={{marginBottom:12,textAlign:'center'}}>
-                  <img src={helmetPreview} alt="helmet" style={{width:'100%',maxHeight:200,objectFit:'cover',borderRadius:8,border:'2px solid var(--green)'}}/>
-                </div>
-              )}
-              <div style={{marginBottom:12}}>
-                <input type="file" accept="image/*" capture="user" id="helmet-cam-input"
-                  onChange={e => {
-                    const f = e.target.files[0];
-                    if (f) { setHelmetFile(f); setHelmetPreview(URL.createObjectURL(f)); }
-                  }}
-                  style={{display:'none'}}
-                />
-                <button type="button" className="btn btn-secondary" style={{width:'100%',justifyContent:'center'}}
-                  onClick={() => document.getElementById('helmet-cam-input').click()}>
-                  {helmetFile ? 'Change Photo' : 'Open Camera / Choose Photo'}
-                </button>
-              </div>
+              <HelmetCamera
+                preview={helmetPreview}
+                onCapture={(file, url) => { setHelmetFile(file); setHelmetPreview(url); }}
+                onRetake={() => { setHelmetFile(null); setHelmetPreview(null); }}
+              />
               <button className="btn btn-primary" style={{width:'100%',justifyContent:'center'}}
                 disabled={!helmetFile || !!loading}
                 onClick={async () => {
@@ -313,11 +356,24 @@ export default function TokensPage() {
                     const small = await shrinkImage(helmetFile);
                     fd.append('photo', small, 'helmet.jpg');
                     const token = localStorage.getItem('token');
-                    const res = await fetch('/api/users/helmet-checkin', { method:'POST', headers:{ Authorization:`Bearer ${token}` }, body:fd });
-                    const raw = await res.text();
-                    let data = {};
-                    try { data = raw ? JSON.parse(raw) : {}; } catch (e) { data = {}; }
-                    if (!res.ok || !raw) throw new Error(data.error || 'Photo could not be uploaded. Check your connection and try again.');
+                    const send = async (base) => {
+                      const r = await fetch(base + '/api/users/helmet-checkin', { method:'POST', headers:{ Authorization:`Bearer ${token}` }, body:fd });
+                      const raw = await r.text();
+                      let d = {};
+                      try { d = raw ? JSON.parse(raw) : {}; } catch (e) { d = {}; }
+                      return { ok: r.ok && !!raw, status: r.status, data: d };
+                    };
+                    let out;
+                    try { out = await send(''); } catch (e) { out = { ok:false, status:0, data:{} }; }
+                    if (!out.ok && !out.data.error) {
+                      // The same-site route did not answer properly: ask the server directly
+                      let out2;
+                      try { out2 = await send('https://pikishield.onrender.com'); } catch (e) { out2 = { ok:false, status:0, data:{} }; }
+                      if (out2.ok || out2.data.error) out = out2;
+                      else out.status = out.status + '/' + out2.status;
+                    }
+                    if (!out.ok) throw new Error(out.data.error || ('Photo could not be uploaded (code ' + out.status + ').'));
+                    const data = out.data;
                     flash(true, data.message);
                     refreshUser();
                     setShowHelmet(false); setHelmetFile(null); setHelmetPreview(null);
