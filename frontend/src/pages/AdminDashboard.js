@@ -3,12 +3,13 @@ import React, { useState, useEffect, useMemo } from 'react';
 import {
   PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  LineChart, Line, Legend
+  LineChart, Line, Legend, AreaChart, Area
 } from 'recharts';
 import { usersAPI, documentsAPI } from '../utils/api';
 import CameraCapture from '../components/CameraCapture';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import Icon from '../components/Icons';
 
 const s  = (v, fb = '') => v == null ? fb : typeof v === 'object' ? fb : String(v) || fb;
 const sd = (v) => s(v, '—');
@@ -302,6 +303,123 @@ function PolicyBreakdownCard({ data }) {
   );
 }
 
+/* ── Executive glass overview ─────────────────────────────────── */
+const GLASS_CSS = `
+.adm{position:relative;min-height:100vh;background:
+  radial-gradient(900px 520px at 8% -8%,rgba(15,123,92,.22),transparent 60%),
+  radial-gradient(800px 520px at 100% 0%,rgba(59,75,107,.22),transparent 60%),
+  radial-gradient(700px 500px at 60% 100%,rgba(253,199,3,.16),transparent 60%),
+  linear-gradient(180deg,#EAF0F7 0%,#F4F6FA 100%)}
+.adm .card,.adm .stat-card,.adm .glass{background:rgba(255,255,255,.62)!important;backdrop-filter:blur(16px) saturate(160%);-webkit-backdrop-filter:blur(16px) saturate(160%);
+  border:1px solid rgba(255,255,255,.75)!important;box-shadow:0 10px 30px rgba(11,31,58,.08),inset 0 1px 0 rgba(255,255,255,.9)!important;border-radius:18px!important}
+.adm .form-input{background:rgba(255,255,255,.7)!important;backdrop-filter:blur(8px)}
+.adm table{background:transparent!important}
+.adm .kpi{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-radius:16px;padding:12px 14px;transition:transform .15s}
+.adm .kpi:hover{transform:translateY(-2px)}
+.adm-grid2{display:grid;grid-template-columns:1.6fr 1fr;gap:14px;margin-bottom:14px}
+.adm-grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px}
+@media (max-width:900px){.adm-grid2,.adm-grid3{grid-template-columns:1fr}}
+`;
+
+const chartTip = { contentStyle:{ background:'rgba(255,255,255,.92)', border:'1px solid #E6EAF2', borderRadius:12, fontSize:12, boxShadow:'0 8px 24px rgba(11,31,58,.12)' } };
+const fmtK = (v) => v >= 1000000 ? (v/1000000).toFixed(1)+'M' : v >= 1000 ? Math.round(v/1000)+'k' : String(v);
+
+function GlassCard({ title, sub, children, right }) {
+  return (
+    <div className="glass" style={{ padding:'16px 16px 12px' }}>
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:10, gap:8 }}>
+        <div>
+          <div style={{ fontSize:13, fontWeight:700, color:'#0B1F3A' }}>{title}</div>
+          {sub && <div style={{ fontSize:11, color:'#6B7683', marginTop:2 }}>{sub}</div>}
+        </div>
+        {right}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function ExecutiveCharts({ data, isSuperAdmin }) {
+  const fin = data.monthlyFinancials || [];
+  const growth = data.userGrowth || [];
+  const claimsBy = (data.claimBreakdown || []).map(c => ({ name: c.type === 'income' ? 'Stipend' : c.type.charAt(0).toUpperCase()+c.type.slice(1), Paid:c.paid, Pending:c.pending, Rejected:c.rejected }));
+  const hasFin = fin.some(m => m.revenue || m.payouts);
+  const hasGrowth = growth.some(m => m.riders || m.members);
+  const hasClaims = claimsBy.some(c => c.Paid || c.Pending || c.Rejected);
+  const empty = (t) => <div style={{ height:190, display:'flex', alignItems:'center', justifyContent:'center', color:'#8A94A3', fontSize:12 }}>{t}</div>;
+  return (
+    <>
+      <div className={isSuperAdmin ? 'adm-grid2' : ''}>
+        {isSuperAdmin && (
+          <GlassCard title="Revenue vs payouts" sub="Last 12 months, KES">
+            {hasFin ? (
+              <ResponsiveContainer width="100%" height={210}>
+                <AreaChart data={fin} margin={{ top:6, right:6, left:-14, bottom:0 }}>
+                  <defs>
+                    <linearGradient id="gRev" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#0F7B5C" stopOpacity=".45"/><stop offset="100%" stopColor="#0F7B5C" stopOpacity="0"/></linearGradient>
+                    <linearGradient id="gPay" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#E0A800" stopOpacity=".4"/><stop offset="100%" stopColor="#E0A800" stopOpacity="0"/></linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(11,31,58,.08)" vertical={false}/>
+                  <XAxis dataKey="month" tick={{ fontSize:10, fill:'#6B7683' }} axisLine={false} tickLine={false}/>
+                  <YAxis tick={{ fontSize:10, fill:'#6B7683' }} axisLine={false} tickLine={false} tickFormatter={fmtK}/>
+                  <Tooltip {...chartTip} formatter={(v,n)=>['KES '+Number(v).toLocaleString(), n]}/>
+                  <Area type="monotone" dataKey="revenue" name="Revenue" stroke="#0F7B5C" strokeWidth={2.5} fill="url(#gRev)"/>
+                  <Area type="monotone" dataKey="payouts" name="Payouts" stroke="#E0A800" strokeWidth={2.5} fill="url(#gPay)"/>
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : empty('No payments yet')}
+          </GlassCard>
+        )}
+        <GlassCard title="New sign-ups" sub="Last 6 months">
+          {hasGrowth ? (
+            <ResponsiveContainer width="100%" height={210}>
+              <BarChart data={growth} margin={{ top:6, right:6, left:-22, bottom:0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(11,31,58,.08)" vertical={false}/>
+                <XAxis dataKey="month" tick={{ fontSize:10, fill:'#6B7683' }} axisLine={false} tickLine={false}/>
+                <YAxis allowDecimals={false} tick={{ fontSize:10, fill:'#6B7683' }} axisLine={false} tickLine={false}/>
+                <Tooltip {...chartTip}/>
+                <Bar dataKey="riders" name="Riders" stackId="a" fill="#0B1F3A" radius={[0,0,0,0]}/>
+                <Bar dataKey="members" name="Members" stackId="a" fill="#FDC703" radius={[6,6,0,0]}/>
+              </BarChart>
+            </ResponsiveContainer>
+          ) : empty('No sign-ups yet')}
+        </GlassCard>
+      </div>
+
+      <div className="adm-grid2" style={{ gridTemplateColumns:'1fr 1fr' }}>
+        <GlassCard title="Claims by type" sub="Paid, pending and rejected">
+          {hasClaims ? (
+            <ResponsiveContainer width="100%" height={190}>
+              <BarChart data={claimsBy} margin={{ top:6, right:6, left:-22, bottom:0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(11,31,58,.08)" vertical={false}/>
+                <XAxis dataKey="name" tick={{ fontSize:10, fill:'#6B7683' }} axisLine={false} tickLine={false}/>
+                <YAxis allowDecimals={false} tick={{ fontSize:10, fill:'#6B7683' }} axisLine={false} tickLine={false}/>
+                <Tooltip {...chartTip}/>
+                <Bar dataKey="Paid" fill="#0F7B5C" radius={[6,6,0,0]}/>
+                <Bar dataKey="Pending" fill="#E0A800" radius={[6,6,0,0]}/>
+                <Bar dataKey="Rejected" fill="#C2415A" radius={[6,6,0,0]}/>
+              </BarChart>
+            </ResponsiveContainer>
+          ) : empty('No claims yet')}
+        </GlassCard>
+        <GlassCard title="Needs attention">
+          {[
+            { label:'Claims waiting for review', value:data.pendingClaims, color:'#C2415A', icon:'claim' },
+            { label:'Accounts waiting for ID approval', value:data.pendingOnboards, color:'#B08A3E', icon:'idcard' },
+            { label:'Suspended accounts', value:data.suspended, color:'#3B4B6B', icon:'alert' },
+          ].map(r => (
+            <div key={r.label} style={{ display:'flex', alignItems:'center', gap:12, padding:'10px 0', borderTop:'1px solid rgba(11,31,58,.07)' }}>
+              <div style={{ width:34, height:34, borderRadius:11, background:r.color+'1A', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}><Icon name={r.icon} color={r.color} size={17}/></div>
+              <div style={{ flex:1, fontSize:12, color:'#3B4B6B' }}>{r.label}</div>
+              <div style={{ fontFamily:"'Source Serif 4',Georgia,serif", fontWeight:700, fontSize:20, color:r.color }}>{r.value || 0}</div>
+            </div>
+          ))}
+        </GlassCard>
+      </div>
+    </>
+  );
+}
+
 export default function AdminDashboard() {
   const { user: authUser } = useAuth();
   const isSuperAdmin = authUser?.role === 'superadmin';
@@ -386,11 +504,12 @@ export default function AdminDashboard() {
   const totalPolicies   = data.activePolicies                 || (funeralCount + bailCount + bailIncomeCount);
 
   return (
-    <div>
+    <div className="adm">
+      <style>{GLASS_CSS}</style>
       <div className="page-body" style={{ paddingTop:28 }}>
 
         {/* Hero banner */}
-        <div style={{ background:'#0B1F3A', borderRadius:8, padding:'28px 32px', marginBottom:24, position:'relative', overflow:'hidden', border:'1px solid rgba(255,255,255,.06)' }}>
+        <div style={{ background:'linear-gradient(135deg,#0B1F3A 0%,#0E4D63 55%,#0F7B5C 100%)', borderRadius:22, padding:'24px 26px', marginBottom:18, position:'relative', overflow:'hidden', boxShadow:'0 18px 40px rgba(11,31,58,.22)' }}>
           <svg style={{ position:'absolute', top:0, left:0, width:'100%', height:'100%', opacity:.04, pointerEvents:'none' }} xmlns="http://www.w3.org/2000/svg">
             <defs><pattern id="ag" width="36" height="36" patternUnits="userSpaceOnUse"><path d="M 36 0 L 0 0 0 36" fill="none" stroke="white" strokeWidth="1"/></pattern></defs>
             <rect width="100%" height="100%" fill="url(#ag)"/>
@@ -415,10 +534,10 @@ export default function AdminDashboard() {
                 {isSuperAdmin && (
                   <button className="btn" style={{ background:'rgba(79,70,229,.18)', color:'#C7D2FE', border:'1px solid rgba(99,102,241,.3)', fontSize:12, padding:'8px 16px' }} onClick={() => setShowNewAdmin(true)}>New Admin</button>
                 )}
-                <button className="btn" style={{ background:'rgba(0,214,143,.15)', color:'#1A9F73', border:'1px solid rgba(0,214,143,.3)', fontSize:12, padding:'8px 16px' }} onClick={load}>Refresh</button>
+                <button className="btn" style={{ background:'#FDC703', color:'#0B1F3A', border:'none', fontWeight:700, fontSize:12, padding:'8px 16px' }} onClick={load}>Refresh</button>
               </div>
             </div>
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(130px,1fr))', gap:10, marginTop:24 }}>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(150px,1fr))', gap:10, marginTop:20 }}>
               {[
                 { label:'Agents',         value: data.totalAgents,  color:'#2F5D8C' },
                 { label:'Total Policies', value: totalPolicies,     color:'#B08A3E' },
@@ -426,11 +545,11 @@ export default function AdminDashboard() {
                 { label:'Bail',           value: bailCount,         color:'#2F5D8C' },
                 { label:'Bail + Stipend', value: bailIncomeCount,   color:'#B08A3E' },
                 { label:'Claims',         value: data.totalClaims,  color:'#9A4D6B' },
-                ...(isSuperAdmin ? [{ label:'Net Position', value:'KES '+(data.netPosition||0).toLocaleString(), color:'#1A9F73' }] : []),
+                ...(isSuperAdmin ? [{ label:'Revenue', value:'KES '+(data.totalRevenue||0).toLocaleString(), color:'#fff' }, { label:'Payouts', value:'KES '+(data.totalPayouts||0).toLocaleString(), color:'#fff' }, { label:'Net Position', value:'KES '+(data.netPosition||0).toLocaleString(), color:'#fff' }] : []),
               ].map(k => (
-                <div key={k.label} style={{ background:'rgba(255,255,255,.06)', borderRadius:6, padding:'12px 14px', border:'1px solid rgba(255,255,255,.08)' }}>
-                  <div style={{ fontSize:20, fontWeight:700, color:k.color, lineHeight:1, marginTop:4 }}>{k.value ?? 0}</div>
-                  <div style={{ fontSize:10, color:'rgba(255,255,255,.5)', marginTop:2 }}>{k.label}</div>
+                <div key={k.label} className="kpi">
+                  <div style={{ fontFamily:"'Source Serif 4',Georgia,serif", fontSize:20, fontWeight:700, color:'#fff', lineHeight:1, marginTop:2, whiteSpace:'nowrap' }}>{k.value ?? 0}</div>
+                  <div style={{ fontSize:10, color:'rgba(255,255,255,.7)', marginTop:4, letterSpacing:.4, textTransform:'uppercase' }}>{k.label}</div>
                 </div>
               ))}
             </div>
@@ -448,7 +567,7 @@ export default function AdminDashboard() {
             ] : []),
           ].map(t => (
             <button key={t.id} onClick={() => setTab(t.id)}
-              style={{ padding:'8px 16px', borderRadius:8, border:'none', cursor:'pointer', fontSize:12, fontWeight:600, background: tab===t.id ? 'var(--green)' : 'var(--surface)', color: tab===t.id ? 'white' : 'var(--text)', boxShadow: tab===t.id ? '0 2px 8px rgba(0,214,143,.3)' : 'none' }}>
+              style={{ padding:'8px 18px', borderRadius:999, border:'1px solid rgba(255,255,255,.7)', backdropFilter:'blur(10px)', cursor:'pointer', fontSize:12, fontWeight:600, background: tab===t.id ? '#0B1F3A' : 'rgba(255,255,255,.6)', color: tab===t.id ? 'white' : '#0B1F3A', boxShadow: tab===t.id ? '0 2px 8px rgba(0,214,143,.3)' : 'none' }}>
               {t.label}
             </button>
           ))}
@@ -458,6 +577,7 @@ export default function AdminDashboard() {
 
         {!loading && tab === 'overview' && (
           <>
+            <ExecutiveCharts data={data} isSuperAdmin={isSuperAdmin}/>
             <PolicyBreakdownCard data={data}/>
 
             <div className="stats-grid" style={{ marginBottom:16, gridTemplateColumns:'repeat(2, 1fr)' }}>
