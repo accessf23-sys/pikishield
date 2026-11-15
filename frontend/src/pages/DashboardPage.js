@@ -8,7 +8,6 @@ import Icon from '../components/Icons';
 import { getCache, setCache } from '../utils/pageCache';
 /* ── Animated SVG Hero ────────────────────────────────────────── */
 function HeroBanner({ user, totalDailyContrib, policies, loading }) {
-  const navigate = useNavigate();
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
   const initials = useMemo(() => user?.fullName?.split('').map(n=>n[0]).join('').slice(0,2).toUpperCase() || '?', [user?.fullName]);
@@ -189,12 +188,6 @@ function HeroBanner({ user, totalDailyContrib, policies, loading }) {
             <div style={{width:6,height:6,borderRadius:'50%',background:'#FDC703',flexShrink:0}}/>
             <span style={{fontSize:11,color:'rgba(255,255,255,.8)'}}>Daily</span>
             <span style={{fontSize:13,fontWeight:700,color:'#FDC703'}}>KES {totalDailyContrib}</span>
-          </div>
-        )}
-        {!loading && policies.length === 0 && (
-          <div onClick={()=>navigate('/subscribe')} style={{display:'inline-flex',alignItems:'center',gap:8,background:'rgba(0,214,143,.12)',border:'1px solid rgba(0,214,143,.3)',borderRadius:6,padding:'10px 16px',cursor:'pointer'}}>
-            <span style={{fontSize:13,color:'rgba(255,255,255,.75)',whiteSpace:'nowrap'}}>No active cover yet</span>
-            <span style={{fontSize:13,fontWeight:700,color:'#FDC703',whiteSpace:'nowrap'}}>Get protected →</span>
           </div>
         )}
       </div>

@@ -183,28 +183,32 @@ export default function SubscribePage() {
             </div>
             <hr className="divider" />
             {members.slice(0, 3).map((m, i) => (
-              <div key={i} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 0.7fr 1.5fr auto', gap: 10, marginBottom: 10, alignItems: 'center' }}>
-                <input className="form-input" placeholder="Full Name" value={m.name} onChange={e => { const ms = [...members]; ms[i].name = e.target.value; setMembers(ms); }} />
-                <select className="form-input" value={m.relation} onChange={e => { const ms = [...members]; ms[i].relation = e.target.value; setMembers(ms); }}>
-                  <option value="">Relation</option>
-                  {['Mother','Father','Spouse','Child','Sibling','Parent'].map(r => <option key={r}>{r}</option>)}
-                </select>
-                <div>
-                  <input className="form-input" type="number" placeholder="Age"
-                    min={1} max={70}
-                    value={m.age}
-                    onChange={e => {
-                      const v = e.target.value;
-                      if (v !== '' && parseInt(v,10) > 70) { setError('Maximum age for funeral cover is 70 years'); return; }
-                      setError('');
-                      const ms = [...members]; ms[i].age = v; setMembers(ms);
-                    }}
-                    style={{ borderColor: m.age && parseInt(m.age,10) > 70 ? 'var(--red)' : undefined }}
-                  />
-                  {m.age && parseInt(m.age,10) > 70 && <div style={{fontSize:10,color:'var(--red)',marginTop:2}}>Max 70 yrs</div>}
+              <div key={i} style={{ border: '1px solid var(--border)', borderRadius: 12, padding: 12, marginBottom: 10, background: '#FAFBFD' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--muted)' }}>Member {i + 1}</span>
+                  {members.length > 1 && <button type="button" onClick={() => setMembers(members.filter((_, j) => j !== i))} style={{ background: '#FFF0F0', border: 'none', borderRadius: 8, padding: '2px 10px', cursor: 'pointer', fontSize: 16, color: '#B42318' }}>×</button>}
                 </div>
-                <input className="form-input" placeholder="National ID" value={m.id} onChange={e => { const ms = [...members]; ms[i].id = e.target.value; setMembers(ms); }} />
-                {members.length > 1 && <button type="button" onClick={() => setMembers(members.filter((_, j) => j !== i))} style={{ background: '#FFF0F0', border: 'none', borderRadius: 8, padding: '7px 10px', cursor: 'pointer', fontSize: 16 }}>×</button>}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                  <input className="form-input" style={{ gridColumn: '1 / -1' }} placeholder="Full name" value={m.name} onChange={e => { const ms = [...members]; ms[i].name = e.target.value; setMembers(ms); }} />
+                  <select className="form-input" value={m.relation} onChange={e => { const ms = [...members]; ms[i].relation = e.target.value; setMembers(ms); }}>
+                    <option value="">Relation</option>
+                    {['Mother','Father','Spouse','Child','Sibling','Parent'].map(r => <option key={r}>{r}</option>)}
+                  </select>
+                  <div>
+                    <input className="form-input" type="number" placeholder="Age (max 70)"
+                      min={1} max={70}
+                      value={m.age}
+                      onChange={e => {
+                        const v = e.target.value;
+                        if (v !== '' && parseInt(v,10) > 70) { setError('Maximum age for funeral cover is 70 years'); return; }
+                        setError('');
+                        const ms = [...members]; ms[i].age = v; setMembers(ms);
+                      }}
+                      style={{ borderColor: m.age && parseInt(m.age,10) > 70 ? 'var(--red)' : undefined }}
+                    />
+                  </div>
+                  <input className="form-input" style={{ gridColumn: '1 / -1' }} placeholder="National ID" value={m.id} onChange={e => { const ms = [...members]; ms[i].id = e.target.value; setMembers(ms); }} />
+                </div>
               </div>
             ))}
             {members.length < 3 && (
@@ -214,9 +218,9 @@ export default function SubscribePage() {
                <strong>Next step:</strong> You'll register a <strong>Next of Kin (NOK)</strong> who can log in and lodge funeral claims on your behalf if needed.
             </div>
             <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
-              <button className="btn btn-secondary" onClick={() => setStep(1)}>← Back</button>
-              <button className="btn btn-primary btn-lg" onClick={handleSubscribe} disabled={loading}>
-                {loading ? 'Enrolling...' : ' Enroll & Continue to NOK Setup'}
+              <button className="btn btn-secondary" style={{ flexShrink: 0 }} onClick={() => setStep(1)}>← Back</button>
+              <button className="btn btn-primary btn-lg" style={{ flex: 1, justifyContent: 'center', minWidth: 0 }} onClick={handleSubscribe} disabled={loading}>
+                {loading ? 'Enrolling...' : 'Enroll & Continue'}
               </button>
             </div>
           </div>
