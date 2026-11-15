@@ -74,6 +74,17 @@ export default function LoginPage({ initialMode = 'login' }) {
   const startMode = initialMode === 'login' ? 'landing' : initialMode;
   const [mode, setMode] = useState(startMode);
   useEffect(() => { setMode(startMode); }, [startMode]);
+  // Phone Back button: from the sign-in / create-account card go back to the start screen first.
+  useEffect(() => {
+    const onPop = () => setMode(m => (m === 'login' || m === 'register' ? 'landing' : m));
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
+  useEffect(() => {
+    if (mode === 'login' || mode === 'register') {
+      try { window.history.pushState({ pikiAuth: mode }, ''); } catch (e) {}
+    }
+  }, [mode === 'landing']); // eslint-disable-line react-hooks/exhaustive-deps
   const { login }  = useAuth();
   const navigate   = useNavigate();
   const [phone, setPhone]       = useState('');
@@ -96,7 +107,7 @@ export default function LoginPage({ initialMode = 'login' }) {
         member: '/member-dashboard',
         nok: '/claims'
       };
-      navigate(routes[user.role] || '/dashboard');
+      navigate(routes[user.role] || '/dashboard', { replace: true }); // replace: Back must not return to the login page
     } catch (err) {
       setError(err.response?.data?.error || err.message || 'Login failed. Check your credentials.');
     } finally {

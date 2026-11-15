@@ -183,7 +183,7 @@ function RiderRegister({ onBack }) {
     finally { setLoading(false); }
   };
 
-  if (submitted) return <SubmittedNotice phone={savedPhoneShown} onSignIn={()=>navigate('/login')} />;
+  if (submitted) return <SubmittedNotice phone={savedPhoneShown} onSignIn={()=>navigate('/login',{replace:true})} />;
 
   return (
     <>
@@ -398,7 +398,7 @@ function MemberRegister({ onBack }) {
     }
   };
 
-  if (skipped) return <SubmittedNotice phone={normalizePhone(form.phone)} onSignIn={()=>navigate('/login')} />;
+  if (skipped) return <SubmittedNotice phone={normalizePhone(form.phone)} onSignIn={()=>navigate('/login',{replace:true})} />;
 
   return (
     <>
