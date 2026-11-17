@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authAPI } from '../utils/api';
+import { clearCache } from '../utils/pageCache';
 
 const AuthContext = createContext(null);
 const SESSION_MS = 8 * 60 * 60 * 1000; // 8 hours
@@ -8,6 +9,21 @@ const AUTH_TIMEOUT_MS = 4000; // 4-second safety timeout
 function clearAuth() {
   localStorage.removeItem('token');
   localStorage.removeItem('piki_boot_time');
+}
+
+// Installed app: wipe the page history so the phone Back button leaves the app
+// (instead of bouncing between old pages and the start screen).
+function resetHistoryToLogin() {
+  try {
+    const installed = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
+    const n = window.history.length - 1;
+    if (installed && n > 0) {
+      window.history.go(-n);
+      setTimeout(() => window.location.replace('/login'), 150);
+    } else {
+      window.location.replace('/login');
+    }
+  } catch (e) { window.location.replace('/login'); }
 }
 
 export function AuthProvider({ children }) {
@@ -76,7 +92,12 @@ export function AuthProvider({ children }) {
     return res.data;
   };
 
-  const logout = () => { clearAuth(); setUser(null); };
+  const logout = () => {
+    clearAuth();
+    clearCache(); // never leave one user's saved data on the phone
+    setUser(null);
+    resetHistoryToLogin();
+  };
 
   const refreshUser = async () => {
     const res = await authAPI.me();

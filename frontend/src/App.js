@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SplashScreen from './components/SplashScreen';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { authAPI } from './utils/api';
+import { wakeServer, prefetchTabs } from './utils/warmup';
 import Sidebar from './components/Sidebar';
 import LoginPage from './pages/LoginPage';
 import SetupPage from './pages/SetupPage';
@@ -302,6 +303,11 @@ function AppRoutes() {
   const home = user ? roleHome(user.role) : '/login';
   //  FIXED: use 'token' (matches AuthContext.js)
   const hasToken = !!localStorage.getItem('token');
+
+  // Wake the sleeping server right away, and load every tab's data quietly once signed in
+  useEffect(() => { wakeServer(); }, []);
+  const role = user && user.role;
+  useEffect(() => { if (role === 'rider' || role === 'member') prefetchTabs(); }, [role]);
 
   if (!hasToken) {
     return (
