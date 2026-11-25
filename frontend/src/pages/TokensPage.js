@@ -75,7 +75,16 @@ function HelmetCamera({ preview, onCapture, onRetake }) {
     const r = Math.min(1, 1024 / Math.max(v.videoWidth, v.videoHeight));
     const c = document.createElement('canvas');
     c.width = Math.round(v.videoWidth * r); c.height = Math.round(v.videoHeight * r);
-    c.getContext('2d').drawImage(v, 0, 0, c.width, c.height);
+    const ctx = c.getContext('2d');
+    ctx.drawImage(v, 0, 0, c.width, c.height);
+    // Date and time printed on the photo (the server also records its own upload time)
+    const stamp = new Date().toLocaleString('en-GB', { timeZone: 'Africa/Nairobi', dateStyle: 'medium', timeStyle: 'short' });
+    const fs = Math.max(14, Math.round(c.width / 28));
+    ctx.font = 'bold ' + fs + 'px Arial, sans-serif';
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    ctx.fillRect(0, c.height - fs * 1.9, c.width, fs * 1.9);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillText(stamp, fs * 0.6, c.height - fs * 0.6);
     c.toBlob((b) => {
       if (!b) return;
       stop();

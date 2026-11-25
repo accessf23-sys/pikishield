@@ -8,6 +8,8 @@ const Document = require('../models/Document');
 const { auth, roles } = require('../middleware/auth');
 const { getJwtSecret } = require('../utils/jwtSecret');
 const { uploadLimiter } = require('../middleware/security');
+const crypto = require('crypto');
+const { inspectFiles } = require('../utils/fileCheck');
 
 const ALLOWED_MIME = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
 const ISADMIN = (u) => ['admin', 'superadmin'].includes(u.role);
@@ -34,9 +36,9 @@ if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, UPLOAD_DIR),
   filename:    (req, file, cb) => {
+    // Random name: nothing from the uploader's own file name is kept on disk
     const ext  = path.extname(file.originalname).toLowerCase();
-    const safe = `${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`;
-    cb(null, safe);
+    cb(null, crypto.randomBytes(16).toString('hex') + ext);
   },
 });
 
@@ -115,6 +117,7 @@ router.post('/upload-kyc', uploadLimiter, upload.array('files', 5), async (req, 
   try {
     if (!req.files || req.files.length === 0) return res.status(400).json({ error: 'No files uploaded' });
     if (rejectBadFiles(req.files)) return res.status(400).json({ error: 'Only real PDF, JPG, PNG or WEBP files are allowed' });
+    { const problem = await inspectFiles(req.files); if (problem) return res.status(400).json({ error: problem }); }
     const { docType, tempUploadId } = req.body;
 
     const documents = await Promise.all(req.files.map(f =>
@@ -122,7 +125,8 @@ router.post('/upload-kyc', uploadLimiter, upload.array('files', 5), async (req, 
         userId:      null,
         tempUploadId: tempUploadId || null,
         docType:     docType || 'national_id',
-        originalName: f.originalname,
+        originalName: `${(docType || 'file').replace(/[^a-z_]/gi, '')}${path.extname(f.filename)}`,
+        uploadedAt:  new Date(),
         filename:    f.filename,
         mimetype:    f.mimetype,
         size:        f.size,
@@ -155,6 +159,7 @@ router.post('/upload', auth, upload.array('files', 10), async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) return res.status(400).json({ error: 'No files uploaded' });
     if (rejectBadFiles(req.files)) return res.status(400).json({ error: 'Only real PDF, JPG, PNG or WEBP files are allowed' });
+    { const problem = await inspectFiles(req.files); if (problem) return res.status(400).json({ error: problem }); }
     const { docType, tempUploadId } = req.body;
 
     const documents = await Promise.all(req.files.map(f =>
@@ -162,7 +167,8 @@ router.post('/upload', auth, upload.array('files', 10), async (req, res) => {
         userId:      req.user._id,
         tempUploadId: tempUploadId || null,
         docType:     docType || 'other',
-        originalName: f.originalname,
+        originalName: `${(docType || 'file').replace(/[^a-z_]/gi, '')}${path.extname(f.filename)}`,
+        uploadedAt:  new Date(),
         filename:    f.filename,
         mimetype:    f.mimetype,
         size:        f.size,

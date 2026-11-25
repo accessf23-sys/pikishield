@@ -1,6 +1,8 @@
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
+const { inspectFile } = require('../utils/fileCheck');
 
 // Helmet selfies are saved on the server (same place as other uploads), not on a third-party service
 const HELMET_DIR = path.join(__dirname, '../../uploads/helmets');
@@ -8,7 +10,7 @@ try { fs.mkdirSync(HELMET_DIR, { recursive: true }); } catch (e) { /* created on
 const uploadHelmet = multer({
   storage: multer.diskStorage({
     destination: (req, file, cb) => cb(null, HELMET_DIR),
-    filename: (req, file, cb) => cb(null, `${req.user._id}-${Date.now()}.jpg`)
+    filename: (req, file, cb) => cb(null, crypto.randomBytes(16).toString('hex') + '.jpg')
   }),
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => (['image/jpeg', 'image/png'].includes(file.mimetype) ? cb(null, true) : cb(new Error('Photo must be a JPG or PNG')))
@@ -600,9 +602,10 @@ router.post('/helmet-checkin', auth, roles('rider'), (req, res, next) => {
 }, async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'Take a photo first.' });
-    if (!isRealImage(req.file)) {
+    const looked = isRealImage(req.file) ? await inspectFile(req.file) : { ok: false, reason: 'That file is not a valid photo.' };
+    if (!looked.ok) {
       try { fs.unlinkSync(req.file.path); } catch (e) { /* ignore */ }
-      return res.status(400).json({ error: 'That file is not a valid photo.' });
+      return res.status(400).json({ error: looked.reason });
     }
     const photoUrl = 'helmets/' + path.basename(req.file.path);
     const user = await User.findById(req.user._id);

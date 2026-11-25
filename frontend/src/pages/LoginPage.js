@@ -48,7 +48,7 @@ function Landing({ onLogin, onRegister }) {
 
       <div style={{ position: 'relative', zIndex: 2, flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 24px 120px', textAlign: 'center' }}>
         <div style={{ width: '100%', maxWidth: 320, marginBottom: 10 }}><Helmet /></div>
-        <h1 style={{ fontFamily: "'Source Serif 4',Georgia,serif", color: '#FDC703', fontSize: 'clamp(30px,8vw,46px)', lineHeight: 1.1, fontWeight: 800, margin: '6px 0 10px' }}>
+        <h1 style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: '#FDC703', fontSize: 'clamp(30px,8vw,46px)', lineHeight: 1.1, fontWeight: 800, margin: '6px 0 10px' }}>
           Ride safe.<br />Stay covered.
         </h1>
         <p style={{ color: 'rgba(255,255,255,.92)', fontSize: 15, lineHeight: 1.5, maxWidth: 320, margin: '0 0 22px' }}>
