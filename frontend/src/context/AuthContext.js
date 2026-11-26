@@ -26,9 +26,60 @@ function resetHistoryToLogin() {
   } catch (e) { window.location.replace('/login'); }
 }
 
+const isInstalled = () => {
+  try { return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true; } catch (e) { return false; }
+};
+
+// Installed app: every fresh launch (app closed, then opened again) starts signed out.
+// sessionStorage is wiped when the app is closed, so a missing marker means a new launch.
+(function freshLaunchCheck() {
+  try {
+    if (!isInstalled()) return;
+    if (!sessionStorage.getItem('pk_alive')) { clearAuth(); clearCache(); }
+    sessionStorage.setItem('pk_alive', '1');
+  } catch (e) { /* ignore */ }
+})();
+
+const AWAY_LIMIT_MS = 2 * 60 * 1000; // away from the app longer than this -> sign in again
+let leaving = false;
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const signedIn = !!user;
+
+  // Phone Back button (installed app): sign out and leave the app, instead of moving between pages
+  useEffect(() => {
+    if (!signedIn || !isInstalled()) return undefined;
+    try { window.history.pushState({ pkGuard: true }, '', window.location.href); } catch (e) { /* ignore */ }
+    const onBack = () => {
+      if (leaving) return;
+      leaving = true;
+      clearAuth(); clearCache(); setUser(null);
+      const n = window.history.length - 1;
+      try { if (n > 0) window.history.go(-n); } catch (e) { /* ignore */ }
+      setTimeout(() => {
+        try { window.history.back(); } catch (e) { /* ignore */ }
+        setTimeout(() => { leaving = false; window.location.replace('/login'); }, 500);
+      }, 250);
+    };
+    window.addEventListener('popstate', onBack);
+    return () => window.removeEventListener('popstate', onBack);
+  }, [signedIn]);
+
+  // Left the app for a while (home button, another app): sign in again on return
+  useEffect(() => {
+    if (!signedIn || !isInstalled()) return undefined;
+    let hiddenAt = 0;
+    const onVis = () => {
+      if (document.hidden) { hiddenAt = Date.now(); return; }
+      const away = hiddenAt ? Date.now() - hiddenAt : 0;
+      hiddenAt = 0;
+      if (away > AWAY_LIMIT_MS) { clearAuth(); clearCache(); setUser(null); window.location.replace('/login'); }
+    };
+    document.addEventListener('visibilitychange', onVis);
+    return () => document.removeEventListener('visibilitychange', onVis);
+  }, [signedIn]);
 
   useEffect(() => {
     const token     = localStorage.getItem('token');

@@ -75,7 +75,7 @@ export default function Sidebar() {
     <aside className="sidebar">
       <div className="sidebar-logo" style={{ cursor: 'pointer' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div onClick={() => navigate(NAV[navRole]?.[0]?.path || '/dashboard')}>
+          <div onClick={() => navigate(NAV[navRole]?.[0]?.path || '/dashboard', { replace: true })}>
             <ShieldLogo />
           </div>
           <NotificationBell />
@@ -91,7 +91,7 @@ export default function Sidebar() {
             <button
               key={item.path}
               className={`nav-item ${pathname === item.path ? 'active' : ''}`}
-              onClick={() => navigate(item.path)}
+              onClick={() => navigate(item.path, { replace: true })}
             >
               {item.label}
             </button>
@@ -119,7 +119,7 @@ export default function Sidebar() {
         {showChangePassword && (
           <button
             className={`nav-item ${pathname === '/password' ? 'active' : ''}`}
-            onClick={() => navigate('/password')}
+            onClick={() => navigate('/password', { replace: true })}
             style={{ marginTop: 2 }}
           >
             Change Password

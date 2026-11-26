@@ -111,7 +111,7 @@ function MobileTopBar() {
       <div style={{fontSize:11,color:'rgba(255,255,255,.5)',fontWeight:600}}>
         {user.fullName?.split(' ')[0]} · {user.role}
       </div>
-      <button className="mobile-topbar-notif" onClick={()=>navigate('/password')} title="Settings">Settings</button>
+      <button className="mobile-topbar-notif" onClick={()=>navigate('/password', { replace: true })} title="Settings">Settings</button>
       <button className="mobile-topbar-notif" onClick={logout} title="Sign out">Sign out</button>
     </div>
   );
@@ -132,7 +132,7 @@ function MobileBottomNav() {
         {items.map(item => (
           <button key={item.path}
             className={`mobile-nav-item${pathname === item.path ? ' active' : ''}`}
-            onClick={() => navigate(item.path)}>
+            onClick={() => navigate(item.path, { replace: true })}>
             {item.icon ? <span className="mn-icon">{item.icon}</span> : null}
             {item.label}
           </button>
